@@ -2,7 +2,7 @@
 title: Chân dung nghề của tôi | Bản V0
 ---
 
-# Chân dung nghề của tôi
+# Chân dung nghề của tôi | bản v0
 
 > **Bài 1 · Xoá dòng này khi nộp.** Mọi chỗ có dấu … là chỗ em điền.
 > Đọc kỹ đề bài trên LMS trước khi viết. Bảy mục dưới đây là bắt buộc.
