@@ -113,6 +113,33 @@ td.c,th.c{text-align:center}
 .modepick button:hover{border-color:var(--brand);background:#fbfcff}
 .modepick b{display:block;font-size:17px;color:var(--ink);margin-bottom:3px}
 .modepick span{font-size:14px;color:var(--ink2)}
+.gate{max-width:420px;margin:0 auto}
+.gate input{width:100%;border:2px solid var(--line);border-radius:12px;padding:15px;font-size:20px;
+  text-align:center;font-family:inherit;letter-spacing:2px;font-weight:700;color:var(--ink)}
+.gate input:focus{outline:0;border-color:var(--brand)}
+.gate .err{color:var(--no);font-size:14px;text-align:center;margin-top:10px;font-weight:600;display:none}
+.field{margin-top:14px}
+.field label{display:block;font-size:13.5px;font-weight:700;color:var(--ink2);margin-bottom:5px}
+.field input{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:13px;font-size:16px;
+  font-family:inherit;color:var(--ink)}
+.field input:focus{outline:0;border-color:var(--brand)}
+.field .hint{font-size:12.5px;color:var(--ink3);margin-top:4px}
+.src{background:#f2f5fb;border-radius:10px;padding:12px 14px;margin-top:12px;font-size:13.5px;color:var(--ink2)}
+.src b{color:var(--brand-d)}
+.src>b:first-child{display:block;margin-bottom:4px;font-size:12.5px;letter-spacing:.03em;text-transform:uppercase}
+.src .sw{display:block;margin-top:7px;padding-top:7px;border-top:1px dashed #cfd8e8;color:var(--ink3);font-size:12.8px}
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:12px;margin-bottom:8px}
+.pill.off{background:#eef1f6;color:var(--ink3)}
+.pill.on{background:var(--human-l);color:var(--human)}
+.code{font-family:ui-monospace,Menlo,monospace;background:#12161f;color:#8fd694;padding:13px 15px;
+  border-radius:10px;font-size:16px;text-align:center;letter-spacing:1px;margin-top:10px;word-break:break-all}
+.sub2{display:grid;gap:10px;margin-top:18px}
+.sub2 button{border:2px solid var(--line);background:#fff;border-radius:13px;padding:16px;text-align:left;
+  cursor:pointer;font-family:inherit}
+.sub2 button:hover{border-color:var(--brand);background:#fbfcff}
+.sub2 b{display:block;font-size:16px;color:var(--ink);margin-bottom:2px}
+.sub2 span{font-size:13.5px;color:var(--ink2)}
+
 </style>
 </head>
 <body>
@@ -131,25 +158,54 @@ td.c,th.c{text-align:center}
 <!-- ============ WELCOME ============ -->
 <section class="screen on" id="s-welcome">
   <div class="card">
-    <p style="margin:0 0 4px;font-size:15px;color:var(--ink2)">Không cần đăng nhập. Không thu thập dữ liệu của bạn. Chạy được khi mất mạng.</p>
+    <span class="pill" id="w-pill"></span>
+    <p style="margin:0;font-size:15px;color:var(--ink2)" id="w-privacy"></p>
     <div class="modepick">
       <button onclick="start('sv')">
         <b>Tôi là sinh viên</b>
         <span>Tự đoán 8 mẫu trên điện thoại, xem mình đúng bao nhiêu và vì sao sai.</span>
       </button>
-      <button onclick="start('gv')">
-        <b>Tôi là giảng viên</b>
-        <span>Chiếu lên màn hình, cả lớp giơ tay bỏ phiếu, nhập số vào và xem thống kê lớp.</span>
+      <button onclick="askPass()">
+        <b>Tôi là giảng viên 🔒</b>
+        <span>Chiếu lên màn hình, xem đáp án và thống kê cả lớp. Cần mật khẩu.</span>
       </button>
     </div>
   </div>
-  <div class="note">
-    <b>Lưu ý cho giảng viên.</b> Tám mẫu dưới đây được biên soạn để làm nổi bật dấu vết nhận diện, không phải lấy ngẫu nhiên từ ngoài đời. Nên thay ít nhất hai mẫu bằng văn bản thật của chính lớp mình — bài viết của sinh viên, tin nhắn nhóm, hoặc một đoạn do lớp nhờ AI viết ngay tại chỗ. Cách sửa ghi ở cuối file mã nguồn.
-  </div>
-  <p class="foot">AIT129 — Trí tuệ nhân tạo ứng dụng · HUTECH<br>Mô phỏng chạy offline, không gửi dữ liệu đi đâu.</p>
+  <p class="foot">AIT129 — Trí tuệ nhân tạo ứng dụng · HUTECH</p>
 </section>
 
-<!-- ============ QUIZ (sinh viên) ============ -->
+<!-- ============ PASSWORD GATE ============ -->
+<section class="screen" id="s-gate">
+  <div class="card gate">
+    <h3 style="margin:0 0 4px;font-size:17px;text-align:center">Chế độ giảng viên</h3>
+    <p style="margin:0 0 16px;font-size:14px;color:var(--ink3);text-align:center">Nhập mật khẩu để xem đáp án và bảng thống kê lớp.</p>
+    <input type="password" id="g-pass" placeholder="••••••" autocomplete="off" onkeydown="if(event.key==='Enter')checkPass()">
+    <div class="err" id="g-err">Mật khẩu chưa đúng. Thử lại.</div>
+    <button class="btn" onclick="checkPass()">Vào chế độ giảng viên</button>
+    <button class="btn sec" onclick="show('s-welcome')">Quay lại</button>
+  </div>
+</section>
+
+<!-- ============ TEACHER SUBMODE ============ -->
+<section class="screen" id="s-tmode">
+  <div class="card">
+    <h3 style="margin:0 0 4px;font-size:17px">Lấy số phiếu của lớp bằng cách nào?</h3>
+    <p style="margin:0;font-size:14px;color:var(--ink2)">Chọn cách phù hợp với tình hình lớp và đường truyền.</p>
+    <div class="sub2">
+      <button onclick="startT('tay')">
+        <b>Lớp giơ tay, thầy nhập số</b>
+        <span>Không cần mạng, không cần sinh viên làm trước. Chạy được trong mọi hoàn cảnh.</span>
+      </button>
+      <button onclick="startT('auto')" id="btn-auto">
+        <b>Lấy từ bảng kết quả đã nộp</b>
+        <span id="auto-desc">Sinh viên làm trên điện thoại và bấm nộp; máy tự tổng hợp.</span>
+      </button>
+    </div>
+    <button class="btn sec" onclick="show('s-welcome')">Quay lại</button>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
 <section class="screen" id="s-quiz">
   <div class="card">
     <div class="meta"><span id="q-idx">Mẫu 1 / 8</span><span class="kind" id="q-kind"></span></div>
@@ -161,12 +217,13 @@ td.c,th.c{text-align:center}
     <div id="q-after" style="display:none">
       <div class="verdict" id="q-verdict"></div>
       <div class="tell" id="q-tell"></div>
+      <div class="src" id="q-src"></div>
       <button class="btn" onclick="nextQ()" id="q-next">Mẫu tiếp theo</button>
     </div>
   </div>
 </section>
 
-<!-- ============ RESULT (sinh viên) ============ -->
+<!-- ============ RESULT ============ -->
 <section class="screen" id="s-result">
   <div class="card big">
     <div class="n" id="r-score">0</div>
@@ -178,28 +235,42 @@ td.c,th.c{text-align:center}
     <div class="rowlist" id="r-list"></div>
   </div>
   <div class="note" id="r-note"></div>
+  <button class="btn" id="r-submit" onclick="show('s-submit')" style="display:none">Nộp kết quả cho giảng viên</button>
   <button class="btn sec" onclick="location.reload()">Làm lại từ đầu</button>
   <p class="foot">Ghi lại con số của mình. Cuối buổi giảng viên sẽ hỏi tới nó.</p>
 </section>
 
-<!-- ============ TEACHER ============ -->
+<!-- ============ SUBMIT ============ -->
+<section class="screen" id="s-submit">
+  <div class="card">
+    <h3 style="margin:0 0 4px;font-size:17px">Nộp kết quả</h3>
+    <p style="margin:0;font-size:14px;color:var(--ink2)" id="sb-what"></p>
+    <div class="field"><label>Mã lớp</label><input id="sb-lop" placeholder="ví dụ: 25DTHA3" autocomplete="off"></div>
+    <div class="field"><label>Mã số sinh viên</label><input id="sb-mssv" placeholder="ví dụ: 25800600030" inputmode="numeric" autocomplete="off"></div>
+    <div class="field"><label>Họ và tên</label><input id="sb-ten" placeholder="Nguyễn Văn A" autocomplete="off"></div>
+    <button class="btn" id="sb-go" onclick="submitResult()">Gửi</button>
+    <button class="btn sec" onclick="show('s-result')">Quay lại</button>
+    <div id="sb-out" style="display:none"></div>
+  </div>
+</section>
+
+<!-- ============ TEACHER SLIDES ============ -->
 <section class="screen" id="s-teach">
   <div class="card">
     <div class="meta"><span id="t-idx">Mẫu 1 / 8</span><span class="kind" id="t-kind"></span></div>
     <div class="sample" id="t-body"></div>
-
     <div id="t-vote">
-      <div class="tally">
-        <div class="tin h"><label>Số phiếu &ldquo;NGƯỜI viết&rdquo;</label><input type="number" id="t-h" min="0" value="" inputmode="numeric" placeholder="0"></div>
-        <div class="tin m"><label>Số phiếu &ldquo;MÁY viết&rdquo;</label><input type="number" id="t-m" min="0" value="" inputmode="numeric" placeholder="0"></div>
+      <div class="tally" id="t-tally">
+        <div class="tin h"><label>Số phiếu &ldquo;NGƯỜI viết&rdquo;</label><input type="number" id="t-h" min="0" inputmode="numeric" placeholder="0"></div>
+        <div class="tin m"><label>Số phiếu &ldquo;MÁY viết&rdquo;</label><input type="number" id="t-m" min="0" inputmode="numeric" placeholder="0"></div>
       </div>
       <button class="btn" onclick="reveal()">Lộ đáp án</button>
     </div>
-
     <div id="t-after" style="display:none">
       <div class="chart" id="t-chart"></div>
       <div class="verdict" id="t-verdict"></div>
       <div class="tell" id="t-tell"></div>
+      <div class="src" id="t-src"></div>
       <button class="btn" onclick="nextT()" id="t-next">Mẫu tiếp theo</button>
     </div>
   </div>
@@ -225,80 +296,152 @@ td.c,th.c{text-align:center}
 </section>
 
 </div>
-
 <script>
 /* ============================================================
+   ⚙️  CẤU HÌNH — sửa ba dòng dưới đây là đủ
+   ============================================================
+   MAT_KHAU_GV : mật khẩu vào chế độ giảng viên.
+   ENDPOINT    : dán URL Apps Script (.../exec) để lưu kết quả sinh viên.
+                 ĐỂ TRỐNG "" thì mô phỏng không gửi gì ra mạng, chạy hoàn toàn ngoại tuyến.
+                 Cách tạo: xem HuongDan_LuuKetQua.md trong cùng thư mục.
+   MA_LOP      : điền sẵn mã lớp để sinh viên khỏi gõ (để trống nếu dạy nhiều lớp).
+   ============================================================ */
+const CONFIG = {
+  MAT_KHAU_GV: "AIT129",
+  ENDPOINT:    "https://script.google.com/macros/s/AKfycbxqcIVXoJNKDW8tfJmsiLGKvCQeDs9LkCQMMwJib4sLcU3cmzlyhtjwKIoRbwCS35fA/exec",
+  MA_LOP:      ""
+};
+
+/* ============================================================
    DỮ LIỆU 8 MẪU
-   Muốn thay mẫu: sửa trực tiếp mảng SAMPLES dưới đây.
-   Mỗi mẫu cần: kind (loại văn bản) · text (nội dung) · truth ('nguoi' | 'may')
-   · tell (mảng các dấu vết nhận diện) · poem (true nếu là thơ, để canh giữa)
+   Mỗi mẫu: kind · text · truth ('nguoi'|'may') · tell[] · source · goiYThay
+   · poem (true nếu là thơ)
    ============================================================ */
 const SAMPLES = [
 { kind:"Đoạn tả cảnh", truth:"nguoi",
   text:"Bốn giờ chiều, cái nắng ở khúc đường này vẫn còn gắt. Bà bán bánh mì đầu hẻm đã dọn từ lúc nào, chỉ còn cái thùng xốp úp ngược. Có mùi mắm ruốc từ nhà ai bay ra, nồng, hơi khét, chắc để lửa lớn quá. Xe rác chưa tới. Con mèo tam thể nằm dài trên nắp cống, không thèm nhúc nhích khi tôi đi ngang.",
   tell:["Chi tiết quá riêng và không cần thiết cho câu chuyện nào: <b>thùng xốp úp ngược</b>, <b>con mèo tam thể trên nắp cống</b>. Máy hiếm khi đưa vào những chi tiết không phục vụ mục đích gì.",
         "Mùi được tả cụ thể tới mức <b>“nồng, hơi khét, chắc để lửa lớn quá”</b> — có suy đoán riêng của người viết.",
-        "Câu dài ngắn không đều. Có câu chỉ ba chữ: “Xe rác chưa tới.”"]},
+        "Câu dài ngắn không đều. Có câu chỉ ba chữ: “Xe rác chưa tới.”"],
+  source:"Do giảng viên biên soạn riêng cho hoạt động này, viết theo lối quan sát đời thường. <b>Không trích từ tác phẩm xuất bản nào</b> — không có tác giả hay năm sáng tác để dẫn.",
+  goiYThay:"Nên thay bằng một đoạn tả cảnh thật có nguồn dẫn được: một đoạn trong sách Ngữ văn phổ thông (có tác giả, tác phẩm, năm), hoặc một bài viết trên báo mạng (có tên tác giả và ngày đăng), hoặc bài tập viết của sinh viên khoá trước đã xin phép."},
 
 { kind:"Bài thơ lục bát", truth:"may", poem:true,
   text:"Chiều buông nắng nhạt bên thềm\nGió đưa hương lúa êm đềm quê hương\nDòng sông lặng lẽ vấn vương\nCon đò nhỏ bé trên đường về xa\n\nQuê tôi đẹp tựa bài ca\nTình người ấm áp chan hoà yêu thương",
   tell:["Đúng luật lục bát, đúng vần, nhưng <b>không có một chi tiết nào là của riêng một vùng quê cụ thể</b>. Thay “quê tôi” bằng bất kỳ nơi nào cũng vừa.",
         "Toàn từ ghép sẵn có: <i>nắng nhạt, êm đềm, lặng lẽ, vấn vương, ấm áp, chan hoà</i>. Đây là những cụm xuất hiện dày đặc trong thơ mạng — cũng chính là thứ mô hình học được nhiều nhất.",
-        "Kết bằng một câu tổng kết đẹp đẽ và vô hại. Thơ người thường kết bằng một hình ảnh, không phải một lời khen."]},
+        "Kết bằng một câu tổng kết đẹp đẽ và vô hại. Thơ người thường kết bằng một hình ảnh, không phải một lời khen."],
+  source:"Do giảng viên biên soạn, <b>mô phỏng</b> văn phong thơ mà mô hình ngôn ngữ hay sinh ra. Không phải sản phẩm sinh trực tiếp từ một mô hình cụ thể.",
+  goiYThay:"Nên thay bằng bản sinh THẬT: mở Gemini hoặc ChatGPT ngay trước buổi dạy, yêu cầu “viết một bài lục bát 6 câu về quê hương”, dán kết quả vào đây và ghi rõ mô hình nào, ngày nào. Bản sinh thật luôn thuyết phục hơn bản mô phỏng, và ghi được nguồn chính xác."},
 
 { kind:"Email xin nghỉ học", truth:"nguoi",
   text:"Em chào thầy ạ,\n\nEm là Trâm lớp 25DTHA3, hôm nay em xin phép nghỉ buổi chiều. Sáng nay em bị sốt, đo được 38.5, mẹ em bắt đi khám. Em có nhờ bạn Ngọc chép bài giúp rồi ạ.\n\nEm xin lỗi vì báo trễ, lúc sáng em ngủ quên mất.\n\nEm cảm ơn thầy.",
   tell:["Có <b>chi tiết thừa mà thật</b>: “mẹ em bắt đi khám”, “lúc sáng em ngủ quên mất”. Máy viết email xin nghỉ thường không tự thú thêm cái sau.",
         "Con số cụ thể và lẻ: <b>38.5</b>. Máy hay viết “sốt cao” hoặc chọn số tròn.",
-        "Xưng hô và nhịp câu đúng kiểu sinh viên nhắn thầy: ngắn, có “ạ”, không có câu chuyển ý trau chuốt."]},
+        "Xưng hô và nhịp câu đúng kiểu sinh viên nhắn thầy: ngắn, có “ạ”, không có câu chuyển ý trau chuốt."],
+  source:"Do giảng viên biên soạn, mô phỏng email sinh viên thường gửi. Tên và mã lớp là hư cấu.",
+  goiYThay:"Đây là mẫu <b>dễ thay bằng đồ thật nhất</b>. Lấy một email xin nghỉ có thật trong hộp thư của thầy, xoá tên và mã số sinh viên, xin phép người gửi. Ghi nguồn là “email sinh viên gửi giảng viên, đã ẩn danh, học kỳ …”."},
 
 { kind:"Đánh giá sản phẩm", truth:"may",
   text:"Sản phẩm có chất lượng khá tốt so với mức giá. Chất liệu bền, thiết kế đơn giản và phù hợp với nhiều đối tượng sử dụng. Tuy nhiên, màu sắc thực tế có phần khác so với hình ảnh minh hoạ, và thời gian giao hàng hơi lâu hơn dự kiến. Nhìn chung, đây là một lựa chọn hợp lý cho những ai đang tìm kiếm sản phẩm cùng phân khúc.",
   tell:["<b>Cân đối một cách đáng ngờ:</b> đúng hai điểm khen rồi đúng hai điểm chê, rồi một câu kết trung tính. Người thật hiếm khi cân bằng như vậy — họ viết vì đang vui hoặc đang bực.",
         "Không có <b>chi tiết đời sống</b> nào: mua khi nào, dùng vào việc gì, hỏng chưa. Toàn nhận xét chung.",
-        "Cụm <i>“nhìn chung”, “phân khúc”, “phù hợp với nhiều đối tượng sử dụng”</i> — giọng của bài PR, không phải giọng của người vừa mở gói hàng."]},
+        "Cụm <i>“nhìn chung”, “phân khúc”, “phù hợp với nhiều đối tượng sử dụng”</i> — giọng của bài PR, không phải giọng của người vừa mở gói hàng."],
+  source:"Do giảng viên biên soạn, mô phỏng văn phong đánh giá do mô hình sinh ra.",
+  goiYThay:"Thay bằng một cặp thật: một đánh giá sinh bằng AI (ghi rõ mô hình và ngày) và một đánh giá có thật trên sàn thương mại điện tử (ghi rõ sàn nào, ngày chụp màn hình, đã xoá tên người viết)."},
 
 { kind:"Bản tin ngắn", truth:"may",
   text:"Sáng nay, tại Trung tâm Hội nghị thành phố đã diễn ra hội thảo về chuyển đổi số trong giáo dục, thu hút sự tham gia của đông đảo chuyên gia, nhà quản lý và giảng viên. Tại hội thảo, các đại biểu đã tập trung thảo luận về vai trò quan trọng của công nghệ trong việc nâng cao chất lượng dạy và học. Hội thảo được đánh giá là đã góp phần tạo ra diễn đàn hữu ích để các bên trao đổi kinh nghiệm.",
   tell:["<b>Không có một con số nào.</b> Bao nhiêu đại biểu? Ai chủ trì? Kết luận cụ thể là gì? Bản tin thật luôn có ít nhất một con số và một cái tên.",
         "Cụm sáo mòn xếp chồng: <i>“thu hút sự tham gia của đông đảo”, “vai trò quan trọng”, “được đánh giá là đã góp phần”</i>.",
-        "Câu cuối không nói gì cả nhưng nghe rất trọn vẹn. Đây là dấu vết dễ nhận nhất: <b>đủ hình thức mà rỗng nội dung</b>."]},
+        "Câu cuối không nói gì cả nhưng nghe rất trọn vẹn. Đây là dấu vết dễ nhận nhất: <b>đủ hình thức mà rỗng nội dung</b>."],
+  source:"Do giảng viên biên soạn. Sự kiện, địa điểm và thời gian đều là hư cấu, cố ý viết không có con số nào.",
+  goiYThay:"Thay bằng một bản tin thật lấy từ báo điện tử — ghi đủ <b>tên báo, tiêu đề, tác giả, ngày đăng, đường dẫn</b>. Chọn bản tin CÓ số liệu và tên người, rồi cho lớp so với bản này để thấy khác biệt."},
 
 { kind:"Bình luận mạng xã hội", truth:"nguoi",
   text:"trời ơi cái quán này mình đi 3 lần r lần nào cũng đông kinh khủng. hôm qua đợi 40p mới có bàn 😭 mà công nhận bánh flan ngon thiệt á. đi với nhỏ bạn nó chê chát order sai món nhưng mình thấy ok, tại bữa đó đông quá thôi",
   tell:["Viết tắt và không dấu câu: <b>“3 lần r”, “40p”</b>. Không viết hoa đầu câu.",
         "<b>Cảm xúc lệch</b>: vừa than đợi lâu vừa khen, rồi lại bênh quán. Máy thường giữ một giọng nhất quán từ đầu tới cuối.",
-        "Có nhân vật phụ xuất hiện rồi biến mất: “nhỏ bạn”. Chi tiết này không phục vụ gì cả — và đó chính là lý do nó thật."]},
+        "Có nhân vật phụ xuất hiện rồi biến mất: “nhỏ bạn”. Chi tiết này không phục vụ gì cả — và đó chính là lý do nó thật."],
+  source:"Do giảng viên biên soạn, mô phỏng cách viết bình luận của sinh viên. Tên quán và chi tiết là hư cấu.",
+  goiYThay:"Dễ thay bằng đồ thật: lấy một bình luận công khai trên mạng xã hội, xoá tên và ảnh đại diện, ghi nguồn là “bình luận công khai trên [nền tảng], chụp ngày …, đã ẩn danh”. Tránh lấy bình luận của người quen trong lớp."},
 
 { kind:"Giải thích một khái niệm", truth:"may",
   text:"Học máy là một nhánh của trí tuệ nhân tạo, trong đó máy tính học từ dữ liệu thay vì được lập trình bằng các quy tắc cố định. Có thể hình dung học máy giống như một đứa trẻ học nhận biết thế giới xung quanh: càng tiếp xúc nhiều, khả năng nhận biết càng chính xác. Nhờ đó, học máy đóng vai trò quan trọng trong nhiều lĩnh vực như y tế, tài chính và giáo dục.",
   tell:["<b>Cấu trúc ba nhịp hoàn hảo:</b> định nghĩa → ẩn dụ → ứng dụng. Đúng, gọn, và giống hệt hàng nghìn đoạn khác trên mạng.",
         "Ẩn dụ “đứa trẻ học nhận biết” là ẩn dụ phổ biến nhất cho học máy — <b>không sai, nhưng cũng không phải của riêng ai</b>.",
         "Danh sách ứng dụng đóng gói sẵn: <i>y tế, tài chính và giáo dục</i>. Ba lĩnh vực, đúng thứ tự hay gặp nhất.",
-        "Lưu ý: <b>mẫu này đúng về nội dung.</b> Dấu vết ở đây không phải là sai, mà là <b>không có dấu vân tay của ai cả</b>."]},
+        "Lưu ý: <b>mẫu này đúng về nội dung.</b> Dấu vết ở đây không phải là sai, mà là <b>không có dấu vân tay của ai cả</b>."],
+  source:"Do giảng viên biên soạn, mô phỏng văn phong giải thích khái niệm do mô hình sinh ra.",
+  goiYThay:"Thay bằng cặp đối chứng thật và mạnh: (1) đoạn định nghĩa học máy <b>trích từ chính giáo trình AIT129</b>, ghi rõ trang; (2) đoạn do AI sinh ngay tại lớp với cùng yêu cầu. Cho lớp so hai bản — đây là hoạt động hay nhất mà mẫu này mở ra."},
 
 { kind:"Mở đầu một truyện ngắn", truth:"nguoi",
   text:"Ba tôi mất vào mùa nước nổi. Người ta nói mùa đó cá nhiều, nhưng nhà tôi không ăn cá suốt hai tháng, không ai bảo ai.\n\nTôi mười một tuổi và việc duy nhất tôi nhớ rõ là cái áo sơ mi trắng người ta mượn đâu đó cho tôi mặc, tay dài quá, phải xắn hai vòng. Còn lại thì mờ hết.",
   tell:["<b>Bắt đầu giữa chừng</b>, không giới thiệu gì. Máy hay mở bằng một câu dựng cảnh trước khi vào chuyện.",
         "Chi tiết được chọn <b>lệch một cách rất người</b>: nhớ cái áo sơ mi tay dài quá, quên hết phần còn lại. Đây là cách trí nhớ thật hoạt động.",
-        "Câu “không ai bảo ai” bỏ lửng, không giải thích. Máy có xu hướng giải thích nốt ý mình vừa gợi ra."]},
+        "Câu “không ai bảo ai” bỏ lửng, không giải thích. Máy có xu hướng giải thích nốt ý mình vừa gợi ra."],
+  source:"Do giảng viên biên soạn riêng cho hoạt động này. <b>Không phải trích từ tác phẩm nào</b> — không có tác giả, tác phẩm hay năm sáng tác để dẫn.",
+  goiYThay:"Nên thay bằng một đoạn mở đầu truyện ngắn THẬT có nguồn dẫn đầy đủ. Chọn tác phẩm trong chương trình Ngữ văn phổ thông mà sinh viên đã học, trích tối đa 3–4 câu, ghi đủ <b>tác giả · tên truyện · năm sáng tác · nhà xuất bản</b>. Trích ngắn có dẫn nguồn cho mục đích giảng dạy là hợp lệ."},
 ];
 
 /* ============ trạng thái ============ */
-let mode=null, i=0, answers=[], votes=[];
+let mode=null, tMode='tay', i=0, answers=[], votes=[], autoData=null;
 const $=id=>document.getElementById(id);
+const ONLINE = () => CONFIG.ENDPOINT && CONFIG.ENDPOINT.indexOf('http')===0;
+
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));$(id).classList.add('on');window.scrollTo({top:0,behavior:'smooth'});}
 function setBar(n){$('bar').style.width=(n/SAMPLES.length*100)+'%';}
+function srcBox(s){
+  return '<b>Nguồn của mẫu này</b>'+s.source
+       +'<span class="sw"><b style="display:inline;text-transform:none;letter-spacing:0">Gợi ý thay bằng nguồn thật:</b> '+s.goiYThay+'</span>';
+}
+
+/* ---------- màn chào ---------- */
+(function initWelcome(){
+  const on = ONLINE();
+  $('w-pill').className = 'pill '+(on?'on':'off');
+  $('w-pill').textContent = on ? 'CÓ LƯU KẾT QUẢ' : 'HOÀN TOÀN NGOẠI TUYẾN';
+  $('w-privacy').innerHTML = on
+    ? 'Sau khi làm xong, em có thể bấm nộp kết quả cho giảng viên. Khi đó máy gửi đi <b>đúng bốn thứ</b>: mã lớp, mã số sinh viên, họ tên và 8 đáp án em đã chọn. Không gửi gì khác, không đọc gì trong máy em. Nếu em không bấm nộp thì không có gì được gửi đi.'
+    : 'Không cần đăng nhập. <b>Không gửi bất kỳ dữ liệu nào ra mạng.</b> Chạy được cả khi mất mạng.';
+})();
+
+/* ---------- cổng mật khẩu ---------- */
+function askPass(){ $('g-pass').value=''; $('g-err').style.display='none'; show('s-gate'); setTimeout(()=>$('g-pass').focus(),250); }
+function checkPass(){
+  if($('g-pass').value.trim().toUpperCase() === CONFIG.MAT_KHAU_GV.toUpperCase()){
+    $('btn-auto').style.display = ONLINE() ? 'block' : 'none';
+    show('s-tmode');
+  } else {
+    $('g-err').style.display='block'; $('g-pass').value=''; $('g-pass').focus();
+  }
+}
 
 function start(m){
   mode=m;i=0;answers=[];votes=[];
-  $('hsub').textContent = m==='sv'
-    ? 'Đoán 8 mẫu. Không có điểm số nào tính vào bài. Cứ đoán thôi.'
-    : 'Chế độ giảng viên — chiếu lên màn hình, lớp giơ tay, nhập số phiếu vào.';
-  m==='sv'?renderQ():renderT();
+  $('hsub').textContent='Đoán 8 mẫu. Không có điểm số nào tính vào bài. Cứ đoán thôi.';
+  renderQ();
+}
+async function startT(sub){
+  tMode=sub;mode='gv';i=0;votes=[];
+  $('hsub').textContent = sub==='tay'
+    ? 'Chế độ giảng viên — chiếu lên màn hình, lớp giơ tay, nhập số phiếu vào.'
+    : 'Chế độ giảng viên — số liệu lấy từ bài sinh viên đã nộp.';
+  if(sub==='auto'){
+    $('auto-desc').textContent='Đang tải bảng kết quả…';
+    try{
+      const r = await fetch(CONFIG.ENDPOINT + '?action=summary', {method:'GET'});
+      autoData = await r.json();
+      if(!autoData || !autoData.ok) throw new Error('Không đọc được dữ liệu');
+    }catch(err){
+      alert('Không lấy được bảng kết quả ('+err.message+'). Chuyển sang chế độ nhập tay.');
+      tMode='tay'; autoData=null;
+    }
+  }
+  renderT();
 }
 
-/* ---------- chế độ sinh viên ---------- */
+/* ---------- sinh viên ---------- */
 function renderQ(){
   const s=SAMPLES[i];
   $('q-idx').textContent='Mẫu '+(i+1)+' / '+SAMPLES.length;
@@ -315,6 +458,7 @@ function answer(pick){
   v.className='verdict '+(ok?'right':'wrong');
   v.innerHTML='<b>'+(ok?'Đúng rồi.':'Chưa đúng.')+'</b>Đây là mẫu do <b>'+(s.truth==='nguoi'?'NGƯỜI':'MÁY')+'</b> viết.';
   $('q-tell').innerHTML='<b>Dấu vết nhận ra</b><ul>'+s.tell.map(t=>'<li>'+t+'</li>').join('')+'</ul>';
+  $('q-src').innerHTML=srcBox(s);
   $('q-choice').style.display='none';$('q-after').style.display='block';
   $('q-next').textContent = i===SAMPLES.length-1?'Xem kết quả':'Mẫu tiếp theo';
   setBar(i+1);
@@ -337,23 +481,61 @@ function result(){
       +'<span class="badge '+(s.truth==='nguoi'?'h':'m')+'">'+(s.truth==='nguoi'?'NGƯỜI':'MÁY')+'</span></div>';
   }).join('');
   $('r-note').innerHTML='<b>Ghi vào giấy nháp trước khi sang hoạt động tiếp theo:</b> mẫu nào bạn sai, và <i>vì sao bạn đã tin nhầm</i>? Câu thứ hai quan trọng hơn câu thứ nhất.';
+  if(ONLINE()){
+    $('r-submit').style.display='block';
+    $('sb-what').innerHTML='Máy sẽ gửi đi: mã lớp, mã số sinh viên, họ tên, 8 đáp án và điểm của em. <b>Không gửi gì khác.</b>';
+    if(CONFIG.MA_LOP) $('sb-lop').value=CONFIG.MA_LOP;
+  }
   setBar(SAMPLES.length);show('s-result');
 }
 
-/* ---------- chế độ giảng viên ---------- */
+function maNop(){ return answers.map(a=>a.pick==='nguoi'?'N':'M').join(''); }
+
+async function submitResult(){
+  const lop=$('sb-lop').value.trim(), mssv=$('sb-mssv').value.trim(), ten=$('sb-ten').value.trim();
+  if(!lop||!mssv){ alert('Cần điền mã lớp và mã số sinh viên.'); return; }
+  const btn=$('sb-go'); btn.disabled=true; btn.textContent='Đang gửi…';
+  const payload={ maLop:lop, mssv:mssv, hoTen:ten, diem:answers.filter(a=>a.ok).length,
+                  tong:SAMPLES.length, dapAn:answers.map(a=>a.pick), maNop:maNop() };
+  const out=$('sb-out'); out.style.display='block';
+  try{
+    const r=await fetch(CONFIG.ENDPOINT,{method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(payload)});
+    const j=await r.json();
+    if(!j.ok) throw new Error(j.error||'Máy chủ từ chối');
+    out.innerHTML='<div class="verdict right" style="margin-top:14px"><b>Đã nộp xong.</b>'
+      +'Giảng viên đã nhận được kết quả của em. Em có thể đóng trang này.</div>';
+    btn.style.display='none';
+  }catch(err){
+    // gửi kiểu bắn-và-quên, phòng khi trình duyệt chặn đọc phản hồi
+    try{ fetch(CONFIG.ENDPOINT,{method:'POST',mode:'no-cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)}); }catch(e){}
+    out.innerHTML='<div class="tell" style="margin-top:14px"><b>Chưa xác nhận được</b>'
+      +'Kết quả có thể đã gửi đi nhưng trình duyệt không đọc được phản hồi. '
+      +'Để chắc chắn, đọc mã dưới đây cho giảng viên hoặc chụp màn hình lại:'
+      +'<div class="code">'+lop+' · '+mssv+' · '+maNop()+' · '+payload.diem+'/8</div></div>';
+    btn.disabled=false; btn.textContent='Thử gửi lại';
+  }
+}
+
+/* ---------- giảng viên ---------- */
 function renderT(){
   const s=SAMPLES[i];
   $('t-idx').textContent='Mẫu '+(i+1)+' / '+SAMPLES.length;
   $('t-kind').textContent=s.kind;
   $('t-body').textContent=s.text;
   $('t-body').className='sample'+(s.poem?' poem':'');
-  $('t-h').value='';$('t-m').value='';
+  const auto = tMode==='auto' && autoData;
+  $('t-tally').style.display = auto?'none':'grid';
+  if(!auto){ $('t-h').value=''; $('t-m').value=''; }
   $('t-vote').style.display='block';$('t-after').style.display='none';
   setBar(i);show('s-teach');
 }
 function reveal(){
   const s=SAMPLES[i];
-  const h=Math.max(0,parseInt($('t-h').value)||0), m=Math.max(0,parseInt($('t-m').value)||0);
+  let h,m;
+  if(tMode==='auto'&&autoData){ h=autoData.mau[i].nguoi; m=autoData.mau[i].may; }
+  else { h=Math.max(0,parseInt($('t-h').value)||0); m=Math.max(0,parseInt($('t-m').value)||0); }
   const tot=h+m;
   votes.push({h,m,tot,truth:s.truth});
   const ph=tot?Math.round(h/tot*100):0, pm=tot?100-ph:0;
@@ -370,6 +552,7 @@ function reveal(){
   v.innerHTML='<b>'+(right>=50?'Lớp bắt được mẫu này.':'Lớp trượt mẫu này.')
     +'</b>'+(right>=50?'Hỏi ngay: ai đoán đúng, em dựa vào cái gì?':'Hỏi ngay: điều gì làm cả lớp tin nhầm?');
   $('t-tell').innerHTML='<b>Dấu vết cần chỉ ra cho lớp</b><ul>'+s.tell.map(t=>'<li>'+t+'</li>').join('')+'</ul>';
+  $('t-src').innerHTML=srcBox(s);
   $('t-vote').style.display='none';$('t-after').style.display='block';
   $('t-next').textContent = i===SAMPLES.length-1?'Xem tổng kết lớp':'Mẫu tiếp theo';
   setBar(i+1);
@@ -390,8 +573,7 @@ function tsum(){
   }).join('');
   $('ts-tab').innerHTML='<tr><th>Mẫu</th><th class="c">Đáp án</th><th class="c">Số phiếu</th><th class="c">Lớp đúng</th></tr>'+rows;
   const P=st?Math.round(sr/st*100):0;
-  $('ts-pct').textContent=P+'%';
-  $('ts-inline').textContent=P+'%';
+  $('ts-pct').textContent=P+'%'; $('ts-inline').textContent=P+'%';
   let say;
   if(P<45) say='Thấp hơn đoán bừa. Lớp không những không nhận ra được, mà còn bị dẫn sai một cách có hệ thống — đây là kết quả đắt giá nhất để mở màn học phần.';
   else if(P<=60) say='Quanh mức đoán bừa. Đây là kết quả hay gặp nhất, và là đúng điều cần cho pha tiếp theo.';
