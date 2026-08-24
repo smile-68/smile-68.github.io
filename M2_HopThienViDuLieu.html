@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M2 — Hộp thiên vị dữ liệu · AIT129</title>
+<style>
+:root{color-scheme:light;
+  --ink:#0b0b0b;--ink2:#52514e;--ink3:#898781;
+  --bg:#f9f9f7;--card:#fcfcfb;--line:#e1e0d9;--axis:#c3c2b7;
+  --brand:#1f4fd8;--brand-d:#16359b;--brand-l:#eaf0ff;
+  --A:#2a78d6;--B:#eb6834;--all:#52514e;
+  --warn-bg:#fff8e8;--warn-bd:#e8d5a0;--warn-ink:#5c4708;
+  --bad:#c02626;--good:#2e7d32;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.55;font-size:16px}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px 44px}
+header{background:linear-gradient(135deg,#16359b,#1f4fd8 60%,#3f74f0);color:#fff;padding:20px 0 18px}
+header .tag{font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.82;font-weight:700}
+header h1{margin:5px 0 3px;font-size:24px;font-weight:700;letter-spacing:-.4px}
+header p{margin:0;font-size:13.5px;opacity:.9;max-width:560px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-top:16px}
+.card h3{margin:0 0 3px;font-size:16.5px}
+.card .cap{margin:0 0 14px;font-size:13.5px;color:var(--ink2);line-height:1.55}
+.story{background:var(--brand-l);border-radius:12px;padding:16px 18px;font-size:15px;color:var(--ink);margin-top:16px}
+.story b{color:var(--brand-d)}
+.grp{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.gcard{border:1.5px solid var(--line);border-radius:11px;padding:13px 15px;background:#fff}
+.gcard.a{border-left:4px solid var(--A)} .gcard.b{border-left:4px solid var(--B)}
+.gcard h4{margin:0 0 4px;font-size:14.5px}
+.gcard p{margin:0;font-size:13px;color:var(--ink2);line-height:1.5}
+.gcard .th{display:block;margin-top:7px;font-size:12.5px;font-weight:700}
+.gcard.a .th{color:var(--A)} .gcard.b .th{color:var(--B)}
+
+.slider{margin-top:8px}
+.slider .lb{display:flex;justify-content:space-between;font-size:13.5px;font-weight:600;color:var(--ink2);margin-bottom:8px}
+.slider .lb b{color:var(--ink)}
+input[type=range]{width:100%;height:34px;-webkit-appearance:none;background:transparent;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:10px;border-radius:5px;
+  background:linear-gradient(to right,var(--A) 0%,var(--A) var(--p),var(--B) var(--p),var(--B) 100%)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;
+  background:#fff;border:3px solid var(--brand);margin-top:-9px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+input[type=range]::-moz-range-track{height:10px;border-radius:5px;background:var(--line)}
+input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:#fff;border:3px solid var(--brand);cursor:pointer}
+.presets{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.presets button{border:1.5px solid var(--line);background:#fff;border-radius:20px;padding:8px 14px;font-size:13px;
+  font-weight:600;color:var(--ink2);cursor:pointer;font-family:inherit}
+.presets button:hover{border-color:var(--brand);color:var(--brand-d)}
+.presets button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+
+.report{background:#12161f;color:#fff;border-radius:13px;padding:20px 22px;margin-top:16px;text-align:center}
+.report .lb{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;font-weight:700}
+.report .big{font-size:52px;font-weight:800;line-height:1.05;margin:6px 0 2px;letter-spacing:-2px}
+.report .sub{font-size:13.5px;opacity:.75}
+.report button{margin-top:14px;background:#fff;color:#12161f;border:0;border-radius:9px;padding:11px 18px;
+  font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+
+.bars{margin-top:6px}
+.brow{margin-bottom:13px}
+.brow .hl{display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:4px;gap:8px;align-items:baseline}
+.brow .hl .nm{font-weight:700;display:flex;align-items:center;gap:7px}
+.brow .hl .nm i{width:11px;height:11px;border-radius:3px;display:inline-block;flex-shrink:0}
+.brow .hl .v{font-weight:800;font-size:15px}
+.brow .track{height:24px;background:#eeedea;border-radius:5px;overflow:hidden}
+.brow .fill{height:100%;border-radius:0 5px 5px 0;transition:width .45s ease}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--ink2);margin-top:10px}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+.line{position:relative;height:74px;margin-top:14px}
+.line .ax{position:absolute;left:0;right:0;top:38px;height:2px;background:var(--axis)}
+.line .tick{position:absolute;top:32px;width:1px;height:8px;background:var(--axis)}
+.line .num{position:absolute;top:46px;transform:translateX(-50%);font-size:11.5px;color:var(--ink3)}
+.line .mk{position:absolute;top:0;transform:translateX(-50%);text-align:center;font-size:11px;font-weight:800;white-space:nowrap}
+.line .mk .bar{width:3px;height:22px;margin:3px auto 0;border-radius:2px}
+.line .mk.a{color:var(--A)} .line .mk.a .bar{background:var(--A)}
+.line .mk.b{color:var(--B)} .line .mk.b .bar{background:var(--B)}
+.line .mk.t{color:var(--ink);top:52px}
+.line .mk.t .bar{height:26px;background:var(--ink);margin:0 auto 3px}
+
+.impact{background:#fdeceb;border:1px solid #f0b8b5;border-radius:12px;padding:15px 17px;margin-top:14px;font-size:14.5px;color:#8a2020}
+.impact b{color:var(--bad)}
+.impact.ok{background:#eaf6ec;border-color:#bfe0c5;color:#28502f}
+.impact.ok b{color:var(--good)}
+.warn{background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:12px;padding:15px 17px;
+  margin-top:14px;font-size:14px;color:var(--warn-ink)}
+.warn b{color:#7a5c00}
+.warn ol{margin:8px 0 0;padding-left:20px} .warn li{margin:5px 0}
+details.how{margin-top:16px;background:#f3f4f2;border-radius:11px;padding:0 16px}
+details.how summary{cursor:pointer;padding:14px 0;font-weight:700;font-size:14.5px;list-style:none}
+details.how summary::-webkit-details-marker{display:none}
+details.how summary::before{content:"▸ ";color:var(--brand)}
+details.how[open] summary::before{content:"▾ "}
+details.how .body{padding-bottom:16px;font-size:13.8px;color:var(--ink2);line-height:1.65}
+details.how code{background:#e5e5e2;padding:1px 5px;border-radius:4px;font-size:12.8px}
+.dstabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.dstab{border:1.5px solid var(--line);background:#fff;border-radius:20px;padding:7px 13px;font-size:12.5px;
+  font-weight:600;color:var(--ink2);cursor:pointer;font-family:inherit}
+.dstab:hover{border-color:var(--brand);color:var(--brand-d)}
+.dstab.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.dstable{max-height:340px;overflow:auto;margin-top:10px;border:1px solid var(--line);border-radius:8px}
+.dstable table{margin-top:0}
+.codebox{background:#1c1e1a;color:#e8e8e2;border-radius:9px;padding:14px 16px;overflow-x:auto;margin:6px 0 16px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.3px;line-height:1.6}
+.codelbl{color:var(--brand-d);font-weight:700;font-size:13px;margin-top:14px}
+.codelbl:first-child{margin-top:0}
+.foot{text-align:center;font-size:12px;color:var(--ink3);margin-top:26px;line-height:1.6}
+.en{opacity:.72;font-weight:600;font-style:italic}
+.gloss dl{margin:10px 0 0}
+.gloss dt{font-weight:700;color:var(--ink);margin-top:14px;font-size:14.5px}
+.gloss dt:first-child{margin-top:0}
+.gloss dt .en{margin-left:5px;font-size:.78em}
+.gloss dd{margin:3px 0 0;color:var(--ink2);font-size:13.5px;line-height:1.55}
+.qs{background:#fff;border:2px solid var(--brand);border-radius:12px;padding:16px 18px;margin-top:16px}
+.qs h4{margin:0 0 8px;font-size:15px;color:var(--brand-d)}
+.qs ol{margin:0;padding-left:20px;font-size:14.5px;color:var(--ink2)}
+.qs li{margin:7px 0}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:10px}
+th{background:#f0f1ee;text-align:left;padding:9px 10px;font-size:11.5px;color:var(--ink2);
+  text-transform:uppercase;letter-spacing:.04em}
+td{padding:9px 10px;border-bottom:1px solid #eeedea;color:var(--ink2)}
+td.c,th.c{text-align:center}
+@media(max-width:560px){.grp{grid-template-columns:1fr}.report .big{font-size:44px}}
+</style>
+</head>
+<body>
+
+<header><div class="wrap">
+  <div class="tag">AIT129 · Buổi 2 · Mô phỏng M2</div>
+  <h1>Hộp thiên vị dữ liệu <span class="en">(Data bias)</span></h1>
+  <p>Một mô hình <span class="en">(model)</span> thật, rất nhỏ. Kéo thanh trượt để đổi thành phần dữ liệu huấn luyện <span class="en">(training data)</span> và xem mô hình học được cái gì.</p>
+</div></header>
+
+<div class="wrap">
+
+<div class="story">
+  <b>Tình huống.</b> Một chuỗi bán lẻ muốn đoán xem khách nào sẽ <b>quay lại mua trong sáu tháng tới</b>,
+  để gửi ưu đãi cho đúng người. Hệ thống chỉ nhìn một con số: <b>số lần khách đã mua trong sáu tháng qua</b>.
+  Nó tự học một ngưỡng <span class="en">(threshold)</span> — mua từ bấy nhiêu lần trở lên thì xếp là &ldquo;sẽ quay lại&rdquo;.
+  <div class="grp">
+    <div class="gcard a"><h4>Nhóm A — khách thành phố</h4>
+      <p>Cửa hàng ngay gần nhà, tiện là ghé. Mua nhiều lần nhưng mỗi lần ít.</p>
+      <span class="th">Thực tế: mua từ 6 lần trở lên mới thật sự là khách trung thành</span></div>
+    <div class="gcard b"><h4>Nhóm B — khách ở tỉnh</h4>
+      <p>Ở xa, phải đặt giao. Mua thưa hơn nhưng mỗi lần mua gộp nhiều.</p>
+      <span class="th">Thực tế: chỉ cần 2 lần trở lên đã là khách trung thành</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Thành phần tập huấn luyện <span class="en">(training set)</span></h3>
+  <p class="cap">Hệ thống học từ 400 khách hàng cũ. Thanh trượt quyết định trong 400 khách đó có bao nhiêu phần trăm là khách nhóm A.</p>
+  <div class="slider">
+    <div class="lb"><span>Nhóm A: <b id="pa">50%</b></span><span>Nhóm B: <b id="pb">50%</b></span></div>
+    <input type="range" id="sl" min="0" max="100" step="5" value="50" oninput="chay()">
+  </div>
+  <div class="presets">
+    <button onclick="dat(50)">Cân bằng 50/50</button>
+    <button onclick="dat(85)">Chủ yếu khách thành phố</button>
+    <button onclick="dat(97)">Gần như chỉ khách thành phố</button>
+    <button onclick="dat(15)">Chủ yếu khách tỉnh</button>
+  </div>
+</div>
+
+<div class="report">
+  <div class="lb">Báo cáo gửi ban giám đốc</div>
+  <div class="big" id="rep">—</div>
+  <div class="sub">đo trên tập khách hàng có cùng thành phần với dữ liệu thật của công ty</div>
+  <button onclick="moRa()" id="btnMo">Xem bên dưới con số đó</button>
+</div>
+
+<div id="duoi" style="display:none">
+
+<div class="card">
+  <h3>Ngưỡng mà mô hình tự chọn</h3>
+  <p class="cap">Mô hình thử mọi ngưỡng từ 0 đến 13 và giữ lại ngưỡng cho độ chính xác <span class="en">(accuracy)</span> cao nhất <b>trên tập huấn luyện</b>. Vạch đen là ngưỡng nó chọn.</p>
+  <div class="line" id="ln"></div>
+</div>
+
+<div class="card">
+  <h3>Độ chính xác — tách theo từng nhóm khách</h3>
+  <p class="cap">Cùng một mô hình, cùng một tập kiểm tra <span class="en">(test set)</span>. Chỉ khác là tách kết quả ra theo nhóm.</p>
+  <div class="bars" id="bars"></div>
+  <div class="legend">
+    <span><i style="background:var(--all)"></i> Tổng thể</span>
+    <span><i style="background:var(--A)"></i> Nhóm A — khách thành phố</span>
+    <span><i style="background:var(--B)"></i> Nhóm B — khách ở tỉnh</span>
+  </div>
+  <div id="impact"></div>
+</div>
+
+<div class="card">
+  <h3>Bảng số liệu</h3>
+  <p class="cap">Cùng dữ liệu với biểu đồ trên, dạng bảng để đọc chính xác.</p>
+  <table id="tab"></table>
+  <p class="cap" style="margin-top:8px">* Tập kiểm tra dùng để đo độ chính xác từng nhóm luôn cố định — <b>200 khách nhóm A + 200 khách nhóm B</b> — và không đổi khi kéo thanh trượt. Thanh trượt chỉ đổi <b>thành phần tập huấn luyện</b>; con số 200/200 giữ nguyên là để hai thanh đo (accA, accB) luôn so sánh trên cùng một tập, không lẫn nhiễu từ việc đổi cỡ mẫu kiểm tra. Xem chi tiết ở mục &ldquo;Mô phỏng này tính như thế nào&rdquo; bên dưới.</p>
+</div>
+
+<div class="qs">
+  <h4>Hai câu ghi vào phiếu Lab 1</h4>
+  <ol>
+    <li>Kéo thanh trượt tới mức mà <b>độ chính xác tổng thể vẫn trên 80%</b> nhưng một nhóm bị sai nặng. Nhóm nào đang bị bỏ rơi, và bị bỏ rơi bao nhiêu phần trăm?</li>
+    <li>Ban giám đốc chỉ nhìn con số trong ô đen ở trên. <b>Họ có cách nào nhìn thấy chuyện đang xảy ra với nhóm kia không?</b> Nếu không, thì ai có trách nhiệm nói cho họ biết?</li>
+  </ol>
+</div>
+
+<div class="warn">
+  <b>Sáu điều rút ra — chỉ đọc sau khi đã tự kéo thanh trượt.</b>
+  <ol>
+    <li>Mô hình <b>không hề bị lập trình để phân biệt đối xử</b>. Nó chỉ chọn ngưỡng tốt nhất cho dữ liệu nó được cho xem.</li>
+    <li>Dữ liệu huấn luyện lệch thì mô hình học đúng cái lệch đó — và <b>lặp lại nó một cách đều đặn, mỗi ngày, với mọi khách hàng</b>.</li>
+    <li>Thiên vị gây ra <b>hai loại thiệt hại khác hẳn nhau</b>: có nhóm bị <i>bỏ sót</i> <span class="en">(false negative)</span> (xứng đáng mà không được gì), có nhóm bị <i>báo nhầm</i> <span class="en">(false positive)</span> (được gửi ưu đãi dù không cần). Kéo thanh trượt sang hai đầu và để ý hộp đỏ đổi cách mô tả — vì loại lỗi đổi, chứ không phải mức lỗi đổi.</li>
+    <li>Một con số tổng thể <b>che giấu hoàn toàn</b> chuyện đang xảy ra với nhóm thiểu số, vì nó bị nhóm đông áp đảo. Muốn thấy thì phải chủ động tách ra mà nhìn.</li>
+    <li><b>Nghịch lý đáng nhớ nhất:</b> vị trí ít bất công nhất giữa hai nhóm lại cho con số báo cáo <b>thấp nhất</b>. Ai chỉ được thưởng theo con số tổng thể sẽ có động cơ chọn đúng mô hình bất công.</li>
+    <li><b>Và đây là điều nặng nhất:</b> kéo hết thanh trượt từ 0 tới 100 cũng <b>không có chỗ nào cả hai nhóm cùng được phục vụ tốt</b>. Cân bằng lại dữ liệu không đủ. Một mô hình chỉ có một ngưỡng thì không thể vừa cho hai nhóm có hai ngưỡng đúng khác nhau — muốn sửa thật thì phải đổi mô hình, hoặc dùng hai mô hình riêng, hoặc cho mô hình biết khách thuộc nhóm nào.</li>
+  </ol>
+</div>
+
+<details class="how">
+  <summary>Mô phỏng này tính như thế nào — mở ra nếu sinh viên hỏi</summary>
+  <div class="body">
+    <p>Đây là <b>một mô hình thật</b>, chạy ngay trong trình duyệt, không phải hiệu ứng dựng sẵn.</p>
+    <p><b>Dữ liệu.</b> 400 khách huấn luyện và 400 khách kiểm tra, sinh bằng bộ số ngẫu nhiên <b>có hạt giống</b> <span class="en">(seed)</span> <b>cố định</b> — nên kết quả giống hệt nhau trên mọi máy, mọi lần chạy. Nhóm A mua trung bình nhiều lần hơn nhóm B. <b>Nhãn</b> <span class="en">(label)</span> đúng: khách nhóm A quay lại nếu mua ≥ 6 lần, khách nhóm B quay lại nếu mua ≥ 2 lần. Có thêm <code>8%</code> nhiễu nhãn <span class="en">(label noise)</span> cho giống thực tế.</p>
+    <p><b>Mô hình.</b> Một ngưỡng duy nhất <code>t</code>. Dự đoán &ldquo;sẽ quay lại&rdquo; khi số lần mua ≥ <code>t</code>. Máy thử tất cả <code>t</code> từ 0 đến 13 và giữ giá trị cho độ chính xác cao nhất trên tập huấn luyện. Đó đúng là cách một mô hình học: <b>chọn tham số</b> <span class="en">(parameter)</span> <b>làm nó đúng nhiều nhất trên dữ liệu nó thấy</b>.</p>
+    <p><b>Hai con số, hai cách đo — đây là chỗ quan trọng nhất.</b></p>
+    <p>Độ chính xác <b>từng nhóm</b> đo trên 200 khách A và 200 khách B, cố định, không đổi theo thanh trượt. Nhờ vậy mọi thay đổi ở hai thanh đó đều đến từ đúng một nguyên nhân: thành phần dữ liệu huấn luyện.</p>
+    <p>Con số trong <b>ô báo cáo</b> lại đo trên tập khách hàng <b>có cùng thành phần với dữ liệu của công ty</b> — vì đó chính là thứ doanh nghiệp đo được trong thực tế. Công thức: <code>độ chính xác báo cáo = tỉ lệ A × độ chính xác A + tỉ lệ B × độ chính xác B</code>. Đây là một phép <b>trung bình có trọng số</b> <span class="en">(weighted average)</span>. Chính phép nhân với tỉ lệ này là cách nhóm đông nuốt chửng nhóm nhỏ trong một con số duy nhất.</p>
+    <p><b>Vì sao ngưỡng nhảy chứ không trượt đều.</b> Mô hình chỉ có <b>một</b> tham số. Với hai nhóm khách có hai ngưỡng đúng khác nhau, giá trị tốt nhất luôn bám lấy nhóm đông — nên nó nhảy từ ngưỡng của nhóm này sang ngưỡng của nhóm kia chứ không có chỗ ở giữa. Mô hình lớn có hàng tỉ tham số nên chuyển mượt hơn, nhưng hỏng theo đúng kiểu đó.</p>
+    <p>Mô hình lớn cũng hỏng theo đúng kiểu này. Chỉ khác là nó có hàng tỉ tham số nên không ai nhìn thấy ngưỡng nằm ở đâu.</p>
+  </div>
+</details>
+
+<div class="card gloss">
+  <h3>Chú giải thuật ngữ <span class="en">(Glossary)</span></h3>
+  <p class="cap">Các từ khoá xuất hiện trong bài, giải thích ngắn gọn theo đúng nghĩa dùng trong mô phỏng này.</p>
+  <dl>
+    <dt>Mô hình <span class="en">(Model)</span></dt>
+    <dd>Công thức máy tự đặt ra để đoán câu trả lời từ dữ liệu. Trong bài này, mô hình chỉ là một con số ngưỡng duy nhất.</dd>
+
+    <dt>Huấn luyện <span class="en">(Training)</span></dt>
+    <dd>Quá trình máy nhìn vào dữ liệu cũ để tự chọn ra ngưỡng/tham số làm nó đúng nhiều nhất.</dd>
+
+    <dt>Tập huấn luyện <span class="en">(Training set)</span></dt>
+    <dd>400 khách hàng cũ mà mô hình được cho xem để học. Thanh trượt trong bài quyết định thành phần nhóm A/B của tập này.</dd>
+
+    <dt>Tập kiểm tra <span class="en">(Test set)</span></dt>
+    <dd>400 khách hàng khác, mô hình chưa từng thấy khi học, dùng để đo xem nó đoán đúng bao nhiêu. Trong bài này, tập kiểm tra luôn cố định 200 khách A + 200 khách B.</dd>
+
+    <dt>Ngưỡng <span class="en">(Threshold)</span></dt>
+    <dd>Ranh giới mà mô hình tự chọn: mua từ bấy nhiêu lần trở lên thì xếp là &ldquo;sẽ quay lại&rdquo;.</dd>
+
+    <dt>Tham số <span class="en">(Parameter)</span></dt>
+    <dd>Con số bên trong mô hình mà quá trình huấn luyện điều chỉnh để mô hình đúng nhiều nhất. Mô hình trong bài chỉ có đúng một tham số (chính là ngưỡng); các mô hình AI lớn có hàng tỉ tham số.</dd>
+
+    <dt>Độ chính xác <span class="en">(Accuracy)</span></dt>
+    <dd>Tỉ lệ phần trăm dự đoán đúng trên một tập dữ liệu.</dd>
+
+    <dt>Nhãn <span class="en">(Label)</span></dt>
+    <dd>Câu trả lời đúng thật sự của mỗi khách hàng (có quay lại hay không) — thứ mô hình cố đoán cho khớp.</dd>
+
+    <dt>Nhiễu nhãn <span class="en">(Label noise)</span></dt>
+    <dd>Một phần nhỏ nhãn bị gán sai một cách ngẫu nhiên, mô phỏng việc dữ liệu thật không bao giờ sạch 100%.</dd>
+
+    <dt>Thiên vị dữ liệu <span class="en">(Data bias)</span></dt>
+    <dd>Khi dữ liệu huấn luyện không đại diện công bằng cho mọi nhóm, khiến mô hình học lệch về phía nhóm chiếm đa số.</dd>
+
+    <dt>Trung bình có trọng số <span class="en">(Weighted average)</span></dt>
+    <dd>Cách gộp nhiều con số theo tỉ lệ đóng góp của từng phần. Con số &ldquo;báo cáo&rdquo; trong bài là độ chính xác nhóm A và B gộp lại theo đúng % của mỗi nhóm trong dữ liệu công ty.</dd>
+
+    <dt>Bỏ sót <span class="en">(False negative)</span></dt>
+    <dd>Khách xứng đáng (nhãn thật là &ldquo;sẽ quay lại&rdquo;) nhưng bị mô hình đoán nhầm là &ldquo;không quay lại&rdquo;.</dd>
+
+    <dt>Báo nhầm <span class="en">(False positive)</span></dt>
+    <dd>Khách không xứng đáng (nhãn thật là &ldquo;không quay lại&rdquo;) nhưng bị mô hình đoán nhầm là &ldquo;sẽ quay lại&rdquo;.</dd>
+
+    <dt>Hạt giống ngẫu nhiên <span class="en">(Random seed)</span></dt>
+    <dd>Con số khởi động cho bộ sinh số ngẫu nhiên, giúp mọi lần chạy lại ra đúng y hệt kết quả cũ — nhờ vậy ai mở bài này cũng thấy cùng một dữ liệu.</dd>
+
+    <dt>Phân phối Poisson <span class="en">(Poisson distribution)</span></dt>
+    <dd>Một công thức xác suất hay dùng để mô phỏng &ldquo;số lần một sự kiện xảy ra trong một khoảng thời gian&rdquo; — ở đây là số lần một khách ghé mua trong sáu tháng. Xem trong mục &ldquo;Xem code thật&rdquo; bên dưới.</dd>
+  </dl>
+</div>
+
+<details class="how">
+  <summary>Xem dữ liệu — 400 khách huấn luyện + 400 khách kiểm tra</summary>
+  <div class="body">
+    <p>Đây đúng là dữ liệu số mô hình đang dùng ngay lúc này, không phải bảng minh hoạ. Tập huấn luyện đổi theo thanh trượt phía trên; tập kiểm tra luôn cố định — đổi tab để so sánh.</p>
+    <div class="dstabs">
+      <button class="dstab on" id="dstTrain" onclick="hienDuLieu('train')">Tập huấn luyện (400 — đổi theo thanh trượt)</button>
+      <button class="dstab" id="dstTest" onclick="hienDuLieu('test')">Tập kiểm tra (400 — cố định)</button>
+    </div>
+    <div class="dstable" id="dsTable"></div>
+  </div>
+</details>
+
+<details class="how">
+  <summary>Xem code thật — các hàm đang chạy ngay trong trang này</summary>
+  <div class="body">
+    <p>Khối bên dưới lấy trực tiếp từ mã nguồn đang chạy (qua <code>Function.prototype.toString()</code>), không phải bản chép tay — nên luôn khớp 100% với con số bạn đang thấy trên trang.</p>
+    <div id="codeView"></div>
+  </div>
+</details>
+
+</div>
+
+<p class="foot">AIT129 — Trí tuệ nhân tạo ứng dụng · HUTECH<br>Chạy offline, không đăng nhập, không gửi dữ liệu đi đâu.</p>
+</div>
+
+<script>
+/* ---------- bộ số ngẫu nhiên có hạt giống cố định ---------- */
+function rng(seed){let a=seed>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;
+  let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;
+  return((t^t>>>14)>>>0)/4294967296;};}
+const NGUONG_A=6, NGUONG_B=2, NHIEU=0.08, N_TRAIN=400, N_TEST=400;
+
+/* số lần mua: nhóm A trung bình cao hơn nhóm B */
+function soLanMua(r,nhom){
+  const lam = nhom==='A'?6.2:3.0;           // trung bình
+  let k=0,p=Math.exp(-lam),s=p,u=r();       // lấy mẫu Poisson
+  while(u>s&&k<13){k++;p*=lam/k;s+=p;}
+  return Math.min(k,13);
+}
+function taoKhach(r,nhom){
+  const x=soLanMua(r,nhom);
+  const nguong=nhom==='A'?NGUONG_A:NGUONG_B;
+  let y=x>=nguong?1:0;
+  if(r()<NHIEU) y=1-y;                       // nhiễu nhãn
+  return {x,y,nhom};
+}
+/* tập kiểm tra cố định, luôn cân bằng */
+function taoTapKiemTra(){
+  const r=rng(20260820),a=[];
+  for(let i=0;i<N_TEST/2;i++)a.push(taoKhach(r,'A'));
+  for(let i=0;i<N_TEST/2;i++)a.push(taoKhach(r,'B'));
+  return a;
+}
+const TEST=taoTapKiemTra();
+
+function taoTrain(pA){
+  const r=rng(777),a=[],nA=Math.round(N_TRAIN*pA/100);
+  for(let i=0;i<nA;i++)a.push(taoKhach(r,'A'));
+  for(let i=0;i<N_TRAIN-nA;i++)a.push(taoKhach(r,'B'));
+  return a;
+}
+function docChinhXac(ds,t){let d=0;ds.forEach(k=>{if((k.x>=t?1:0)===k.y)d++;});return d/ds.length;}
+/* huấn luyện: thử mọi ngưỡng, giữ cái tốt nhất trên tập huấn luyện */
+function huanLuyen(train){let best=0,bt=0;
+  for(let t=0;t<=13;t++){const a=docChinhXac(train,t);if(a>best){best=a;bt=t;}}
+  return bt;}
+/* con số báo cáo = trung bình có trọng số theo tỉ lệ A/B của dữ liệu công ty */
+function tinhBaoCao(pA,accA,accB){
+  const w=pA/100;
+  return w*accA+(1-w)*accB;
+}
+
+const $=id=>document.getElementById(id);
+let daMo=false, TRAIN_HIEN_TAI=[], dsTab='train';
+
+function dat(v){$('sl').value=v;chay();}
+function moRa(){daMo=true;$('duoi').style.display='block';$('btnMo').style.display='none';chay();
+  $('duoi').scrollIntoView({behavior:'smooth',block:'start'});}
+
+function chay(){
+  const pA=+$('sl').value;
+  $('pa').textContent=pA+'%';$('pb').textContent=(100-pA)+'%';
+  $('sl').style.setProperty('--p',pA+'%');
+  document.querySelectorAll('.presets button').forEach(b=>b.classList.remove('on'));
+
+  const train=taoTrain(pA), t=huanLuyen(train);
+  TRAIN_HIEN_TAI=train;
+  const tA=TEST.filter(k=>k.nhom==='A'), tB=TEST.filter(k=>k.nhom==='B');
+  const accA=docChinhXac(tA,t), accB=docChinhXac(tB,t);
+  /* Con số báo cáo = độ chính xác trên tập khách hàng CÓ CÙNG THÀNH PHẦN với dữ liệu công ty.
+     Đây đúng là con số mà doanh nghiệp sẽ đo được trong thực tế. */
+  const accAll=tinhBaoCao(pA,accA,accB);
+  const P=x=>Math.round(x*100);
+
+  $('rep').textContent=P(accAll)+'%';
+  if(!daMo)return;
+
+  /* trục ngưỡng */
+  const pos=v=>(v/13*100);
+  $('ln').innerHTML='<div class="ax"></div>'
+    +Array.from({length:14},(_,v)=>'<div class="tick" style="left:'+pos(v)+'%"></div><div class="num" style="left:'+pos(v)+'%">'+v+'</div>').join('')
+    +'<div class="mk a" style="left:'+pos(NGUONG_A)+'%">Ngưỡng đúng của A<div class="bar"></div></div>'
+    +'<div class="mk b" style="left:'+pos(NGUONG_B)+'%">Ngưỡng đúng của B<div class="bar"></div></div>'
+    +'<div class="mk t" style="left:'+pos(t)+'%"><div class="bar"></div>Mô hình chọn: '+t+'</div>';
+
+  /* ba thanh độ chính xác */
+  const row=(nm,val,mau)=>'<div class="brow"><div class="hl"><span class="nm"><i style="background:'+mau+'"></i>'+nm+'</span>'
+    +'<span class="v" style="color:'+mau+'">'+P(val)+'%</span></div>'
+    +'<div class="track"><div class="fill" style="width:'+P(val)+'%;background:'+mau+'"></div></div></div>';
+  $('bars').innerHTML=row('Tổng thể',accAll,'var(--all)')
+    +row('Nhóm A — khách thành phố',accA,'var(--A)')
+    +row('Nhóm B — khách ở tỉnh',accB,'var(--B)');
+
+  /* hệ quả cụ thể: khách B trung thành bị xếp nhầm */
+  const chenh=Math.abs(P(accA)-P(accB));
+  const yeu = accA<accB ? {ds:tA,ten:'A — khách thành phố',tl:pA}
+                        : {ds:tB,ten:'B — khách ở tỉnh',tl:100-pA};
+  /* hai loại lỗi khác hẳn nhau về hậu quả */
+  const trungThanh = yeu.ds.filter(k=>k.y===1);
+  const boSot      = trungThanh.filter(k=>k.x<t).length;          // xứng đáng mà bị loại
+  const khongQL    = yeu.ds.filter(k=>k.y===0);
+  const baoNham    = khongQL.filter(k=>k.x>=t).length;            // không xứng mà vẫn gửi
+  const tlBoSot = trungThanh.length?Math.round(boSot/trungThanh.length*100):0;
+  const tlBaoNham = khongQL.length?Math.round(baoNham/khongQL.length*100):0;
+  const nangHon = boSot>=baoNham
+    ? '<b>'+boSot+' trên '+trungThanh.length+' khách trung thành ('+tlBoSot+'%)</b> bị xếp nhầm là &ldquo;không quay lại&rdquo; — '
+      +'họ xứng đáng nhận ưu đãi nhưng sẽ không nhận được gì.'
+    : '<b>'+baoNham+' trên '+khongQL.length+' khách sẽ không quay lại ('+tlBaoNham+'%)</b> vẫn được xếp là &ldquo;sẽ quay lại&rdquo; — '
+      +'công ty gửi ưu đãi cho người không cần, tiền rơi vào chỗ trống.';
+  const box=$('impact');
+  if(chenh>=40){
+    box.className='impact';
+    box.innerHTML='<b>Nhóm '+yeu.ten+' đang bị mô hình phục vụ tệ nhất.</b> Nhóm này chỉ chiếm '+yeu.tl
+      +'% dữ liệu huấn luyện, nên mô hình gần như không học gì về họ. '+nangHon
+      +'<br><br>Con số báo cáo <b>'+P(accAll)+'%</b> không hề nhắc tới chuyện này, vì nó bị nhóm đông áp đảo.';
+  } else {
+    box.className='impact ok';
+    box.innerHTML='<b>Đây là vùng ÍT BẤT CÔNG NHẤT, không phải vùng công bằng.</b> Hai nhóm vẫn chênh nhau '+chenh
+      +' điểm phần trăm. Với nhóm '+yeu.ten+': '+nangHon
+      +'<br><br>Để ý điều lạ: chính ở vùng này <b>con số báo cáo lại thấp nhất</b>. Kéo thanh trượt về 90% hoặc 10% '
+      +'và xem con số báo cáo tăng lên trong khi một nhóm sụp đổ.';
+  }
+
+  /* bảng */
+  const dem=(ds,f)=>ds.filter(f).length;
+  $('tab').innerHTML='<tr><th>Chỉ số</th><th class="c">Tổng thể</th><th class="c">Nhóm A</th><th class="c">Nhóm B</th></tr>'
+    +'<tr><td>Số khách trong tập kiểm tra*</td><td class="c">'+TEST.length+'</td><td class="c">'+tA.length+'</td><td class="c">'+tB.length+'</td></tr>'
+    +'<tr><td>Độ chính xác</td><td class="c" style="font-weight:800">'+P(accAll)+'%</td><td class="c" style="font-weight:800;color:var(--A)">'+P(accA)+'%</td><td class="c" style="font-weight:800;color:var(--B)">'+P(accB)+'%</td></tr>'
+    +'<tr><td>Khách trung thành thật sự</td><td class="c">'+dem(TEST,k=>k.y===1)+'</td><td class="c">'+dem(tA,k=>k.y===1)+'</td><td class="c">'+dem(tB,k=>k.y===1)+'</td></tr>'
+    +'<tr><td>Bị hệ thống xếp nhầm là &ldquo;không quay lại&rdquo;</td><td class="c">'+dem(TEST,k=>k.y===1&&k.x<t)+'</td><td class="c">'+dem(tA,k=>k.y===1&&k.x<t)+'</td><td class="c" style="font-weight:700;color:var(--bad)">'+dem(tB,k=>k.y===1&&k.x<t)+'</td></tr>'
+    +'<tr><td>Ngưỡng mô hình đang dùng</td><td class="c" colspan="3" style="font-weight:800">mua từ '+t+' lần trở lên</td></tr>';
+
+  renderDsTable();
+}
+
+/* ---------- xem dữ liệu thô ---------- */
+function hienDuLieu(loai){
+  dsTab=loai;
+  $('dstTrain').classList.toggle('on',loai==='train');
+  $('dstTest').classList.toggle('on',loai==='test');
+  renderDsTable();
+}
+function renderDsTable(){
+  const ds = dsTab==='train'?TRAIN_HIEN_TAI:TEST;
+  if(!ds.length)return;
+  const rows = ds.map((k,i)=>'<tr><td>'+(i+1)+'</td><td class="c">'+(k.nhom==='A'?'A — thành phố':'B — tỉnh')
+    +'</td><td class="c">'+k.x+'</td><td class="c">'+(k.y===1?'Quay lại':'Không quay lại')+'</td></tr>').join('');
+  $('dsTable').innerHTML='<table><tr><th>#</th><th class="c">Nhóm</th><th class="c">Số lần mua (x)</th><th class="c">Nhãn thật (y)</th></tr>'+rows+'</table>';
+}
+
+/* ---------- xem code thật, lấy trực tiếp từ hàm đang chạy ---------- */
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function renderCode(){
+  const parts=[
+    ['Bộ số ngẫu nhiên có hạt giống cố định — để mọi máy, mọi lần chạy ra cùng một kết quả',rng],
+    ['Số lần mua trong 6 tháng — mô phỏng bằng phân phối Poisson, nhóm A trung bình cao hơn nhóm B',soLanMua],
+    ['Sinh một khách hàng: số lần mua + nhãn thật, có gắn 8% nhiễu nhãn',taoKhach],
+    ['Sinh 400 khách KIỂM TRA — cố định, luôn 50/50, không đổi theo thanh trượt',taoTapKiemTra],
+    ['Sinh 400 khách HUẤN LUYỆN theo đúng % thanh trượt đang chọn',taoTrain],
+    ['Đo độ chính xác của một ngưỡng trên một tập dữ liệu',docChinhXac],
+    ['Huấn luyện: thử cả 14 ngưỡng, giữ ngưỡng đúng nhiều nhất trên tập huấn luyện',huanLuyen],
+    ['Công thức tính con số "báo cáo gửi ban giám đốc" — trung bình có trọng số',tinhBaoCao],
+  ];
+  $('codeView').innerHTML=parts.map(([ten,fn])=>
+    '<div class="codelbl">// '+ten+'</div><pre class="codebox">'+escHtml(fn.toString())+'</pre>'
+  ).join('');
+}
+
+$('sl').style.setProperty('--p','50%');
+chay();
+renderCode();
+document.querySelectorAll('.presets button').forEach(b=>{
+  const m=b.getAttribute('onclick').match(/\d+/); if(m) b.dataset.v=m[0];
+});
+</script>
+</body>
+</html>

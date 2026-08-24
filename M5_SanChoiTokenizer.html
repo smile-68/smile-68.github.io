@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M5 — Sân chơi Tokenizer · AIT129</title>
+<style>
+:root{color-scheme:light;
+  --ink:#0b0b0b;--ink2:#52514e;--ink3:#898781;
+  --bg:#f9f9f7;--card:#fcfcfb;--line:#e1e0d9;--axis:#c3c2b7;
+  --brand:#1f4fd8;--brand-d:#16359b;--brand-l:#eaf0ff;
+  --blue:#2a78d6;--dblue:#0d366b;--orange:#eb6834;--red:#e34948;
+  --good:#2e7d32;--bad:#c02626;
+  --warn-bg:#fff8e8;--warn-bd:#e8d5a0;--warn-ink:#5c4708;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.55;font-size:16px}
+.wrap{max-width:800px;margin:0 auto;padding:0 16px 44px}
+header{background:linear-gradient(135deg,#0d366b,#1f4fd8 60%,#3f74f0);color:#fff;padding:20px 0 18px}
+header .tag{font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.82;font-weight:700}
+header h1{margin:5px 0 3px;font-size:24px;font-weight:700;letter-spacing:-.4px}
+header p{margin:0;font-size:13.5px;opacity:.9;max-width:620px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-top:16px}
+.card h3{margin:0 0 3px;font-size:16.5px}
+.card .cap{margin:0 0 14px;font-size:13.5px;color:var(--ink2);line-height:1.55}
+.step{display:inline-block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;
+  color:var(--brand-d);background:var(--brand-l);border-radius:20px;padding:4px 11px;margin-bottom:8px}
+.story{background:var(--brand-l);border-radius:12px;padding:16px 18px;font-size:15px;margin-top:16px}
+.story>b:first-child{display:block;margin-bottom:5px;color:var(--brand-d)}
+
+.opts{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
+.opts button{border:1.5px solid var(--line);background:#fff;border-radius:20px;padding:8px 13px;font-size:13px;
+  font-weight:600;color:var(--ink2);cursor:pointer;font-family:inherit}
+.opts button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.lbl{font-size:12.5px;font-weight:700;color:var(--ink2);margin:14px 0 6px}
+.btn{border:0;background:var(--brand);color:#fff;border-radius:10px;padding:12px 20px;font-size:14.5px;
+  font-weight:700;cursor:pointer;font-family:inherit;margin-top:12px}
+.btn:hover{background:var(--brand-d)}
+
+.merges{margin-top:12px;display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;align-items:center;font-size:13px}
+.merges .n{color:var(--ink3);font-size:11.5px;font-variant-numeric:tabular-nums;text-align:right}
+.merges .m b{color:var(--brand-d)}
+.merges .m .ar{color:var(--ink3);margin:0 5px}
+.merges .tr{display:block;height:8px;background:#eeedea;border-radius:4px;overflow:hidden;min-width:40px}
+.merges .fl{display:block;height:100%;background:var(--blue);border-radius:0 4px 4px 0}
+.merges .c{color:var(--ink3);font-size:11.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+
+textarea{width:100%;min-height:78px;border:1.5px solid var(--line);border-radius:11px;padding:11px 13px;
+  font-family:inherit;font-size:15px;line-height:1.55;color:var(--ink);background:#fff;resize:vertical}
+textarea:focus{outline:0;border-color:var(--brand)}
+.toks{display:flex;flex-wrap:wrap;gap:3px;margin-top:12px;line-height:1}
+.tok{border-radius:5px;padding:5px 6px;font-size:13.5px;white-space:pre;border:1px solid rgba(0,0,0,.05)}
+.tok.eow{box-shadow:inset -2px 0 0 rgba(0,0,0,.22)}
+.counts{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:14px}
+.cnt{background:#12161f;color:#fff;border-radius:11px;padding:12px 10px;text-align:center}
+.cnt .lb{font-size:10px;letter-spacing:.09em;text-transform:uppercase;opacity:.6;font-weight:700}
+.cnt .big{font-size:26px;font-weight:800;line-height:1.15;margin:3px 0 0;font-variant-numeric:tabular-nums}
+@media(max-width:560px){.counts{grid-template-columns:1fr 1fr}}
+
+.sc-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.sw{width:100%;min-width:560px;border-collapse:collapse;font-size:13px;margin-top:10px}
+table.sw th,table.sw td{border-bottom:1px solid var(--line);padding:8px 7px;text-align:center;font-variant-numeric:tabular-nums}
+table.sw th:first-child,table.sw td:first-child{text-align:left;min-width:200px}
+table.sw th{font-size:11px;text-transform:uppercase;color:var(--ink3);font-weight:700;line-height:1.3}
+table.sw td.hi{font-weight:800;color:var(--bad)}
+table.sw td.lo{font-weight:800;color:var(--good)}
+
+.rule{border-radius:12px;padding:15px 17px;margin-top:14px;font-size:14.5px}
+.rule>b:first-child{display:block;margin-bottom:5px}
+.rule.stop{background:#fdeceb;border:1.4px solid #e88b88;color:#8a2020}
+.rule.stop>b:first-child{color:var(--bad)}
+.rule.free{background:#eaf6ec;border:1px solid #bfe0c5;color:#28502f}
+.rule.free>b:first-child{color:var(--good)}
+.rule.care{background:var(--warn-bg);border:1px solid var(--warn-bd);color:var(--warn-ink)}
+.rule.care>b:first-child{color:#7a5c00}
+
+.take{margin-top:6px;padding:0;list-style:none}
+.take li{position:relative;padding:11px 0 11px 34px;border-bottom:1px solid var(--line);font-size:14.5px}
+.take li:last-child{border-bottom:0}
+.take li .k{position:absolute;left:0;top:11px;width:24px;height:24px;border-radius:50%;background:var(--brand-l);
+  color:var(--brand-d);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.take li b{color:var(--brand-d)}
+details.how{margin-top:16px;background:#f3f4f2;border-radius:11px;padding:0 16px}
+details.how summary{cursor:pointer;padding:13px 0;font-weight:700;font-size:14px;color:var(--ink2);list-style:none}
+details.how summary::-webkit-details-marker{display:none}
+details.how summary::before{content:"▸ ";color:var(--ink3)}
+details.how[open] summary::before{content:"▾ "}
+details.how .bdy{padding:0 0 14px;font-size:13.5px;color:var(--ink2);line-height:1.6}
+details.how code{background:#e4e5e2;border-radius:4px;padding:1px 5px;font-size:12.5px}
+.note{font-size:12.5px;color:var(--ink3);margin-top:12px;line-height:1.5}
+.ghi{background:#12161f;color:#fff;border-radius:12px;padding:16px 18px;margin-top:16px}
+.ghi .lb{font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.6;font-weight:700}
+.ghi .code{font-size:14px;font-weight:700;margin:7px 0 0;word-break:break-word;line-height:1.55}
+.ghi button{margin-top:12px;background:#fff;color:#12161f;border:0;border-radius:9px;padding:10px 16px;
+  font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit}
+footer{text-align:center;font-size:12px;color:var(--ink3);margin-top:26px;line-height:1.6}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="tag">AIT129 · Mô phỏng M5 · Buổi 5</div>
+  <h1>Sân chơi Tokenizer</h1>
+  <p>Mô hình không nhìn thấy chữ cái. Nó nhìn thấy những mảnh chữ (token) đã cắt sẵn. Ở đây bạn cho máy <b>tự học cách cắt chữ (tokenization)</b> rồi xem hậu quả.</p>
+</div></header>
+
+<div class="wrap">
+
+<div class="story">
+  <b>Máy tự học cách cắt chữ (tokenization), không ai dạy nó ngữ pháp</b>
+  Thuật toán rất đơn giản: đếm xem <b>cặp ký tự nào đi cạnh nhau nhiều nhất (byte pair)</b>, dán chúng lại thành một mảnh (token), rồi đếm lại — đây gọi là <b>phép dán (merge)</b>.
+  Lặp vài trăm lần là ra bộ mảnh (bộ từ vựng — vocabulary). Toàn bộ quá trình đó chạy thật trong trang này — bạn sẽ thấy nó tự tìm ra
+  <b>ng</b>, <b>nh</b>, <b>th</b>, <b>ch</b> mà không hề được dạy tiếng Việt.
+</div>
+
+<!-- ===== PHẦN 1 ===== -->
+<div class="card">
+  <div class="step">Phần 1 · Máy học cách cắt</div>
+  <h3>Cho máy đọc một kho văn bản (corpus) rồi tự tìm ra các mảnh</h3>
+  <p class="cap">Chọn kho văn bản (corpus) để huấn luyện. Đây là điểm mấu chốt của cả bài: <b>bộ cắt chữ (tokenizer) phụ thuộc hoàn toàn vào kho nó được đọc.</b></p>
+  <div class="opts" id="kho"></div>
+  <button class="btn" id="btnHoc">▶ Cho máy học cách cắt</button>
+  <div id="mergeBox" style="display:none">
+    <div class="lbl">18 phép dán (merge) đầu tiên máy tìm ra — xếp theo số lần gặp</div>
+    <div class="merges" id="merges"></div>
+    <p class="note" id="noteMerge"></p>
+  </div>
+</div>
+
+<!-- ===== PHẦN 2 ===== -->
+<div class="card" id="card2" style="display:none">
+  <div class="step">Phần 2 · Cắt thử</div>
+  <h3>Gõ gì cũng được — xem nó bị cắt ra sao</h3>
+  <p class="cap">Mỗi ô màu là một token. Vạch đậm bên phải nghĩa là mảnh đó kết thúc một từ.</p>
+  <textarea id="inp" spellcheck="false"></textarea>
+  <div class="opts" id="mau" style="margin-top:10px"></div>
+  <div class="toks" id="toks"></div>
+  <div class="counts">
+    <div class="cnt"><div class="lb">Ký tự</div><div class="big" id="cKT">0</div></div>
+    <div class="cnt"><div class="lb">Từ</div><div class="big" id="cTU">0</div></div>
+    <div class="cnt"><div class="lb">Token</div><div class="big" id="cTK">0</div></div>
+    <div class="cnt"><div class="lb">Token / từ</div><div class="big" id="cTT">0</div></div>
+  </div>
+  <div id="v2"></div>
+</div>
+
+<!-- ===== PHẦN 3 ===== -->
+<div class="card" id="card3" style="display:none">
+  <div class="step">Phần 3 · Kho nào thì mảnh nấy</div>
+  <h3>Cùng một câu, ba bộ cắt, ba cái giá khác nhau</h3>
+  <p class="cap">Bảng dưới tính thật: mỗi ô là số token khi cắt cùng một câu bằng bộ cắt học từ ba kho khác nhau.
+  Ô <span style="color:var(--bad);font-weight:800">đỏ</span> là đắt nhất, ô <span style="color:var(--good);font-weight:800">xanh</span> là rẻ nhất trong hàng.</p>
+  <div class="sc-wrap"><table class="sw" id="tbl"></table></div>
+  <div class="rule care" style="margin-top:14px"><b>Đây là chỗ liên hệ với đời thật</b>
+  Các mô hình lớn được huấn luyện chủ yếu trên văn bản <b>tiếng Anh</b>. Nên trong thực tế, cột «kho tiếng Anh»
+  mới là cột giống chúng nhất — và đó là lý do <b>cùng một ý, viết bằng tiếng Việt thường tốn nhiều token hơn tiếng Anh</b>.
+  Nhiều token hơn nghĩa là: đắt hơn, chậm hơn, và chiếm nhiều chỗ hơn trong phần bộ nhớ mà mô hình được phép nhìn.</div>
+</div>
+
+<!-- ===== PHẦN 4 ===== -->
+<div class="card" id="card4" style="display:none">
+  <div class="step">Phần 4 · Hai hệ quả</div>
+  <h3>Vì sao mô hình đếm sai chữ cái, và vì sao prompt dài không phải lúc nào cũng tốt</h3>
+
+  <div class="lbl">Hệ quả 1 — Máy không nhìn thấy chữ cái</div>
+  <div class="opts" id="tuTest"></div>
+  <div class="toks" id="tokTu"></div>
+  <div id="vDem"></div>
+
+  <div class="lbl" style="margin-top:20px">Hệ quả 2 — Cùng một yêu cầu, bốn cách viết</div>
+  <div class="sc-wrap"><table class="sw" id="tblP"></table></div>
+  <div class="rule free" style="margin-top:12px"><b>Đừng rút ra kết luận sai</b>
+  Bài học <b>không phải</b> «viết prompt càng ngắn càng tốt». Chỗ nào cần ràng buộc (constraint) thì vẫn phải viết —
+  M6 đã cho thấy bỏ trống thì máy tự quyết. Bài học là: <b>trả tiền cho chữ có việc, đừng trả tiền cho chữ lịch sự.</b>
+  «Làm ơn», «cảm ơn bạn nhiều», «nếu bạn không phiền» đều tốn token mà không ràng buộc thêm điều gì.</div>
+
+  <div class="ghi">
+    <div class="lb">Chép dòng này vào thẻ prompt cá nhân</div>
+    <p class="code" id="ghiCode">—</p>
+    <button id="btnCopy">Sao chép</button>
+  </div>
+</div>
+
+<!-- ===== PHẦN 5 ===== -->
+<div class="card" id="card5" style="display:none">
+  <div class="step">Phần 5 · Rút ra</div>
+  <h3>Sáu điều đáng chép vào vở</h3>
+  <ul class="take" id="take"></ul>
+</div>
+
+<details class="how"><summary>Mô phỏng này hoạt động thế nào? (và nó khác tokenizer thật ở đâu)</summary>
+<div class="bdy">
+<p><b>Thuật toán là thật.</b> Trang này chạy đúng thuật toán <b>BPE</b> (Byte Pair Encoding — mã hoá theo cặp byte) — chính họ thuật toán mà
+phần lớn mô hình ngôn ngữ hiện nay dùng để cắt chữ. Cách làm: tách mỗi từ thành từng ký tự, đếm mọi cặp ký tự liền nhau (byte pair),
+dán cặp nhiều nhất lại thành một mảnh (token), rồi lặp lại 220 lần. Không có bảng nào viết sẵn.</p>
+<p><b>Khác tokenizer (bộ cắt chữ) thật ở kích thước, không ở nguyên lý.</b> Kho ở đây khoảng vài nghìn chữ và 220 phép dán (merge).
+Tokenizer thật đọc hàng nghìn tỉ ký tự và có khoảng 100 000 đến 200 000 mảnh. Vì thế số token cụ thể trong trang này
+<b>không bằng</b> số token của mô hình thật — nhưng <b>chiều của sự khác biệt thì giống</b>: thứ gì hiếm gặp trong kho
+huấn luyện đều bị cắt vụn hơn.</p>
+<p><b>Vì sao máy tìm ra «ng», «nh», «th» mà không học ngữ pháp.</b> Vì trong tiếng Việt các cặp chữ đó xuất hiện cực nhiều.
+Thuật toán chỉ đếm tần suất; việc nó trùng với phụ âm ghép của tiếng Việt là <b>hệ quả</b> chứ không phải mục tiêu.
+Đây là ví dụ gọn nhất trong cả học phần cho câu «máy học từ ví dụ, không học từ luật».</p>
+<p><b>Ba kho văn bản</b> đều do người soạn học phần viết cho mục đích giảng dạy, nội dung xoay quanh chính các khái niệm
+của môn này, nên không vướng bản quyền và các em đọc là hiểu.</p>
+</div></details>
+
+<!-- ===== GLOSSARY ===== -->
+<div class="card">
+  <div class="step">Thuật ngữ</div>
+  <h3>Bảng chú giải — đọc lại nếu quên nghĩa một từ nào đó</h3>
+  <p class="cap">Các thuật ngữ quan trọng dùng trong bài, xếp theo thứ tự xuất hiện.</p>
+  <ul class="take">
+    <li><span class="k">1</span><b>Mô hình ngôn ngữ (language model)</b> — chương trình học từ rất nhiều văn bản để đoán chữ tiếp theo hợp lý nhất; đây là thứ chạy phía sau các trợ lý AI như ChatGPT, Claude.</li>
+    <li><span class="k">2</span><b>Token</b> — mảnh chữ nhỏ nhất mà mô hình thực sự nhìn thấy. Có thể là một chữ cái, một cụm vài chữ, hoặc cả một từ ngắn — không phải lúc nào cũng đúng một chữ như con người vẫn nghĩ.</li>
+    <li><span class="k">3</span><b>Tokenizer (bộ cắt chữ)</b> — chương trình cắt một câu văn ra thành các token trước khi đưa vào mô hình. Hành động cắt đó gọi là <b>tokenization (token hoá)</b>.</li>
+    <li><span class="k">4</span><b>BPE — Byte Pair Encoding (mã hoá theo cặp byte)</b> — thuật toán mà bài này mô phỏng: liên tục tìm cặp ký tự đi cạnh nhau nhiều nhất trong kho văn bản rồi dán lại thành một mảnh, lặp đi lặp lại cho tới khi đủ số lần quy định.</li>
+    <li><span class="k">5</span><b>Phép dán (merge)</b> — một bước duy nhất trong BPE: gộp hai mảnh xuất hiện cạnh nhau nhiều nhất thành một mảnh mới, lớn hơn.</li>
+    <li><span class="k">6</span><b>Kho văn bản (corpus)</b> — tập hợp văn bản dùng để huấn luyện bộ cắt chữ. Bộ cắt chữ chỉ "biết" những kiểu chữ có mặt trong kho này — đổi kho là đổi cách cắt.</li>
+    <li><span class="k">7</span><b>Bộ từ vựng (vocabulary)</b> — toàn bộ danh sách các mảnh mà bộ cắt chữ học được sau khi huấn luyện xong; mỗi phép dán làm bộ từ vựng lớn thêm một mảnh.</li>
+    <li><span class="k">8</span><b>Ký hiệu ▁ (end-of-word marker)</b> — dấu hiệu máy dùng để đánh dấu một mảnh là phần kết thúc của một từ, giúp nó phân biệt "an" đứng giữa từ với "an" đứng cuối từ.</li>
+    <li><span class="k">9</span><b>Ràng buộc (constraint)</b> — yêu cầu cụ thể mà một prompt đặt ra cho mô hình, ví dụ: số câu, giọng văn, định dạng gạch đầu dòng. Câu prompt tốt là câu nêu đủ ràng buộc cần thiết, không thừa chữ.</li>
+    <li><span class="k">10</span><b>Prompt (câu lệnh / yêu cầu)</b> — đoạn văn bản người dùng gõ vào để yêu cầu mô hình làm một việc gì đó.</li>
+  </ul>
+</div>
+
+<footer>AIT129 — Trí tuệ nhân tạo ứng dụng · Mô phỏng M5 · Chạy hoàn toàn ngoại tuyến, không gửi dữ liệu đi đâu.<br>
+Số token ở đây không bằng số token của mô hình thật — chỉ chiều khác biệt là giống.</footer>
+</div>
+
+<script>
+"use strict";
+var $=function(id){return document.getElementById(id);};
+
+var KHO_VI=[
+"Trí tuệ nhân tạo là ngành nghiên cứu cách làm cho máy tính thực hiện những việc mà trước đây chỉ con người mới làm được.",
+"Máy học từ ví dụ chứ không học từ luật do người viết ra. Dữ liệu là nguyên liệu, thuật toán là công thức, mô hình là món ăn đã nấu xong.",
+"Dữ liệu huấn luyện quyết định chất lượng mô hình nhiều hơn thuật toán. Nếu dữ liệu lệch thì mô hình học đúng cái lệch đó và lặp lại nó đều đặn.",
+"Học có giám sát là khi dữ liệu đã có sẵn đáp án đúng. Học không giám sát là khi dữ liệu không có đáp án và máy tự tìm nhóm.",
+"Học tăng cường là khi máy thử, nhận thưởng hoặc phạt, rồi điều chỉnh dần. Ba kiểu học này gặp ở hầu hết ứng dụng đang dùng.",
+"Tập huấn luyện dùng để học, tập kiểm tra được giấu đi để chấm. Không giấu thì điểm cao không nói lên điều gì về khả năng thật.",
+"Học tủ xảy ra khi mô hình thuộc lòng cả những chi tiết ngẫu nhiên của dữ liệu cũ, nên rất giỏi trên dữ liệu cũ và rất tệ trên dữ liệu mới.",
+"Cây quyết định đặt liên tiếp các câu hỏi để chia dữ liệu thành các nhóm ngày càng thuần nhất.",
+"Mỗi câu hỏi được chọn vì nó làm giảm độ lộn xộn nhiều nhất, chứ không vì máy hiểu ý nghĩa của cột đó.",
+"Ma trận nhầm lẫn đếm bốn khả năng: bắt được, cho về, báo nhầm và bỏ sót. Mọi chỉ số đánh giá đều tính ra từ bốn con số này.",
+"Độ chính xác là tỉ lệ đoán đúng trên tổng số. Độ chuẩn xác là trong số bị báo thì bao nhiêu là thật.",
+"Độ bao phủ là trong số thật thì bắt được bao nhiêu. Ba con số này thường mâu thuẫn với nhau.",
+"Ngưỡng quyết định do con người đặt ra chứ không do máy. Đây là chỗ đạo đức bước vào một hệ thống kỹ thuật.",
+"Một mô hình có độ chính xác cao vẫn có thể vô dụng nếu nó bỏ sót gần hết những trường hợp quan trọng.",
+"Công cụ chuyên dụng làm một việc rất sâu, công cụ đa năng làm nhiều việc ở mức khá.",
+"Không loại nào tốt hơn, chúng thắng ở hai loại việc khác nhau. Câu hỏi đúng là việc của tôi có hình dạng thế nào.",
+"Prompt giống một đơn đặt hàng gửi cho thợ may. Mỗi chỗ người đặt hàng không ghi rõ thì thợ may sẽ tự quyết theo thói quen của họ.",
+"Một prompt mơ hồ không cho ra kết quả xấu, nó cho ra kết quả hên xui. Lần này hay, lần sau dở, và người dùng không biết vì sao.",
+"Ảo giác là khi mô hình sinh ra thông tin nghe rất hợp lý nhưng không có thật.",
+"Nó không cố tình nói dối, nó chỉ đang chọn chuỗi chữ có xác suất cao. Muốn kiểm tra ảo giác thì phải hỏi những câu có đáp án tra được.",
+"Trợ lý riêng là một công cụ được nạp tri thức riêng, đặt luật riêng, rồi đóng gói cho người khác dùng.",
+"Dòng tuyệt đối không làm giúp chặn một kiểu sai cụ thể, nhưng không làm câu trả lời ổn định hơn.",
+"Mô hình ngôn ngữ không nhìn thấy từng chữ cái. Nó nhìn thấy các mảnh chữ đã được cắt sẵn và ghép lại theo xác suất.",
+"Việc cắt chữ thành mảnh được học từ tần suất xuất hiện trong kho văn bản, không phải từ ngữ pháp.",
+"Văn bản viết cẩu thả, sai chính tả hoặc không dấu sẽ bị cắt vụn hơn, và mô hình phải đoán nhiều hơn.",
+"Đạo đức trong trí tuệ nhân tạo không phải là môn học thêm, nó là một phần của việc thiết kế hệ thống.",
+"Người chịu trách nhiệm cuối cùng cho một quyết định về con người phải là một người có tên, không phải một mô hình.",
+"Sinh viên cần biết khi nào nên dùng công cụ và khi nào không nên dùng. Biết khi nào không dùng cũng là một phần của việc biết dùng.",
+"Dữ liệu thiếu, dữ liệu lệch và dữ liệu cũ là ba nguồn sai lầm thường gặp nhất trong các dự án thực tế.",
+"Một bảng xếp hạng công cụ luôn có người đặt trọng số. Câu hỏi đầu tiên là ai chấm và họ coi trọng điều gì."
+].join(" ");
+
+var KHO_EN=[
+"Artificial intelligence is the study of how to make machines carry out tasks that used to need a person.",
+"A model learns from examples, not from rules written by a person. Data is the ingredient, the algorithm is the recipe, the model is the finished dish.",
+"Training data shapes the model far more than the algorithm does. If the data is skewed, the model learns that skew and repeats it steadily.",
+"Supervised learning is when the data already carries the right answers. Unsupervised learning is when it does not and the machine groups things on its own.",
+"Reinforcement learning is when the machine tries something, gets a reward or a penalty, and adjusts. These three kinds cover most systems in use today.",
+"The training set is used for learning and the test set is hidden away for scoring. Without hiding it, a high score means nothing.",
+"Overfitting happens when a model memorises the noise in the old data, so it looks brilliant on the old data and fails on new data.",
+"A decision tree asks a series of questions that split the data into groups that are more and more alike.",
+"Each question is chosen because it lowers the disorder the most, not because the machine understands what the column means.",
+"A confusion matrix counts four outcomes: caught, cleared, false alarm and missed. Every score comes from those four numbers.",
+"Accuracy is the share of correct answers over the total. Precision is how many of the flagged cases were real.",
+"Recall is how many of the real cases were caught. These three numbers usually pull against each other.",
+"The decision threshold is set by people, not by the machine. That is where ethics enters a technical system.",
+"A model with high accuracy can still be useless if it misses almost every case that matters.",
+"A specialised tool does one job deeply, while a general tool does many jobs reasonably well.",
+"Neither is better. They win at different shapes of work, so the right question is what shape your task has.",
+"A prompt is an order sent to a tailor. Every detail you leave out, the tailor decides for you, by habit.",
+"A vague prompt does not give bad output, it gives lucky output. Good this time, poor next time, and you never learn why.",
+"A hallucination is when a model produces something that sounds right but is not true.",
+"It is not lying. It is picking a likely sequence of characters. To test for it, ask questions with answers you can check.",
+"A custom assistant is a tool loaded with your own knowledge, given your own rules, and packaged for other people to use.",
+"A line saying what the assistant must never do blocks one kind of error, but it does not make answers more stable.",
+"A language model does not see single letters. It sees pieces of text that were cut in advance and joins them by probability.",
+"How text is cut into pieces is learned from how often things appear in a body of writing, not from grammar.",
+"Careless writing, typos or missing marks get cut into smaller pieces, and the model has to guess more.",
+"Ethics in artificial intelligence is not an extra subject. It is part of designing the system.",
+"The person accountable for a decision about people must be a person with a name, never a model.",
+"Students need to know when to use a tool and when not to. Knowing when not to use one is part of knowing how.",
+"Missing data, skewed data and stale data are the three commonest sources of error in real projects.",
+"Every ranking of tools has someone who chose the weights. The first question is who scored it and what they valued."
+].join(" ");
+
+var KHOS=[
+ {k:'vi', ten:'Kho tiếng Việt', txt:KHO_VI},
+ {k:'en', ten:'Kho tiếng Anh',  txt:KHO_EN},
+ {k:'mix',ten:'Kho trộn hai thứ tiếng', txt:KHO_VI+" "+KHO_EN}
+];
+var KHO='vi', CACHE={}, SO_MERGE=220;
+
+/* ---------- BPE thật ---------- */
+function hocBPE(text,soMerge){
+ var words={};
+ text.toLowerCase().replace(/[.,:;!?()«»"'\-]/g,' ').split(/\s+/).forEach(function(w){if(w)words[w]=(words[w]||0)+1;});
+ var vocab={};
+ Object.keys(words).forEach(function(w){vocab[Array.from(w).join(' ')+' </w>']=words[w];});
+ var merges=[];
+ for(var m=0;m<soMerge;m++){
+  var pairs={},seq,s,i;
+  for(seq in vocab){s=seq.split(' ');
+   for(i=0;i<s.length-1;i++){var k=s[i]+' '+s[i+1];pairs[k]=(pairs[k]||0)+vocab[seq];}}
+  var best=null,bc=1;
+  for(var k2 in pairs) if(pairs[k2]>bc){bc=pairs[k2];best=k2;}
+  if(!best)break;
+  var ab=best.split(' '),a=ab[0],b=ab[1];
+  merges.push([a,b,bc]);
+  var nv={};
+  for(seq in vocab){s=seq.split(' ');var out=[];i=0;
+   while(i<s.length){if(i<s.length-1&&s[i]===a&&s[i+1]===b){out.push(a+b);i+=2;}else{out.push(s[i]);i++;}}
+   var kk=out.join(' ');nv[kk]=(nv[kk]||0)+vocab[seq];}
+  vocab=nv;
+ }
+ return merges;
+}
+function layBo(k){
+ if(!CACHE[k]) CACHE[k]=hocBPE(KHOS.filter(function(x){return x.k===k;})[0].txt,SO_MERGE);
+ return CACHE[k];
+}
+function catTu(w,merges){
+ var s=Array.from(w.toLowerCase()); s.push('</w>');
+ for(var j=0;j<merges.length;j++){
+  var a=merges[j][0],b=merges[j][1],out=[],i=0;
+  while(i<s.length){if(i<s.length-1&&s[i]===a&&s[i+1]===b){out.push(a+b);i+=2;}else{out.push(s[i]);i++;}}
+  s=out;
+ }
+ return s;
+}
+function cat(text,merges){
+ var toks=[];
+ text.replace(/([.,:;!?()"])/g,' $1 ').split(/\s+/).forEach(function(w){
+  if(!w)return;
+  catTu(w,merges).forEach(function(t){
+   if(t==='</w>'){if(toks.length)toks[toks.length-1].eow=true;return;}
+   var eow=false;
+   if(t.indexOf('</w>')>=0){t=t.replace('</w>','');eow=true;}
+   toks.push({t:t,eow:eow});});});
+ return toks;
+}
+
+/* ---------- màu token ---------- */
+var PAL=['#eaf0ff','#fdf0e8','#eaf6ec','#f3f4f2','#fdeceb','#e9f3fb'];
+function veToks(el,toks){
+ el.innerHTML=toks.map(function(o,i){
+  return '<span class="tok'+(o.eow?' eow':'')+'" style="background:'+PAL[i%PAL.length]+'">'+
+    o.t.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</span>';}).join('');
+}
+
+/* ---------- câu mẫu ---------- */
+var MAU=[
+ ['Việt có dấu','Mô hình học từ dữ liệu chứ không học từ luật.'],
+ ['Việt không dấu','Mo hinh hoc tu du lieu chu khong hoc tu luat.'],
+ ['Viết tắt kiểu chat','mh hoc tu dl chu k hoc tu luat nha'],
+ ['Tiếng Anh','A model learns from data, not from rules.'],
+ ['Số và mã lệnh','SELECT * FROM don_hang WHERE tong_tien > 1500000;']
+];
+var PROMPTS=[
+ ['Cụt lủn — thiếu ràng buộc','Viết giới thiệu câu lạc bộ.'],
+ ['Đủ ràng buộc, không thừa chữ','Viết 3 câu giới thiệu câu lạc bộ tiếng Anh cho sinh viên năm nhất, giọng thân mật, gạch đầu dòng.'],
+ ['Đủ ràng buộc + chữ lịch sự','Chào bạn, làm ơn giúp mình với nhé, mình rất cảm ơn bạn nhiều. Nếu bạn không phiền thì viết 3 câu giới thiệu câu lạc bộ tiếng Anh cho sinh viên năm nhất, giọng thân mật, gạch đầu dòng nhé. Cảm ơn bạn rất nhiều!'],
+ ['Dài dòng nhưng vẫn mơ hồ','Mình đang cần một đoạn văn thật hay và thật ấn tượng, viết sao cho thật cuốn hút và chuyên nghiệp, để giới thiệu về câu lạc bộ, bạn cứ sáng tạo thoải mái nhé.']
+];
+var TU_TEST=['nghiêng','trường','chuyển','strawberry','AIT129'];
+
+/* ---------- dựng ---------- */
+(function(){
+ var h='';KHOS.forEach(function(x){h+='<button data-k="'+x.k+'">'+x.ten+'</button>';});
+ $('kho').innerHTML=h;
+ $('kho').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
+  KHO=b.dataset.k;danhDau();
+  if($('mergeBox').style.display==='none')return;
+  var cu=$('noteMerge').innerHTML;
+  $('noteMerge').innerHTML='<b>… đang cho máy đọc lại kho và đếm cặp chữ</b>';
+  setTimeout(function(){ if(CACHE[KHO]===undefined){} veMerges(); veTat(); },30);});
+ var m='';MAU.forEach(function(x,i){m+='<button data-i="'+i+'">'+x[0]+'</button>';});
+ $('mau').innerHTML=m;
+ $('mau').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
+  $('inp').value=MAU[+b.dataset.i][1];veTat();});
+ var t='';TU_TEST.forEach(function(x,i){t+='<button data-i="'+i+'">'+x+'</button>';});
+ $('tuTest').innerHTML=t;
+ $('tuTest').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
+  TU=TU_TEST[+b.dataset.i];veDem();danhDau();});
+ $('inp').addEventListener('input',veTat);
+})();
+var TU='nghiêng';
+function danhDau(){
+ $('kho').querySelectorAll('button').forEach(function(b){b.classList.toggle('on',b.dataset.k===KHO);});
+ var tt=$('tuTest'); if(tt) tt.querySelectorAll('button').forEach(function(b){
+  b.classList.toggle('on',TU_TEST[+b.dataset.i]===TU);});
+ var mm=$('mau'); if(mm) mm.querySelectorAll('button').forEach(function(b){
+  b.classList.toggle('on',MAU[+b.dataset.i][1]===$('inp').value);});
+}
+
+function veMerges(){
+ var M=layBo(KHO), max=M[0][2];
+ var h='';
+ M.slice(0,18).forEach(function(m,i){
+  h+='<span class="n">'+(i+1)+'.</span>'+
+     '<span class="m">"'+m[0].replace('</w>','▁')+'" <span class="ar">+</span> "'+m[1].replace('</w>','▁')+
+     '" <span class="ar">→</span> <b>"'+(m[0]+m[1]).replace('</w>','▁')+'"</b></span>'+
+     '<span class="c">'+m[2]+' lần</span>';});
+ $('merges').innerHTML=h;
+ var DAU={vi:['ng','nh','th','ch','kh','ph','tr','gi','ươ','uy'],
+          en:['th','in','er','re','on','at','ed','ing','an','ou'],
+          mix:['ng','nh','th','ch','in','er','re','on']};
+ var co=M.slice(0,18).filter(function(m){return DAU[KHO].indexOf(m[0]+m[1])>=0;})
+          .map(function(m){return '"'+m[0]+m[1]+'"';});
+ var TEN={vi:'phụ âm ghép và vần quen thuộc của <b>tiếng Việt</b>',
+          en:'những cụm chữ hay gặp nhất của <b>tiếng Anh</b>',
+          mix:'cụm chữ hay gặp của <b>cả hai thứ tiếng</b>'};
+ var note='Ký hiệu <b>▁</b> đánh dấu chỗ kết thúc một từ. Máy học đủ '+M.length+' phép dán, ở đây chỉ hiện 18 phép đầu.';
+ if(co.length) note+=' Chú ý: máy đã tự tìm ra '+co.join(', ')+' — toàn là '+TEN[KHO]+
+   ', mà không ai dạy nó ngữ pháp. Nó chỉ đếm tần suất.';
+ else note+=' Các mảnh đầu tiên phản ánh thói quen chính tả của <b>đúng thứ tiếng trong kho</b> — đổi kho là đổi hết.';
+ $('noteMerge').innerHTML=note;
+}
+
+function veTat(){
+ var M=layBo(KHO), txt=$('inp').value;
+ var toks=cat(txt,M);
+ veToks($('toks'),toks);
+ var soTu=txt.trim()?txt.trim().split(/\s+/).length:0;
+ $('cKT').textContent=txt.length; $('cTU').textContent=soTu; $('cTK').textContent=toks.length;
+ $('cTT').textContent=soTu?(toks.length/soTu).toFixed(1):'0';
+ var tt=soTu?toks.length/soTu:0, h='';
+ if(soTu===0) h='';
+ else if(tt<=1.6) h='<div class="rule free"><b>Cắt gọn</b>Trung bình '+tt.toFixed(1)+' token một từ. Kiểu chữ này <b>có nhiều trong kho huấn luyện</b> nên máy đã có sẵn mảnh lớn để dùng.</div>';
+ else if(tt<=3) h='<div class="rule care"><b>Cắt hơi vụn</b>Trung bình '+tt.toFixed(1)+' token một từ. Một phần chữ trong câu này <b>ít gặp trong kho</b>, nên máy phải ghép từ nhiều mảnh nhỏ.</div>';
+ else h='<div class="rule stop"><b>Cắt vụn nặng</b>Trung bình '+tt.toFixed(1)+' token một từ — gần như cắt tới từng chữ cái. Với mô hình thật, kiểu chữ này vừa <b>tốn nhiều token hơn</b> vừa khiến mô hình <b>phải đoán nhiều hơn</b>, nên dễ sai hơn.</div>';
+ $('v2').innerHTML=h;
+ veBang(); veDem(); veBangP(); danhDau();
+}
+
+function veBang(){
+ var h='<tr><th>Câu thử</th>';
+ KHOS.forEach(function(x){h+='<th>'+x.ten+'</th>';});
+ h+='<th>Ký tự</th></tr>';
+ MAU.forEach(function(m){
+  var vals=KHOS.map(function(x){return cat(m[1],layBo(x.k)).length;});
+  var mx=Math.max.apply(null,vals), mn=Math.min.apply(null,vals);
+  h+='<tr><td>'+m[0]+'</td>';
+  vals.forEach(function(v){h+='<td class="'+(v===mx?'hi':(v===mn?'lo':''))+'">'+v+'</td>';});
+  h+='<td style="color:var(--ink3)">'+m[1].length+'</td></tr>';});
+ $('tbl').innerHTML=h;
+}
+
+function veDem(){
+ var M=layBo(KHO), toks=cat(TU,M);
+ veToks($('tokTu'),toks);
+ var soG=(TU.toLowerCase().match(/g/g)||[]).length;
+ $('vDem').innerHTML='<div class="rule stop"><b>«'+TU+'» = '+TU.length+' chữ cái, nhưng chỉ '+toks.length+
+  ' token</b>Khi bạn hỏi mô hình «từ này có mấy chữ '+(soG?'g':'r')+'», nó <b>không nhìn thấy từng chữ cái</b> để mà đếm — '+
+  'nó chỉ thấy '+toks.length+' mảnh đã dán sẵn. Muốn đếm, nó phải <b>nhớ lại</b> mảnh này gồm những chữ nào, '+
+  'và đó là việc nó hay làm sai. Đây là lý do thật đằng sau chuyện mô hình đếm sai chữ cái — '+
+  'không phải vì nó «ngu», mà vì <b>nó chưa bao giờ nhìn thấy chữ cái</b>.</div>';
+}
+
+function veBangP(){
+ var M=layBo(KHO);
+ var h='<tr><th>Cách viết prompt</th><th>Token</th><th>Ràng buộc (constraint)<br>thật sự nêu</th><th>Token cho<br>mỗi ràng buộc</th></tr>';
+ var rb=[0,4,4,0];
+ var vals=PROMPTS.map(function(p){return cat(p[1],M).length;});
+ PROMPTS.forEach(function(p,i){
+  var v=vals[i], r=rb[i];
+  h+='<tr><td>'+p[0]+'</td><td>'+v+'</td><td>'+r+'</td><td class="'+(r===0?'hi':(i===1?'lo':''))+'">'+
+     (r?Math.round(v/r):'∞')+'</td></tr>';});
+ $('tblP').innerHTML=h;
+ $('ghiCode').textContent='M5 · kho: '+KHOS.filter(function(x){return x.k===KHO;})[0].ten+
+  ' · câu đang thử '+cat($('inp').value,M).length+' token'+
+  ' · prompt đủ-ràng-buộc '+vals[1]+' token vs prompt lịch sự '+vals[2]+' token vs prompt dài-mà-mơ-hồ '+vals[3]+' token';
+}
+
+var TAKE=[
+ 'Máy <b>tự tìm ra</b> "ng", "nh", "th" chỉ bằng cách đếm cặp chữ nào hay đi cạnh nhau. Không ai dạy nó tiếng Việt. Đây là câu «học từ ví dụ, không học từ luật» ở dạng gọn nhất.',
+ 'Mô hình <b>không nhìn thấy chữ cái</b>. Nó nhìn thấy mảnh. Vì thế nó đếm sai chữ cái, đánh vần ngược sai, và làm hỏng những trò chơi chữ.',
+ 'Bộ cắt chữ <b>phụ thuộc hoàn toàn vào kho nó được đọc</b>. Đổi kho là mọi con số đổi theo — cùng một câu có thể đắt gấp ba lần.',
+ 'Mô hình lớn đọc chủ yếu tiếng Anh, nên <b>tiếng Việt tốn nhiều token hơn cho cùng một ý</b>. Đắt hơn, chậm hơn, và chiếm nhiều chỗ hơn.',
+ 'Viết <b>không dấu hoặc viết tắt kiểu chat</b> làm chữ bị cắt vụn hơn hẳn — vừa tốn hơn vừa khiến mô hình phải đoán nhiều hơn. Viết đúng chính tả là một kỹ thuật, không chỉ là phép lịch sự.',
+ 'Prompt dài không xấu, prompt <b>dài mà không ràng buộc thêm gì</b> mới xấu. Đo bằng câu hỏi: mỗi chục token này mua được thêm ràng buộc nào?'];
+(function(){var h='';TAKE.forEach(function(t,i){h+='<li><span class="k">'+(i+1)+'</span>'+t+'</li>';});$('take').innerHTML=h;})();
+
+$('btnHoc').addEventListener('click',function(){
+ var b=this; b.textContent='… đang đếm cặp chữ';
+ setTimeout(function(){
+  veMerges();
+  $('mergeBox').style.display='';
+  ['card2','card3','card4','card5'].forEach(function(id){$(id).style.display='';});
+  if(!$('inp').value) $('inp').value=MAU[0][1];
+  veTat();
+  b.textContent='↻ Học lại với kho khác';
+  $('mergeBox').scrollIntoView({behavior:'smooth',block:'nearest'});
+ },30);
+});
+$('btnCopy').addEventListener('click',function(){var t=$('ghiCode').textContent,b=this;
+ if(navigator.clipboard)navigator.clipboard.writeText(t).then(function(){b.textContent='Đã chép ✓';
+  setTimeout(function(){b.textContent='Sao chép';},1600);});});
+danhDau();
+</script>
+</body></html>

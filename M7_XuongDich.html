@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M7 — Xưởng dịch · AIT129</title>
+<style>
+:root{color-scheme:light;
+  --ink:#0b0b0b;--ink2:#52514e;--ink3:#898781;
+  --bg:#f9f9f7;--card:#fcfcfb;--line:#e1e0d9;--axis:#c3c2b7;
+  --brand:#1f4fd8;--brand-d:#16359b;--brand-l:#eaf0ff;
+  --blue:#2a78d6;--dblue:#0d366b;--orange:#eb6834;--red:#e34948;
+  --good:#2e7d32;--bad:#c02626;
+  --warn-bg:#fff8e8;--warn-bd:#e8d5a0;--warn-ink:#5c4708;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.55;font-size:16px}
+.wrap{max-width:800px;margin:0 auto;padding:0 16px 44px}
+header{background:linear-gradient(135deg,#0d366b,#1f4fd8 60%,#3f74f0);color:#fff;padding:20px 0 18px}
+header .tag{font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.82;font-weight:700}
+header h1{margin:5px 0 3px;font-size:24px;font-weight:700;letter-spacing:-.4px}
+header p{margin:0;font-size:13.5px;opacity:.9;max-width:620px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-top:16px}
+.card h3{margin:0 0 3px;font-size:16.5px}
+.card .cap{margin:0 0 14px;font-size:13.5px;color:var(--ink2);line-height:1.55}
+.step{display:inline-block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;
+  color:var(--brand-d);background:var(--brand-l);border-radius:20px;padding:4px 11px;margin-bottom:8px}
+.story{background:var(--brand-l);border-radius:12px;padding:16px 18px;font-size:15px;margin-top:16px}
+.story>b:first-child{display:block;margin-bottom:5px;color:var(--brand-d)}
+
+.opts{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
+.opts button{border:1.5px solid var(--line);background:#fff;border-radius:20px;padding:8px 13px;font-size:13px;
+  font-weight:600;color:var(--ink2);cursor:pointer;font-family:inherit;text-align:left;line-height:1.35}
+.opts button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.lbl{font-size:12.5px;font-weight:700;color:var(--ink2);margin:16px 0 6px}
+
+.src{background:#12161f;color:#e8e8e4;border-radius:12px;padding:15px 17px;margin-top:12px;font-size:16px;line-height:1.7}
+.src .hi{background:rgba(143,192,255,.22);border-bottom:2px solid #8fc0ff;border-radius:3px;padding:1px 3px}
+.src .lb{font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;opacity:.55;font-weight:700;margin-bottom:6px;display:block}
+
+.slot{border:1.5px solid var(--line);border-radius:12px;padding:13px 15px;margin-top:10px;background:#fff}
+.slot .h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:7px}
+.slot .nm{font-size:14.5px;font-weight:800;color:var(--brand-d)}
+.slot .ct{font-size:12px;font-weight:700;color:var(--ink3);background:#f3f4f2;border-radius:14px;padding:2px 9px}
+.slot .why{font-size:12.5px;color:var(--ink2);line-height:1.5;margin-bottom:8px}
+.slot .vs{display:flex;gap:6px;flex-wrap:wrap}
+.slot .vs span{font-size:13px;border:1px solid var(--line);background:#fbfbf9;border-radius:8px;padding:5px 10px;color:var(--ink2)}
+.slot .vs span.ok{background:#eaf6ec;border-color:#8ec79a;color:#1e5b28;font-weight:800}
+.slot .vs span.safe{background:#eaf0ff;border-color:#8fb0f0;color:var(--brand-d);font-weight:700}
+.slot .vs span.bad{background:#fdeceb;border-color:#e8b0ad;color:#8a2020;font-weight:700}
+.key{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink2);margin-top:10px}
+.key span{display:flex;align-items:center;gap:6px}
+.key i{width:12px;height:12px;border-radius:3px;display:inline-block;border:1px solid rgba(0,0,0,.1)}
+
+.combo{background:#12161f;color:#fff;border-radius:13px;padding:18px 20px;margin-top:14px;text-align:center}
+.combo .lb{font-size:11px;letter-spacing:.11em;text-transform:uppercase;opacity:.6;font-weight:700}
+.combo .big{font-size:50px;font-weight:800;line-height:1.05;margin:5px 0 2px;letter-spacing:-2px}
+.combo .sub{font-size:13.5px;opacity:.78;line-height:1.5}
+.combo .eq{font-size:13px;opacity:.6;margin-top:8px;font-variant-numeric:tabular-nums}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:12px}
+@media(max-width:600px){.two{grid-template-columns:1fr}}
+.out{border-radius:12px;padding:14px 16px;font-size:14.5px;line-height:1.6}
+.out .h{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.out.safe{background:#eaf0ff;border:1.4px solid #8fb0f0}
+.out.safe .h{color:var(--brand-d)}
+.out.ok{background:#eaf6ec;border:1.4px solid #8ec79a}
+.out.ok .h{color:var(--good)}
+
+.rule{border-radius:12px;padding:15px 17px;margin-top:14px;font-size:14.5px}
+.rule>b:first-child{display:block;margin-bottom:5px}
+.rule.stop{background:#fdeceb;border:1.4px solid #e88b88;color:#8a2020}
+.rule.stop>b:first-child{color:var(--bad)}
+.rule.free{background:#eaf6ec;border:1px solid #bfe0c5;color:#28502f}
+.rule.free>b:first-child{color:var(--good)}
+.rule.care{background:var(--warn-bg);border:1px solid var(--warn-bd);color:var(--warn-ink)}
+.rule.care>b:first-child{color:#7a5c00}
+
+.gloss{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.gl{border:1px solid var(--line);border-radius:9px;padding:7px 10px;background:#fff;text-align:center;min-width:62px}
+.gl .en{font-size:13px;font-weight:700;color:var(--ink)}
+.gl .vi{font-size:12.5px;color:var(--orange);margin-top:2px}
+.idi{margin-top:12px}
+.idi .row{border:1.5px solid var(--line);border-radius:11px;padding:12px 14px;margin-bottom:9px;background:#fff}
+.idi .en{font-size:14.5px;font-weight:700}
+.idi .bad{font-size:13.5px;color:var(--bad);margin-top:5px}
+.idi .ok{font-size:13.5px;color:var(--good);margin-top:3px}
+.idi .no{font-size:12.5px;color:var(--ink3);margin-top:5px;line-height:1.5}
+
+.chk{margin-top:6px;padding:0;list-style:none;counter-reset:c}
+.chk li{position:relative;padding:11px 0 11px 34px;border-bottom:1px solid var(--line);font-size:14.5px}
+.chk li:last-child{border-bottom:0}
+.chk li::before{counter-increment:c;content:counter(c);position:absolute;left:0;top:11px;width:24px;height:24px;
+  border-radius:50%;background:var(--brand);color:#fff;font-size:12px;font-weight:800;display:flex;
+  align-items:center;justify-content:center}
+.chk li b{color:var(--brand-d)}
+.take{margin-top:6px;padding:0;list-style:none}
+.take li{position:relative;padding:11px 0 11px 34px;border-bottom:1px solid var(--line);font-size:14.5px}
+.take li:last-child{border-bottom:0}
+.take li .k{position:absolute;left:0;top:11px;width:24px;height:24px;border-radius:50%;background:var(--brand-l);
+  color:var(--brand-d);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.take li b{color:var(--brand-d)}
+details.how{margin-top:16px;background:#f3f4f2;border-radius:11px;padding:0 16px}
+details.how summary{cursor:pointer;padding:13px 0;font-weight:700;font-size:14px;color:var(--ink2);list-style:none}
+details.how summary::-webkit-details-marker{display:none}
+details.how summary::before{content:"▸ ";color:var(--ink3)}
+details.how[open] summary::before{content:"▾ "}
+details.how .bdy{padding:0 0 14px;font-size:13.5px;color:var(--ink2);line-height:1.6}
+.ghi{background:#12161f;color:#fff;border-radius:12px;padding:16px 18px;margin-top:16px}
+.ghi .lb{font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.6;font-weight:700}
+.ghi .code{font-size:14px;font-weight:700;margin:7px 0 0;word-break:break-word;line-height:1.55}
+.ghi button{margin-top:12px;background:#fff;color:#12161f;border:0;border-radius:9px;padding:10px 16px;
+  font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit}
+footer{text-align:center;font-size:12px;color:var(--ink3);margin-top:26px;line-height:1.6}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="tag">AIT129 · Mô phỏng M7 · Buổi 6</div>
+  <h1>Xưởng dịch</h1>
+  <p>AI dịch như một người giỏi ngữ pháp nhưng chưa từng sống ở nước đó. Trang này chỉ ra <b>chính xác chỗ nó buộc phải đoán</b> — và vì sao không mô hình nào chữa được.</p>
+</div></header>
+
+<div class="wrap">
+
+<div class="story">
+  <b>Vấn đề không nằm ở mô hình</b>
+  Tiếng Việt <b>bắt buộc</b> phải nói rõ những thứ mà tiếng Anh cho phép để trống: gọi người nghe là gì, người được nhắc tới là nam hay nữ, quan hệ giữa hai bên trang trọng tới đâu.
+  Câu gốc <b>không chứa</b> những thông tin đó. Nên máy phải đoán — và nó đưa bạn một bản duy nhất, <b>không nói là nó đã đoán</b>.
+</div>
+
+<!-- ===== PHẦN 1 ===== -->
+<div class="card">
+  <div class="step">Phần 1 · Những chỗ máy buộc phải đoán</div>
+  <h3>Chọn một câu tiếng Anh và đếm xem có bao nhiêu bản dịch đều đúng</h3>
+  <p class="cap">Phần tô sáng trong câu gốc là chỗ tiếng Việt bắt buộc phải quyết mà tiếng Anh thì không.</p>
+  <div class="opts" id="cau"></div>
+  <div class="src" id="src"></div>
+  <div id="slots"></div>
+  <div class="combo" id="combo"></div>
+</div>
+
+<!-- ===== PHẦN 2 ===== -->
+<div class="card">
+  <div class="step">Phần 2 · Bối cảnh — thứ không có trong câu gốc</div>
+  <h3>Ai nói với ai?</h3>
+  <p class="cap">Chọn bối cảnh thật. Trang sẽ tô <span style="color:var(--good);font-weight:800">xanh</span> phương án đúng với bối cảnh đó,
+  <span style="color:var(--brand-d);font-weight:800">xanh dương</span> phương án an toàn mà máy hay chọn, và
+  <span style="color:var(--bad);font-weight:800">đỏ</span> phương án gây hiểu lầm.</p>
+  <div class="opts" id="ctx"></div>
+  <div class="two">
+    <div class="out safe"><div class="h">Bản máy hay đưa (an toàn, trung tính)</div><span id="oSafe"></span></div>
+    <div class="out ok"><div class="h">Bản đúng với bối cảnh bạn chọn</div><span id="oOk"></span></div>
+  </div>
+  <div id="v2"></div>
+  <div class="key">
+    <span><i style="background:#eaf6ec;border-color:#8ec79a"></i>đúng với bối cảnh</span>
+    <span><i style="background:#eaf0ff;border-color:#8fb0f0"></i>an toàn, máy hay chọn</span>
+    <span><i style="background:#fdeceb;border-color:#e8b0ad"></i>gây hiểu lầm</span>
+    <span><i style="background:#fbfbf9"></i>đúng ngữ pháp, không hợp cảnh</span>
+  </div>
+</div>
+
+<!-- ===== PHẦN 3 ===== -->
+<div class="card">
+  <div class="step">Phần 3 · Dịch từng chữ</div>
+  <h3>Khi máy hiểu đúng mọi từ mà vẫn sai cả câu</h3>
+  <p class="cap">Bấm một thành ngữ để xem nó ra sao nếu dịch từng chữ một — và vì sao người bản xứ hiểu ngay còn máy thì không.</p>
+  <div class="opts" id="idiom"></div>
+  <div class="lbl">Dịch từng chữ, đúng nghĩa từ điển:</div>
+  <div class="gloss" id="gloss"></div>
+  <div class="idi" id="idiBox"></div>
+</div>
+
+<!-- ===== PHẦN 4 ===== -->
+<div class="card">
+  <div class="step">Phần 4 · Quy trình</div>
+  <h3>Bốn bước hậu biên tập — mang thẳng sang trạm DeepL</h3>
+  <p class="cap">Đây là quy trình dùng ở trạm dịch của Lab 1. Không bước nào cần biết ngoại ngữ giỏi — chỉ cần biết <b>chỗ nào phải nghi ngờ</b>.</p>
+  <ol class="chk">
+    <li><b>Khoanh mọi chỗ chỉ người.</b> Mỗi «you», «he», «she», «they» trong bản gốc là một chỗ máy đã đoán. Kiểm từng chỗ: xưng hô này đúng với quan hệ thật chưa?</li>
+    <li><b>Khoanh mọi con số, ngày tháng và đơn vị.</b> 03/04 có thể là 3 tháng 4 hoặc 4 tháng 3. Dấu phẩy thập phân, đơn vị đo, tiền tệ — máy giữ nguyên chứ không quy đổi.</li>
+    <li><b>Đọc to bản dịch cho một người không nhìn bản gốc.</b> Chỗ nào họ hỏi lại là chỗ hỏng. Đây là bước rẻ nhất và bắt được nhiều lỗi nhất.</li>
+    <li><b>Tra ngược mọi thuật ngữ chuyên ngành.</b> Dịch ngược từ tiếng Việt sang tiếng Anh; nếu không ra lại từ gốc thì thuật ngữ đã trôi.</li>
+  </ol>
+  <div class="ghi">
+    <div class="lb">Chép dòng này vào phiếu trạm dịch</div>
+    <p class="code" id="ghiCode">—</p>
+    <button id="btnCopy">Sao chép</button>
+  </div>
+</div>
+
+<!-- ===== PHẦN 5 ===== -->
+<div class="card">
+  <div class="step">Phần 5 · Rút ra</div>
+  <h3>Sáu điều đáng chép vào vở</h3>
+  <ul class="take" id="take"></ul>
+</div>
+
+<details class="how"><summary>Mô phỏng này hoạt động thế nào? (và vì sao nó không dịch hộ bạn)</summary>
+<div class="bdy">
+<p><b>Trang này không dịch.</b> Nó không gọi ra ngoài, không có mô hình dịch nào bên trong, và nó cố ý không làm việc đó.
+Việc nó làm là <b>đếm và chỉ chỗ</b>: với mỗi câu gốc, các phương án tiếng Việt đều <b>đúng ngữ pháp</b> đã được liệt kê sẵn,
+và trang nhân số phương án của từng ô với nhau để ra số tổ hợp.</p>
+<p><b>Vì sao đó là phép đo có thật.</b> Con số tổ hợp không phải ước lượng — nó là tích số phương án của các ô,
+tính ngay trên màn hình. Ý nghĩa của nó: <b>câu gốc thiếu đúng chừng ấy thông tin</b>. Một mô hình dịch tốt hơn
+vẫn phải chọn một trong chừng ấy phương án, vì thông tin để chọn đúng <b>không nằm trong câu gốc</b>.</p>
+<p><b>«Bản máy hay đưa» nghĩa là gì.</b> Đó là phương án <b>trung tính nhất</b> — phương án không sai với ai trong hầu hết
+bối cảnh, nên cũng là phương án an toàn nhất để một hệ thống chọn khi không biết bối cảnh. Trang <b>không</b> khẳng định
+một sản phẩm cụ thể sẽ dịch đúng như vậy; sản phẩm đổi từng tháng, còn lý do chọn phương án an toàn thì không đổi.</p>
+<p><b>Phần dịch từng chữ</b> dùng một từ điển nhỏ nhúng sẵn trong trang, tra đúng nghĩa phổ thông nhất của mỗi từ.
+Kết quả buồn cười là có thật: đó chính xác là thứ xảy ra khi một hệ thống hiểu đúng từng từ mà không nắm được cụm.</p>
+</div></details>
+
+<footer>AIT129 — Trí tuệ nhân tạo ứng dụng · Mô phỏng M7 · Chạy hoàn toàn ngoại tuyến, không gửi dữ liệu đi đâu.<br>
+Trang không dịch hộ và không đánh giá sản phẩm dịch nào — nó chỉ chỉ ra chỗ mọi hệ thống dịch buộc phải đoán.</footer>
+</div>
+
+<script>
+"use strict";
+var $=function(id){return document.getElementById(id);};
+
+/* mã bối cảnh: sv_thay = sinh viên nói với thầy · dn_dn = đồng nghiệp ngang hàng
+   · nv_khach = nhân viên nói với khách · ban_ban = bạn bè */
+var CTXS=[
+ {k:'sv_thay', ten:'Sinh viên → giảng viên'},
+ {k:'dn_dn',   ten:'Đồng nghiệp ngang tuổi'},
+ {k:'nv_khach',ten:'Nhân viên → khách hàng'},
+ {k:'ban_ban', ten:'Hai người bạn thân'}
+];
+var CTX='sv_thay';
+
+var CAUS=[
+{ k:'send', ten:'Câu 1 — email công việc',
+  en:['You','should send','it','to your teacher before Friday.'],
+  hi:[0,1,2],
+  slots:[
+   {nm:'Gọi người nghe là gì?', why:'Tiếng Anh chỉ có một chữ «you». Tiếng Việt buộc phải chọn, và lựa chọn đó nói ra quan hệ giữa hai người.',
+    vals:['em','bạn','anh/chị','quý khách','ông/bà'],
+    dung:{sv_thay:'em',dn_dn:'bạn',nv_khach:'quý khách',ban_ban:'bạn'},
+    an:'bạn',
+    xau:{sv_thay:'ông/bà',dn_dn:'quý khách',nv_khach:'bạn',ban_ban:'quý khách'}},
+   {nm:'Mức độ bắt buộc của «should»', why:'«Should» nằm giữa gợi ý và yêu cầu. Tiếng Việt tách rõ ba mức, và chọn sai mức là đổi hẳn thái độ.',
+    vals:['nên','cần','phải'],
+    dung:{sv_thay:'nên',dn_dn:'nên',nv_khach:'cần',ban_ban:'nên'},
+    an:'nên',
+    xau:{sv_thay:'phải',dn_dn:'phải',nv_khach:'phải',ban_ban:'phải'}},
+   {nm:'«it» là cái gì?', why:'Tiếng Việt rất ít khi dùng đại từ trống. Người dịch phải gọi tên vật — mà câu gốc không nói vật đó là gì.',
+    vals:['nó','bài','tài liệu','hồ sơ'],
+    dung:{sv_thay:'bài',dn_dn:'tài liệu',nv_khach:'hồ sơ',ban_ban:'bài'},
+    an:'nó',
+    xau:{sv_thay:'nó',dn_dn:'nó',nv_khach:'nó',ban_ban:'hồ sơ'}}],
+  mau:{
+   an:'Bạn nên gửi nó cho giáo viên của bạn trước thứ Sáu.',
+   dung:{sv_thay:'Em nên gửi bài cho thầy trước thứ Sáu.',
+         dn_dn:'Bạn nên gửi tài liệu cho giáo viên trước thứ Sáu.',
+         nv_khach:'Quý khách cần gửi hồ sơ cho giáo viên phụ trách trước thứ Sáu.',
+         ban_ban:'Bạn nên gửi bài cho thầy trước thứ Sáu nhé.'}}
+},
+{ k:'doctor', ten:'Câu 2 — bẫy giới tính',
+  en:['The doctor','said','they','would call tomorrow.'],
+  hi:[0,2],
+  slots:[
+   {nm:'«The doctor» là nam hay nữ?', why:'Câu gốc KHÔNG nói. Nhưng bản dịch tiếng Việt thường phải chọn một đại từ, và lựa chọn đó bịa ra một thông tin không có.',
+    vals:['bác sĩ ấy','ông ấy','bà ấy','vị bác sĩ'],
+    dung:{sv_thay:'bác sĩ ấy',dn_dn:'bác sĩ ấy',nv_khach:'vị bác sĩ',ban_ban:'bác sĩ ấy'},
+    an:'bác sĩ ấy',
+    xau:{sv_thay:'ông ấy',dn_dn:'ông ấy',nv_khach:'ông ấy',ban_ban:'ông ấy'}},
+   {nm:'«call» — gọi kiểu gì?', why:'Gọi điện, gọi tên, hay triệu tập? Một từ tiếng Anh, ba việc khác hẳn nhau trong tiếng Việt.',
+    vals:['gọi điện','gọi','liên hệ','mời lên'],
+    dung:{sv_thay:'gọi điện',dn_dn:'gọi điện',nv_khach:'liên hệ',ban_ban:'gọi điện'},
+    an:'gọi điện',
+    xau:{sv_thay:'mời lên',dn_dn:'mời lên',nv_khach:'gọi',ban_ban:'mời lên'}},
+   {nm:'«tomorrow» — chắc chắn tới đâu?', why:'«Would» là lời hứa đã lùi thì. Tiếng Việt phải chọn giữa hứa chắc và dự tính.',
+    vals:['sẽ','định','có thể sẽ'],
+    dung:{sv_thay:'sẽ',dn_dn:'sẽ',nv_khach:'sẽ',ban_ban:'sẽ'},
+    an:'sẽ',
+    xau:{sv_thay:'có thể sẽ',dn_dn:'có thể sẽ',nv_khach:'có thể sẽ',ban_ban:'có thể sẽ'}}],
+  mau:{
+   an:'Bác sĩ nói bác sĩ ấy sẽ gọi điện vào ngày mai.',
+   dung:{sv_thay:'Bác sĩ nói bác sĩ ấy sẽ gọi điện vào ngày mai.',
+         dn_dn:'Bác sĩ bảo bác sĩ ấy sẽ gọi điện cho mình ngày mai.',
+         nv_khach:'Bác sĩ cho biết vị bác sĩ đó sẽ liên hệ lại vào ngày mai.',
+         ban_ban:'Bác sĩ bảo bác sĩ ấy sẽ gọi điện ngày mai.'}}
+},
+{ k:'back', ten:'Câu 3 — lịch sự công sở',
+  en:['Thanks','—','I’ll get back to you','on that.'],
+  hi:[0,2],
+  slots:[
+   {nm:'Cảm ơn kiểu nào?', why:'Một chữ «thanks» của tiếng Anh trải ra thành cả một thang bậc trong tiếng Việt.',
+    vals:['Cảm ơn','Dạ vâng, em cảm ơn','Cảm ơn anh/chị','Trân trọng cảm ơn quý khách'],
+    dung:{sv_thay:'Dạ vâng, em cảm ơn',dn_dn:'Cảm ơn',nv_khach:'Trân trọng cảm ơn quý khách',ban_ban:'Cảm ơn'},
+    an:'Cảm ơn',
+    xau:{sv_thay:'Trân trọng cảm ơn quý khách',dn_dn:'Trân trọng cảm ơn quý khách',nv_khach:'Cảm ơn',ban_ban:'Trân trọng cảm ơn quý khách'}},
+   {nm:'«get back to you»', why:'Đây là cụm cố định, không dịch từng chữ được. Và mỗi cách dịch hứa một mức khác nhau.',
+    vals:['sẽ trả lời lại','sẽ phản hồi','sẽ báo lại','sẽ quay lại chỗ bạn'],
+    dung:{sv_thay:'sẽ báo lại',dn_dn:'sẽ báo lại',nv_khach:'sẽ phản hồi',ban_ban:'sẽ báo lại'},
+    an:'sẽ phản hồi',
+    xau:{sv_thay:'sẽ quay lại chỗ bạn',dn_dn:'sẽ quay lại chỗ bạn',nv_khach:'sẽ quay lại chỗ bạn',ban_ban:'sẽ quay lại chỗ bạn'}},
+   {nm:'Xưng «I» là gì?', why:'Tiếng Việt không có đại từ ngôi thứ nhất trung tính. Chọn xưng hô là tự đặt mình vào một vị trí.',
+    vals:['tôi','em','mình','chúng tôi'],
+    dung:{sv_thay:'em',dn_dn:'mình',nv_khach:'chúng tôi',ban_ban:'mình'},
+    an:'tôi',
+    xau:{sv_thay:'chúng tôi',dn_dn:'chúng tôi',nv_khach:'mình',ban_ban:'chúng tôi'}}],
+  mau:{
+   an:'Cảm ơn — tôi sẽ phản hồi bạn về việc đó.',
+   dung:{sv_thay:'Dạ vâng, em cảm ơn thầy — em sẽ báo lại thầy về việc đó ạ.',
+         dn_dn:'Cảm ơn nhé — mình sẽ báo lại bạn về việc đó.',
+         nv_khach:'Trân trọng cảm ơn quý khách — chúng tôi sẽ phản hồi quý khách về việc này.',
+         ban_ban:'Cảm ơn nhé — mình sẽ báo lại cho cậu vụ đó.'}}
+}];
+var CAU='send';
+
+/* ---------- thành ngữ + từ điển nhỏ ---------- */
+var TUDIEN={
+ 'break':'phá vỡ','a':'một','leg':'cái chân','it’s':'trời','raining':'đang mưa','cats':'những con mèo',
+ 'and':'và','dogs':'những con chó','piece':'miếng','of':'của','cake':'bánh ngọt','the':'cái',
+ 'ball':'quả bóng','is':'thì','in':'ở trong','your':'của bạn','court':'sân toà án',
+ 'let’s':'hãy','touch':'chạm','base':'căn cứ','next':'kế tiếp','week':'tuần'
+};
+var IDIOMS=[
+ {k:'leg', en:'Break a leg!', tu:['break','a','leg'],
+  bad:'Hãy phá vỡ một cái chân!',
+  ok:'Chúc may mắn nhé!',
+  no:'Đây là lời chúc trước khi ai đó lên sân khấu. Không có chữ nào trong câu mang nghĩa «may mắn» — nghĩa nằm ở <b>thói quen của cả cộng đồng nói tiếng đó</b>, không nằm trong từ.'},
+ {k:'cake', en:'It’s a piece of cake.', tu:['it’s','a','piece','of','cake'],
+  bad:'Trời là một miếng của bánh ngọt.',
+  ok:'Việc đó dễ ợt.',
+  no:'Máy hiểu đúng cả năm từ. Ghép lại vẫn vô nghĩa, vì nghĩa của cụm <b>không bằng tổng nghĩa các từ</b>.'},
+ {k:'court', en:'The ball is in your court.', tu:['the','ball','is','in','your','court'],
+  bad:'Cái quả bóng thì ở trong sân toà án của bạn.',
+  ok:'Giờ đến lượt bạn quyết định.',
+  no:'«Court» ở đây là sân quần vợt chứ không phải toà án. Máy chọn nghĩa <b>phổ biến hơn trong kho dữ liệu</b>, không phải nghĩa đúng trong bối cảnh này.'},
+ {k:'base', en:'Let’s touch base next week.', tu:['let’s','touch','base','next','week'],
+  bad:'Hãy chạm căn cứ tuần kế tiếp.',
+  ok:'Tuần sau ta trao đổi lại nhé.',
+  no:'Cụm này mượn từ môn bóng chày. Người Việt không có nền văn hoá đó, nên <b>dịch đúng chữ vẫn không ai hiểu</b> — đây đúng là chỗ «giỏi ngữ pháp mà chưa từng sống ở nước đó».'}
+];
+var IDI='leg';
+
+/* ---------- dựng ---------- */
+(function(){
+ var h='';CAUS.forEach(function(c){h+='<button data-k="'+c.k+'">'+c.ten+'</button>';});$('cau').innerHTML=h;
+ $('cau').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;CAU=b.dataset.k;ve();});
+ h='';CTXS.forEach(function(c){h+='<button data-k="'+c.k+'">'+c.ten+'</button>';});$('ctx').innerHTML=h;
+ $('ctx').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;CTX=b.dataset.k;ve();});
+ h='';IDIOMS.forEach(function(c){h+='<button data-k="'+c.k+'">'+c.en+'</button>';});$('idiom').innerHTML=h;
+ $('idiom').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;IDI=b.dataset.k;veIdiom();danhDau();});
+})();
+function danhDau(){
+ $('cau').querySelectorAll('button').forEach(function(b){b.classList.toggle('on',b.dataset.k===CAU);});
+ $('ctx').querySelectorAll('button').forEach(function(b){b.classList.toggle('on',b.dataset.k===CTX);});
+ $('idiom').querySelectorAll('button').forEach(function(b){b.classList.toggle('on',b.dataset.k===IDI);});
+}
+function cauHT(){return CAUS.filter(function(c){return c.k===CAU;})[0];}
+
+function ve(){
+ var c=cauHT();
+ var s='<span class="lb">Câu gốc tiếng Anh</span>';
+ c.en.forEach(function(w,i){s+=(c.hi.indexOf(i)>=0?'<span class="hi">'+w+'</span>':w)+' ';});
+ $('src').innerHTML=s;
+
+ var h='',tich=1,eq=[];
+ c.slots.forEach(function(sl){
+  tich*=sl.vals.length; eq.push(sl.vals.length);
+  h+='<div class="slot"><div class="h"><span class="nm">'+sl.nm+'</span>'+
+     '<span class="ct">'+sl.vals.length+' phương án đều đúng ngữ pháp</span></div>'+
+     '<div class="why">'+sl.why+'</div><div class="vs">';
+  sl.vals.forEach(function(v){
+   var cl = v===sl.dung[CTX] ? 'ok' : (v===sl.xau[CTX] ? 'bad' : (v===sl.an ? 'safe' : ''));
+   h+='<span class="'+cl+'">'+v+'</span>';});
+  h+='</div></div>';});
+ $('slots').innerHTML=h;
+
+ $('combo').innerHTML='<div class="lb">Số bản dịch đều đúng ngữ pháp</div>'+
+  '<div class="big">'+tich+'</div>'+
+  '<div class="sub">Máy đưa bạn <b>đúng một</b> trong '+tich+' bản — và không nói cho bạn biết là nó đã chọn.</div>'+
+  '<div class="eq">'+eq.join(' × ')+' = '+tich+'</div>';
+
+ $('oSafe').textContent=c.mau.an;
+ $('oOk').textContent=c.mau.dung[CTX];
+ var ten=CTXS.filter(function(x){return x.k===CTX;})[0].ten;
+ /* đo mức lệch bằng tỉ lệ từ trùng nhau — để không thổi phồng một khác biệt nhỏ */
+ function tuSet(x){var o={};x.toLowerCase().replace(/[.,—!?]/g,' ').split(/\s+/).forEach(function(w){if(w)o[w]=1;});return o;}
+ var A=tuSet(c.mau.an), B=tuSet(c.mau.dung[CTX]), chung=0, tong=0;
+ Object.keys(B).forEach(function(w){tong++; if(A[w])chung++;});
+ var giongNhau = tong?chung/tong:1;
+ var giong = c.mau.an===c.mau.dung[CTX];
+ if(!giong && giongNhau>=0.75){
+  $('v2').innerHTML='<div class="rule care"><b>Lệch nhẹ — nhưng lệch ở đúng chỗ người ta để ý</b>'+
+   'Với «'+ten+'», bản an toàn chỉ khác bản đúng ở vài chữ sắc thái. Nghe qua thì ổn, nhưng người bản xứ '+
+   '<b>cảm được ngay là hơi sượng</b>. Hãy đổi sang bối cảnh khác trong danh sách trên để thấy khoảng lệch mở rộng ra thế nào.</div>';
+ } else
+ $('v2').innerHTML = giong
+  ? '<div class="rule free"><b>Lần này bản an toàn trùng bản đúng</b>Với bối cảnh «'+ten+'», phương án trung tính vừa vặn. '+
+    'Đừng vội mừng: hãy đổi sang bối cảnh khác và xem nó lệch đi thế nào. <b>Bản an toàn chỉ đúng ở một số bối cảnh, không phải mọi bối cảnh.</b></div>'
+  : '<div class="rule stop"><b>Bản an toàn KHÔNG đúng với bối cảnh này</b>Với «'+ten+'», bản máy hay đưa nghe lệch — '+
+    'và người đọc sẽ cảm thấy ngay, dù không chỉ ra được sai ở đâu. Thông tin để chọn đúng nằm ở <b>quan hệ giữa hai người</b>, '+
+    'mà câu gốc tiếng Anh <b>không hề chứa</b>. Không mô hình nào đọc ra được thứ không có trong câu.</div>';
+
+ $('ghiCode').textContent='M7 · '+c.ten+' · bối cảnh: '+ten+' · '+eq.join('×')+' = '+tich+
+  ' bản đều đúng ngữ pháp · bản an toàn '+(giong?'TRÙNG':'LỆCH')+' bản đúng bối cảnh';
+ veIdiom(); danhDau();
+}
+
+function veIdiom(){
+ var it=IDIOMS.filter(function(x){return x.k===IDI;})[0];
+ $('gloss').innerHTML=it.tu.map(function(w){
+  return '<div class="gl"><div class="en">'+w+'</div><div class="vi">'+(TUDIEN[w]||'?')+'</div></div>';}).join('');
+ $('idiBox').innerHTML='<div class="row"><div class="en">'+it.en+'</div>'+
+  '<div class="bad">✗ Ghép lại: “'+it.bad+'”</div>'+
+  '<div class="ok">✓ Nghĩa thật: “'+it.ok+'”</div>'+
+  '<div class="no">'+it.no+'</div></div>';
+}
+
+var TAKE=[
+ 'Máy dịch <b>buộc phải đoán</b> ở những chỗ tiếng Việt bắt phải nói rõ mà tiếng Anh cho phép để trống — xưng hô, giới tính, mức trang trọng.',
+ 'Nó đưa bạn <b>một bản duy nhất và không nói là nó đã đoán</b>. Đó mới là chỗ nguy hiểm, chứ không phải bản thân việc đoán.',
+ 'Thông tin để chọn đúng <b>không nằm trong câu gốc</b>. Vì thế mô hình tốt hơn cũng không chữa được — chỉ có <b>người biết bối cảnh</b> mới chữa được.',
+ 'Bản «an toàn» là bản không sai với ai. Nhưng <b>không sai với ai</b> khác hẳn <b>đúng với người này</b>.',
+ 'Câu <b>“The doctor said they…”</b> là cái bẫy: chọn “ông ấy” là <b>bịa ra một thông tin không có trong câu gốc</b>. Đây chính là thiên vị giới ở dạng nhỏ nhất và khó thấy nhất.',
+ 'Thành ngữ hỏng vì nghĩa của cụm <b>không bằng tổng nghĩa các từ</b>. Máy giỏi ngữ pháp, nhưng nó chưa từng sống ở nước đó.'];
+(function(){var h='';TAKE.forEach(function(t,i){h+='<li><span class="k">'+(i+1)+'</span>'+t+'</li>';});$('take').innerHTML=h;})();
+
+$('btnCopy').addEventListener('click',function(){var t=$('ghiCode').textContent,b=this;
+ if(navigator.clipboard)navigator.clipboard.writeText(t).then(function(){b.textContent='Đã chép ✓';
+  setTimeout(function(){b.textContent='Sao chép';},1600);});});
+ve();
+</script>
+</body></html>

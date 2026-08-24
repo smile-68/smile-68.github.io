@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M4 — Bản đồ công cụ AI theo ngành · AIT129</title>
+<style>
+:root{color-scheme:light;
+  --ink:#0b0b0b;--ink2:#52514e;--ink3:#898781;
+  --bg:#f9f9f7;--card:#fcfcfb;--line:#e1e0d9;--axis:#c3c2b7;
+  --brand:#1f4fd8;--brand-d:#16359b;--brand-l:#eaf0ff;
+  --blue:#2a78d6;--dblue:#0d366b;--orange:#eb6834;--red:#e34948;
+  --good:#2e7d32;--bad:#c02626;
+  --warn-bg:#fff8e8;--warn-bd:#e8d5a0;--warn-ink:#5c4708;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.55;font-size:16px}
+.wrap{max-width:800px;margin:0 auto;padding:0 16px 44px}
+header{background:linear-gradient(135deg,#0d366b,#1f4fd8 60%,#3f74f0);color:#fff;padding:20px 0 18px}
+header .tag{font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.82;font-weight:700}
+header h1{margin:5px 0 3px;font-size:24px;font-weight:700;letter-spacing:-.4px}
+header p{margin:0;font-size:13.5px;opacity:.9;max-width:620px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-top:16px}
+.card h3{margin:0 0 3px;font-size:16.5px}
+.card .cap{margin:0 0 14px;font-size:13.5px;color:var(--ink2);line-height:1.55}
+.step{display:inline-block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;
+  color:var(--brand-d);background:var(--brand-l);border-radius:20px;padding:4px 11px;margin-bottom:8px}
+.story{background:var(--brand-l);border-radius:12px;padding:16px 18px;font-size:15px;margin-top:16px}
+.story>b:first-child{display:block;margin-bottom:5px;color:var(--brand-d)}
+
+.q{margin-bottom:16px}
+.q .qt{font-size:13.5px;font-weight:700;color:var(--ink2);margin-bottom:7px}
+.q .qt i{font-style:normal;color:var(--ink3);font-weight:600}
+.opts{display:flex;gap:7px;flex-wrap:wrap}
+.opts button{border:1.5px solid var(--line);background:#fff;border-radius:20px;padding:8px 13px;font-size:13px;
+  font-weight:600;color:var(--ink2);cursor:pointer;font-family:inherit;line-height:1.3}
+.opts button:hover{border-color:var(--brand);color:var(--brand-d)}
+.opts button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.presets{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.presets button{border:1.5px dashed var(--axis);background:#fff;border-radius:9px;padding:9px 13px;font-size:12.5px;
+  font-weight:600;color:var(--ink2);cursor:pointer;font-family:inherit;text-align:left;line-height:1.35}
+.presets button:hover{border-color:var(--brand);color:var(--brand-d);border-style:solid}
+
+.rule{border-radius:12px;padding:15px 17px;margin-top:16px;font-size:14.5px}
+.rule>b:first-child{display:block;margin-bottom:5px}
+.rule.stop{background:#fdeceb;border:1.4px solid #e88b88;color:#8a2020}
+.rule.stop>b:first-child{color:var(--bad)}
+.rule.care{background:var(--warn-bg);border:1px solid var(--warn-bd);color:var(--warn-ink)}
+.rule.care>b:first-child{color:#7a5c00}
+.rule.free{background:#eaf6ec;border:1px solid #bfe0c5;color:#28502f}
+.rule.free>b:first-child{color:var(--good)}
+
+.top{margin-top:6px}
+.trow{border:1.5px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:10px;background:#fff}
+.trow.win{border-color:var(--brand);border-width:2px;background:var(--brand-l)}
+.trow .hd{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.trow .nm{font-size:15px;font-weight:800}
+.trow.win .nm{color:var(--brand-d)}
+.trow .sc{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+.trow .vd{font-size:12.5px;color:var(--ink3);margin-top:2px}
+.trow .mo{font-size:13px;color:var(--ink2);margin-top:6px;line-height:1.5}
+.bd{margin-top:9px;display:grid;grid-template-columns:auto 1fr auto;gap:5px 9px;align-items:center;font-size:12px}
+.bd .k{color:var(--ink2);white-space:nowrap}
+.bd .tr{display:block;height:9px;background:#eeedea;border-radius:5px;overflow:hidden}
+.bd .fl{display:block;height:100%;background:var(--blue);border-radius:0 5px 5px 0;min-width:1px}
+.bd .v{color:var(--ink3);font-variant-numeric:tabular-nums;white-space:nowrap}
+.rank{display:inline-block;font-size:11px;font-weight:800;background:var(--brand);color:#fff;border-radius:20px;
+  padding:2px 9px;margin-right:7px;vertical-align:2px}
+.trow:not(.win) .rank{background:#dcdbd5;color:var(--ink2)}
+
+.map{margin-top:14px}
+.map svg{width:100%;height:auto;display:block}
+.leg{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink2);margin-top:10px}
+.leg span{display:flex;align-items:center;gap:6px}
+.leg i{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+.take{margin-top:6px;padding:0;list-style:none}
+.take li{position:relative;padding:11px 0 11px 34px;border-bottom:1px solid var(--line);font-size:14.5px}
+.take li:last-child{border-bottom:0}
+.take li .k{position:absolute;left:0;top:11px;width:24px;height:24px;border-radius:50%;background:var(--brand-l);
+  color:var(--brand-d);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.take li b{color:var(--brand-d)}
+details.how{margin-top:16px;background:#f3f4f2;border-radius:11px;padding:0 16px}
+details.how summary{cursor:pointer;padding:13px 0;font-weight:700;font-size:14px;color:var(--ink2);list-style:none}
+details.how summary::-webkit-details-marker{display:none}
+details.how summary::before{content:"▸ ";color:var(--ink3)}
+details.how[open] summary::before{content:"▾ "}
+details.how .bdy{padding:0 0 14px;font-size:13.5px;color:var(--ink2);line-height:1.6}
+details.how code{background:#e4e5e2;border-radius:4px;padding:1px 5px;font-size:12.5px}
+.sc-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.sw{width:100%;min-width:620px;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+table.sw th,table.sw td{border-bottom:1px solid var(--line);padding:6px 6px;text-align:center;font-variant-numeric:tabular-nums}
+table.sw th:first-child,table.sw td:first-child{text-align:left;min-width:190px}
+table.sw th{font-size:11px;text-transform:uppercase;color:var(--ink3);font-weight:700;line-height:1.3}
+table.sw tr.now{background:var(--brand-l);font-weight:800}
+.six{margin-top:6px;padding:0;list-style:none;counter-reset:c}
+.six li{position:relative;padding:10px 0 10px 30px;border-bottom:1px solid var(--line);font-size:14px}
+.six li:last-child{border-bottom:0}
+.six li::before{counter-increment:c;content:counter(c);position:absolute;left:0;top:11px;width:21px;height:21px;
+  border-radius:50%;background:#eeedea;color:var(--ink2);font-size:11px;font-weight:800;display:flex;
+  align-items:center;justify-content:center}
+.six li b{color:var(--brand-d)}
+.six li.hi::before{background:var(--brand);color:#fff}
+.note{font-size:12.5px;color:var(--ink3);margin-top:12px;line-height:1.5}
+.ghi{background:#12161f;color:#fff;border-radius:12px;padding:16px 18px;margin-top:16px}
+.ghi .lb{font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.6;font-weight:700}
+.ghi .code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;font-weight:700;margin:7px 0 0;
+  word-break:break-word;line-height:1.55}
+.ghi button{margin-top:12px;background:#fff;color:#12161f;border:0;border-radius:9px;padding:10px 16px;
+  font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit}
+footer{text-align:center;font-size:12px;color:var(--ink3);margin-top:26px;line-height:1.6}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="tag">AIT129 · Mô phỏng M4 · Buổi 4</div>
+  <h1>Bản đồ công cụ AI theo ngành</h1>
+  <p>Mô tả việc cần làm bằng năm câu hỏi. Trang sẽ chấm điểm chín loại công cụ theo một công thức hiện ngay trên màn hình — và bạn được quyền cãi lại nó.</p>
+</div></header>
+
+<div class="wrap">
+
+<div class="rule care">
+  <b>Lưu ý trước khi bắt đầu</b>
+  Gọi AI là "công cụ" thực ra không còn chính xác. Một công cụ chỉ làm đúng việc con người vận hành nó;
+  AI hiện đại — nhất là <b>AI-Agent</b> — có thể tự lập kế hoạch, tự thực thi nhiều bước, tự kiểm tra và sửa lại kết quả của chính mình,
+  thậm chí tự tạo ra thứ mới chứ không chỉ xử lý theo lệnh có sẵn. Nói cách khác, AI đang vượt ra ngoài khung "công cụ".
+  M4 vẫn cố tình thu hẹp góc nhìn về AI như một loại công cụ để tiện so sánh và chọn lựa theo việc cần làm —
+  nhưng bạn cần hiểu rõ đây là một sự đơn giản hoá có chủ đích, không phải toàn bộ bản chất của AI.
+</div>
+
+<div class="story">
+  <b>Dao phay không tốt hơn dao gọt</b>
+  Nó chỉ tốt hơn <b>cho việc khác</b>. Câu hỏi «công cụ AI nào mạnh nhất» là câu hỏi sai.
+  Câu đúng là: <b>việc của tôi có hình dạng thế nào</b> — và loại công cụ nào có hình dạng khớp với nó.
+</div>
+
+<!-- ===== PHẦN 1 ===== -->
+<div class="card">
+  <div class="step">Phần 1 · Mô tả việc</div>
+  <h3>Năm câu hỏi về việc cần làm</h3>
+  <p class="cap">Không câu nào hỏi về công cụ. Tất cả đều hỏi về <b>việc</b> — vì việc mới là thứ quyết định.</p>
+  <div id="qs"></div>
+  <div class="qt" style="font-size:13px;font-weight:700;color:var(--ink2);margin:16px 0 7px">
+    Hoặc nạp nhanh một tình huống có sẵn:</div>
+  <div class="presets" id="pre"></div>
+</div>
+
+<!-- ===== LUẬT CỨNG ===== -->
+<div id="ruleBox"></div>
+
+<!-- ===== PHẦN 2 ===== -->
+<div class="card">
+  <div class="step">Phần 2 · Ba loại công cụ hợp nhất</div>
+  <h3>Điểm này từ đâu ra? Xem luôn phần đóng góp</h3>
+  <p class="cap">Mỗi thanh là một phần của điểm số. Nếu bạn thấy công thức chấm sai, đó là ý kiến đáng ghi vào phiếu — công thức này do người viết đặt ra, không phải chân lý.</p>
+  <div class="top" id="top"></div>
+  <details class="how"><summary>Xem bảng điểm đầy đủ — cả chín loại công cụ</summary>
+    <div class="bdy"><div class="sc-wrap"><table class="sw" id="tbl"></table></div>
+    <p class="note">Cột «Phù hợp đầu ra» chỉ phụ thuộc câu 1. Bốn cột còn lại phụ thuộc câu 2–5. Đổi một câu trả lời là cả bảng đổi.</p></div>
+  </details>
+</div>
+
+<!-- ===== PHẦN 3 ===== -->
+<div class="card">
+  <div class="step">Phần 3 · Bản đồ</div>
+  <h3>Việc của bạn nằm ở góc nào?</h3>
+  <p class="cap">Trục ngang: việc này có <b>một đáp án đúng</b> hay <b>nhiều đáp án đều chấp nhận được</b>?
+  Trục dọc: <b>sai thì ai chịu</b>? Vị trí trên bản đồ quyết định AI được phép làm tới đâu.</p>
+  <div class="map"><svg id="svg" viewBox="0 0 700 470" role="img" aria-label="Bản đồ hai trục vị trí công việc"></svg></div>
+  <div class="leg">
+    <span><i style="background:#d9ecdc"></i>AI được bay tự do</span>
+    <span><i style="background:#fdf0d8"></i>AI làm, người soát</span>
+    <span><i style="background:#f7dcd9"></i>AI chỉ chuẩn bị — người quyết</span>
+    <span><i style="background:#16359b;border-radius:50%"></i>Việc của bạn</span>
+  </div>
+  <div id="zone"></div>
+</div>
+
+<!-- ===== PHẦN 4 ===== -->
+<div class="card">
+  <div class="step">Phần 4 · Phiếu khảo sát</div>
+  <h3>Sáu tiêu chí mang ra chợ công cụ</h3>
+  <p class="cap">Đây là sáu cột của bảng so sánh nhóm phải nộp. Tiêu chí 6 là tiêu chí mới — nó tách hai công cụ hoà điểm nhau.</p>
+  <ul class="six">
+    <li><b>Làm được việc không?</b> Chạy thử đúng nhiệm vụ chuẩn của lớp, không thử việc khác.</li>
+    <li><b>Mất bao lâu?</b> Bấm giờ từ lúc mở tới lúc có kết quả dùng được, kể cả thời gian đăng nhập.</li>
+    <li><b>Miễn phí tới đâu?</b> Ghi rõ giới hạn: bao nhiêu lượt, có đòi thẻ không, có watermark không.</li>
+    <li><b>Có đòi dữ liệu gì của mình không?</b> Đọc điều khoản ở mức tối thiểu: dữ liệu mình nhập có bị dùng để huấn luyện không.</li>
+    <li><b>Sai thì mình có biết không?</b> Công cụ có dẫn nguồn, có cho xem cách tính, hay chỉ đưa kết quả.</li>
+    <li class="hi"><b>Có cho tạo trợ lý riêng không?</b> Mình có nạp được tri thức riêng của ngành và đóng gói cho người khác dùng, hay mỗi lần đều phải gõ lại từ đầu?</li>
+  </ul>
+  <div class="ghi">
+    <div class="lb">Chép dòng này vào phiếu khảo sát</div>
+    <p class="code" id="ghiCode">—</p>
+    <button id="btnCopy">Sao chép</button>
+  </div>
+</div>
+
+<!-- ===== PHẦN 5 ===== -->
+<div class="card">
+  <div class="step">Phần 5 · Rút ra</div>
+  <h3>Sáu điều đáng chép vào vở</h3>
+  <ul class="take" id="take"></ul>
+</div>
+
+<details class="how"><summary>Mô phỏng này hoạt động thế nào? (và chỗ nào bạn nên nghi ngờ nó)</summary>
+<div class="bdy">
+<p><b>Chấm loại công cụ, không chấm sản phẩm.</b> Trang này cố tình <b>không</b> khẳng định sản phẩm X mạnh hơn sản phẩm Y.
+Tính năng của từng sản phẩm thay đổi từng tháng, nên mọi bảng xếp hạng sản phẩm đều lỗi thời rất nhanh.
+Cái ổn định hơn là <b>loại công cụ</b> — và đó là thứ được chấm ở đây. Tên sản phẩm chỉ xuất hiện làm ví dụ,
+và việc kiểm chứng chúng còn dùng được không chính là <b>Lab 1 của buổi học</b>.</p>
+<p><b>Công thức.</b> Mỗi loại công cụ có sáu thuộc tính chấm theo thang 0–3 (hợp với loại đầu ra · làm việc được với dữ liệu riêng ·
+truy được nguồn · chịu được yêu cầu chính xác cao · tự động hoá lặp lại · đóng gói được cho người không rành AI · dễ bắt đầu).
+Điểm = <code>40·hợpĐầuRa/3 + wDữLiệu·dữLiệuRiêng/3 + wHậuQuả·(truyNguồn+chínhXác)/6 + wLặp·tựĐộng/3 + wNgườiDùng·đóngGói/3 + 12·dễDùng/3</code>,
+rồi chia cho điểm tối đa có thể đạt với đúng bộ câu trả lời đó. Mọi con số đều hiện trong bảng đầy đủ.</p>
+<p><b>Chỗ nên nghi ngờ.</b> Các trọng số là <b>lựa chọn của người viết trang này</b>, không phải kết quả đo đạc.
+Ai đó coi trọng tốc độ hơn độ truy nguồn sẽ đặt bộ trọng số khác và ra thứ hạng khác — và họ không sai.
+Đây chính là lý do phiếu khảo sát ở Phần 4 bắt nhóm tự chấm bằng tay: <b>một bảng xếp hạng chỉ đáng tin khi bạn biết ai đặt trọng số và vì sao</b>.</p>
+<p><b>Luật cứng khác điểm số.</b> Dải cảnh báo phía trên bảng điểm <b>không</b> tính từ công thức. Nó là một quy tắc:
+việc ra quyết định về con người, hoặc việc mà sai thì ảnh hưởng sức khoẻ và quyền lợi, thì AI không được là người quyết —
+dù nó đạt bao nhiêu điểm đi nữa.</p>
+</div></details>
+
+<footer>AIT129 — Trí tuệ nhân tạo ứng dụng · Mô phỏng M4 · Chạy hoàn toàn ngoại tuyến, không gửi dữ liệu đi đâu.<br>
+Tên sản phẩm chỉ là ví dụ minh hoạ; hãy tự kiểm chứng trước khi dùng cho việc thật.</footer>
+</div>
+
+<script>
+"use strict";
+var $=function(id){return document.getElementById(id);};
+
+/* ---------- chín loại công cụ ---------- */
+/* out: vanBan bang anh dich ma quyetDinh | dl=dữ liệu riêng, tn=truy nguồn, cx=chính xác cao,
+   td=tự động hoá, dg=đóng gói cho người khác, dd=dễ bắt đầu — thang 0..3 */
+var TOOLS=[
+ {id:'tro', ten:'Trợ lý hội thoại đa năng', vd:'ChatGPT · Gemini · Claude',
+  mo:'Gõ tiếng Việt thường, nhận lại văn bản. Rộng nhưng nông: cái gì cũng làm được kha khá, không cái gì làm được sâu.',
+  out:{vanBan:3,bang:1,anh:0,dich:2,ma:2,quyetDinh:1}, dl:1,tn:1,cx:1,td:1,dg:0,dd:3},
+ {id:'tac', ten:'Công cụ tạo trợ lý riêng / tác tử', vd:'Google AI Studio · z.ai · GPT tuỳ chỉnh',
+  mo:'Nạp tri thức riêng, đặt luật riêng, rồi đóng gói thành một thứ người khác bấm là dùng được.',
+  out:{vanBan:3,bang:2,anh:1,dich:2,ma:3,quyetDinh:1}, dl:3,tn:2,cx:2,td:3,dg:3,dd:1},
+ {id:'dich',ten:'Công cụ dịch chuyên dụng', vd:'DeepL · Google Translate',
+  mo:'Một việc duy nhất, làm rất sâu. Yếu ở chỗ nó không biết bối cảnh văn hoá quanh câu chữ.',
+  out:{vanBan:1,bang:0,anh:0,dich:3,ma:0,quyetDinh:0}, dl:1,tn:1,cx:2,td:2,dg:2,dd:3},
+ {id:'anh', ten:'Công cụ sinh ảnh & thiết kế', vd:'Canva AI · các công cụ tạo ảnh',
+  mo:'Mạnh ở nơi có vô số đáp án đẹp. Vô dụng ở nơi chỉ có một đáp án đúng.',
+  out:{vanBan:0,bang:0,anh:3,dich:0,ma:0,quyetDinh:0}, dl:1,tn:0,cx:0,td:1,dg:2,dd:3},
+ {id:'sheet',ten:'AI trong bảng tính', vd:'Google Sheets · Excel có trợ lý',
+  mo:'Số nằm nguyên trong bảng của bạn, công thức nhìn thấy được, ai cũng kiểm lại được.',
+  out:{vanBan:1,bang:3,anh:1,dich:1,ma:1,quyetDinh:0}, dl:3,tn:3,cx:3,td:2,dg:2,dd:2},
+ {id:'ml',  ten:'Huấn luyện mô hình không cần code', vd:'BigML · Teachable Machine',
+  mo:'Bạn đưa dữ liệu, nó tìm quy luật và cho xem quy luật đó. Cần dữ liệu đủ nhiều và đủ sạch.',
+  out:{vanBan:0,bang:3,anh:1,dich:0,ma:0,quyetDinh:2}, dl:3,tn:2,cx:2,td:2,dg:1,dd:1},
+ {id:'nhan',ten:'Nhận dạng chuyên ngành', vd:'OCR quét chữ · nhận dạng giọng nói',
+  mo:'Biến thứ máy không đọc được (ảnh, tiếng nói) thành thứ máy đọc được. Bước đầu của rất nhiều quy trình.',
+  out:{vanBan:3,bang:1,anh:1,dich:1,ma:0,quyetDinh:0}, dl:2,tn:2,cx:2,td:3,dg:2,dd:2},
+ {id:'tim', ten:'Tìm kiếm có trích nguồn', vd:'Perplexity · NotebookLM',
+  mo:'Trả lời kèm đường dẫn tới chỗ nó lấy thông tin. Chậm hơn, nhưng bạn kiểm được.',
+  out:{vanBan:3,bang:1,anh:0,dich:1,ma:0,quyetDinh:1}, dl:2,tn:3,cx:2,td:1,dg:1,dd:3},
+ {id:'khong',ten:'Không dùng AI — người hoặc công cụ thường', vd:'Bảng tính công thức · quy trình có người duyệt',
+  mo:'Chậm hơn, nhưng có người chịu trách nhiệm và giải thích được từng bước. Đây là một lựa chọn hợp lệ, không phải thất bại.',
+  out:{vanBan:1,bang:2,anh:1,dich:1,ma:1,quyetDinh:3}, dl:3,tn:3,cx:3,td:0,dg:1,dd:3}
+];
+
+/* ---------- năm câu hỏi ---------- */
+var QS=[
+ {k:'dauRa', t:'1 · Đầu ra của việc này là gì?', i:'chọn thứ bạn phải nộp cho người khác',
+  o:[['vanBan','Văn bản'],['bang','Bảng số & biểu đồ'],['anh','Hình ảnh / thiết kế'],
+     ['dich','Bản dịch'],['ma','Mã lệnh'],['quyetDinh','Một quyết định về người']]},
+ {k:'duLieu',t:'2 · Có phải dùng dữ liệu riêng của tổ chức không?', i:'dữ liệu không có sẵn trên mạng',
+  o:[['khong','Không'],['it','Có, ít'],['nhieu','Có, nhiều và nhạy cảm']]},
+ {k:'hauQua',t:'3 · Nếu kết quả sai thì ai chịu?', i:'câu quan trọng nhất trong năm câu',
+  o:[['nhe','Gần như không ai'],['thoiGian','Người dùng mất thời gian'],
+     ['tienBac','Mất tiền hoặc mất uy tín'],['conNguoi','Ảnh hưởng sức khoẻ hoặc quyền lợi của người']]},
+ {k:'lap',   t:'4 · Việc này lặp lại bao nhiêu lần?', i:'',
+  o:[['motLan','Một lần'],['vaiLan','Vài lần mỗi tuần'],['hangNgay','Hằng ngày, nhiều người dùng']]},
+ {k:'nguoiDung',t:'5 · Người dùng cuối có rành AI không?', i:'',
+  o:[['biet','Có — chính mình dùng'],['khongBiet','Không — phải làm sẵn cho họ bấm']]}
+];
+var A={dauRa:'vanBan',duLieu:'khong',hauQua:'nhe',lap:'motLan',nguoiDung:'biet'};
+
+var PRESETS=[
+ ['Viết bản tin nội bộ tuần này',           {dauRa:'vanBan',duLieu:'khong',hauQua:'nhe',lap:'motLan',nguoiDung:'biet'}],
+ ['Dịch tài liệu kỹ thuật cho đối tác',      {dauRa:'dich',duLieu:'it',hauQua:'tienBac',lap:'vaiLan',nguoiDung:'biet'}],
+ ['Báo cáo doanh thu hằng tuần từ dữ liệu công ty', {dauRa:'bang',duLieu:'nhieu',hauQua:'tienBac',lap:'hangNgay',nguoiDung:'khongBiet'}],
+ ['Sàng lọc hồ sơ ứng viên để loại bớt',     {dauRa:'quyetDinh',duLieu:'nhieu',hauQua:'conNguoi',lap:'hangNgay',nguoiDung:'khongBiet'}],
+ ['Làm ảnh bìa cho sự kiện câu lạc bộ',      {dauRa:'anh',duLieu:'khong',hauQua:'nhe',lap:'motLan',nguoiDung:'biet'}],
+ ['Trợ lý trả lời câu hỏi thường gặp của khoa', {dauRa:'vanBan',duLieu:'nhieu',hauQua:'thoiGian',lap:'hangNgay',nguoiDung:'khongBiet'}]
+];
+
+/* ---------- trọng số ---------- */
+var W_DL={khong:0,it:12,nhieu:22};
+var W_HQ={nhe:0,thoiGian:10,tienBac:18,conNguoi:34};
+var W_LAP={motLan:0,vaiLan:8,hangNgay:16};
+var W_ND={biet:0,khongBiet:14};
+var W_OUT=40, W_DD=12;
+
+function chamDiem(t){
+ var p=[];
+ p.push(['Phù hợp đầu ra', W_OUT*t.out[A.dauRa]/3, W_OUT]);
+ p.push(['Dữ liệu riêng',  W_DL[A.duLieu]*t.dl/3,  W_DL[A.duLieu]]);
+ p.push(['Chịu được hậu quả', W_HQ[A.hauQua]*(t.tn+t.cx)/6, W_HQ[A.hauQua]]);
+ p.push(['Tự động hoá lặp lại', W_LAP[A.lap]*t.td/3, W_LAP[A.lap]]);
+ p.push(['Đóng gói cho người khác', W_ND[A.nguoiDung]*t.dg/3, W_ND[A.nguoiDung]]);
+ p.push(['Dễ bắt đầu', W_DD*t.dd/3, W_DD]);
+ var tong=0,max=0;
+ p.forEach(function(x){tong+=x[1];max+=x[2];});
+ return {phan:p, tong:tong, max:max, pct:max>0?tong/max:0};
+}
+
+/* ---------- toạ độ bản đồ ---------- */
+var X_OUT={quyetDinh:.13,ma:.34,bang:.36,dich:.47,vanBan:.74,anh:.92};
+var Y_HQ ={nhe:.10,thoiGian:.36,tienBac:.66,conNguoi:.94};
+var VIDU=[
+ [.92,.12,'Ảnh bìa sự kiện'],[.76,.30,'Nháp bản tin'],[.50,.48,'Dịch hợp đồng'],
+ [.36,.62,'Báo cáo doanh thu'],[.30,.24,'Nhắc lịch học'],[.16,.90,'Sàng lọc hồ sơ'],
+ [.20,.72,'Duyệt hạn mức vay'],[.62,.20,'Gợi ý phim']
+];
+
+/* ---------- dựng câu hỏi ---------- */
+(function(){
+ var h='';
+ QS.forEach(function(q){
+  h+='<div class="q"><div class="qt">'+q.t+(q.i?' <i>— '+q.i+'</i>':'')+'</div><div class="opts" data-k="'+q.k+'">';
+  q.o.forEach(function(o){h+='<button data-v="'+o[0]+'">'+o[1]+'</button>';});
+  h+='</div></div>';});
+ $('qs').innerHTML=h;
+ $('qs').addEventListener('click',function(e){
+  var b=e.target.closest('button'); if(!b)return;
+  var k=b.parentNode.dataset.k; A[k]=b.dataset.v; ve();});
+ var ph='';
+ PRESETS.forEach(function(p,i){ph+='<button data-i="'+i+'">'+p[0]+'</button>';});
+ $('pre').innerHTML=ph;
+ $('pre').addEventListener('click',function(e){
+  var b=e.target.closest('button'); if(!b)return;
+  var p=PRESETS[+b.dataset.i][1];
+  Object.keys(p).forEach(function(k){A[k]=p[k];});
+  ve(); $('ruleBox').scrollIntoView({behavior:'smooth',block:'start'});});
+})();
+
+function danhDauChon(){
+ document.querySelectorAll('#qs .opts').forEach(function(g){
+  g.querySelectorAll('button').forEach(function(b){b.classList.toggle('on',b.dataset.v===A[g.dataset.k]);});});
+ document.querySelectorAll('#pre button').forEach(function(b){
+  var p=PRESETS[+b.dataset.i][1], ok=Object.keys(p).every(function(k){return p[k]===A[k];});
+  b.style.borderStyle=ok?'solid':'dashed'; b.style.borderColor=ok?'var(--brand)':'var(--axis)';
+  b.style.color=ok?'var(--brand-d)':'var(--ink2)';});
+}
+
+/* ---------- luật cứng ---------- */
+function veLuat(){
+ var h='';
+ if(A.dauRa==='quyetDinh'){
+  h='<div class="rule stop"><b>Luật cứng — không phải điểm số</b>'+
+  'Đầu ra của việc này là <b>một quyết định về người</b>. Dù loại công cụ nào đạt bao nhiêu điểm ở bảng dưới, '+
+  'AI <b>không được là người ra quyết định cuối cùng</b>. Vai trò hợp lệ duy nhất của nó ở đây là <b>chuẩn bị thông tin</b> '+
+  'cho một người có tên, người đó ký và chịu trách nhiệm. Bảng điểm bên dưới vẫn hiển thị — nhưng hãy đọc nó như '+
+  '«công cụ nào giúp chuẩn bị tốt nhất», không phải «công cụ nào quyết thay».</div>';
+ }else if(A.hauQua==='conNguoi'){
+  h='<div class="rule stop"><b>Luật cứng — không phải điểm số</b>'+
+  'Sai ở việc này thì <b>sức khoẻ hoặc quyền lợi của người khác</b> bị ảnh hưởng. Bắt buộc có người kiểm trước khi kết quả '+
+  'đi ra ngoài, và phải ghi lại được <b>ai đã kiểm</b>. Điểm cao không thay được chữ ký.</div>';
+ }else if(A.hauQua==='tienBac'){
+  h='<div class="rule care"><b>Cần soát trước khi gửi đi</b>'+
+  'Sai thì mất tiền hoặc mất uy tín. Hai tiêu chí đáng cân nhất ở đây là <b>truy được nguồn</b> và <b>xem được cách tính</b> — '+
+  'không phải tốc độ.</div>';
+ }else if(A.hauQua==='thoiGian'){
+  h='<div class="rule care"><b>Hậu quả nhẹ, nhưng đừng bỏ hẳn khâu soát</b>'+
+  'Sai thì người dùng mất thời gian. Với việc lặp lại nhiều lần, một lỗi nhỏ nhân lên rất nhanh — '+
+  'nên soát <b>mẫu ngẫu nhiên</b> định kỳ thay vì soát từng cái.</div>';
+ }else{
+  h='<div class="rule free"><b>Vùng AI được bay tự do</b>'+
+  'Nhiều đáp án đều chấp nhận được, sai thì gần như không ai chịu thiệt. Đây đúng là chỗ AI sinh tạo mạnh nhất — '+
+  'cứ thử nhiều phương án rồi chọn.</div>';
+ }
+ $('ruleBox').innerHTML=h;
+}
+
+/* ---------- bảng xếp hạng ---------- */
+function veTop(){
+ var rs=TOOLS.map(function(t){var d=chamDiem(t);return {t:t,d:d};});
+ rs.sort(function(a,b){return b.d.pct-a.d.pct;});
+ var h='';
+ rs.slice(0,3).forEach(function(r,i){
+  h+='<div class="trow'+(i===0?' win':'')+'">'+
+   '<div class="hd"><span class="nm"><span class="rank">'+(i+1)+'</span>'+r.t.ten+'</span>'+
+   '<span class="sc">'+Math.round(r.d.pct*100)+'%</span></div>'+
+   '<div class="vd">Ví dụ: '+r.t.vd+'</div><div class="mo">'+r.t.mo+'</div><div class="bd">';
+  r.d.phan.forEach(function(p){
+   if(p[2]===0)return;
+   h+='<span class="k">'+p[0]+'</span><span class="tr"><span class="fl" style="width:'+
+      Math.round(p[1]/p[2]*100)+'%"></span></span><span class="v">'+p[1].toFixed(1)+' / '+p[2]+'</span>';});
+  h+='</div></div>';});
+ if(rs.length>1 && Math.abs(rs[0].d.pct-rs[1].d.pct)*100 < 1.2){
+  h+='<div class="rule care" style="margin-top:4px"><b>Hai loại này hoà điểm</b>'+
+   'Công thức không tách được «'+rs[0].t.ten+'» và «'+rs[1].t.ten+'». Đây chính là lúc phải dùng '+
+   '<b>tiêu chí thứ sáu</b> ở Phần 4: loại nào cho bạn <b>đóng gói lại thành trợ lý riêng</b> cho người khác dùng?</div>';}
+ $('top').innerHTML=h;
+
+ var th='<tr><th>Loại công cụ</th><th>Phù hợp<br>đầu ra</th><th>Dữ liệu<br>riêng</th><th>Chịu được<br>hậu quả</th>'+
+        '<th>Tự động<br>hoá</th><th>Đóng gói<br>cho người khác</th><th>Dễ<br>bắt đầu</th><th>Tổng</th></tr>';
+ rs.forEach(function(r,i){
+  th+='<tr'+(i===0?' class="now"':'')+'><td>'+r.t.ten+'</td>';
+  r.d.phan.forEach(function(p){th+='<td>'+(p[2]===0?'—':p[1].toFixed(1))+'</td>';});
+  th+='<td><b>'+Math.round(r.d.pct*100)+'%</b></td></tr>';});
+ $('tbl').innerHTML=th;
+
+ var lbl={};QS.forEach(function(q){q.o.forEach(function(o){lbl[o[0]]=o[1];});});
+ $('ghiCode').textContent='M4 · '+lbl[A.dauRa]+' · dữ liệu riêng: '+lbl[A.duLieu]+' · hậu quả: '+lbl[A.hauQua]+
+  ' · '+lbl[A.lap]+' · người dùng: '+lbl[A.nguoiDung]+
+  ' → 1) '+rs[0].t.ten+' '+Math.round(rs[0].d.pct*100)+'% · 2) '+rs[1].t.ten+' '+Math.round(rs[1].d.pct*100)+
+  '% · 3) '+rs[2].t.ten+' '+Math.round(rs[2].d.pct*100)+'%';
+}
+
+/* ---------- bản đồ ---------- */
+function veMap(){
+ var W=700,H=470,L=58,R=22,T=18,B=58;
+ var x=function(v){return L+v*(W-L-R);}, y=function(v){return T+(1-v)*(H-T-B);};
+ var s='';
+ /* ba vùng: nền theo chéo (nhiều đáp án + hậu quả thấp = xanh) */
+ s+='<defs><linearGradient id="g" x1="0" y1="1" x2="1" y2="0">'+
+    '<stop offset="0%" stop-color="#f7dcd9"/><stop offset="18%" stop-color="#f7dcd9"/>'+
+    '<stop offset="42%" stop-color="#fdf0d8"/><stop offset="66%" stop-color="#fdf0d8"/>'+
+    '<stop offset="88%" stop-color="#d9ecdc"/><stop offset="100%" stop-color="#d9ecdc"/></linearGradient></defs>';
+ s+='<rect x="'+L+'" y="'+T+'" width="'+(W-L-R)+'" height="'+(H-T-B)+'" fill="url(#g)" rx="8"/>';
+ /* nhãn vùng */
+ s+='<text x="'+x(.04)+'" y="'+y(.52)+'" font-size="12.5" font-weight="800" fill="#8a2020" opacity=".85">AI chỉ chuẩn bị</text>'+
+    '<text x="'+x(.04)+'" y="'+(y(.52)+15)+'" font-size="12.5" font-weight="800" fill="#8a2020" opacity=".85">— người quyết</text>';
+ s+='<text x="'+x(.56)+'" y="'+y(.63)+'" font-size="12.5" font-weight="800" fill="#7a5c00" opacity=".85">AI làm, người soát</text>';
+ s+='<text x="'+x(.64)+'" y="'+y(.05)+'" font-size="12.5" font-weight="800" fill="#28502f" opacity=".85">AI được bay tự do</text>';
+ /* ví dụ — nhãn lật sang trái khi sát mép phải */
+ var ux=X_OUT[A.dauRa], uy=Y_HQ[A.hauQua];
+ VIDU.forEach(function(v){
+  /* ẩn ví dụ trùng chỗ với việc của bạn — cùng một việc, vẽ hai lần thì rối */
+  if(Math.abs(v[0]-ux)<.08 && Math.abs(v[1]-uy)<.08) return;
+  var cx=x(v[0]), cy=y(v[1]), phai=v[0]>.82;
+  s+='<circle cx="'+cx+'" cy="'+cy+'" r="4" fill="#898781" opacity=".65"/>'+
+     '<text x="'+(cx+(phai?-8:8))+'" y="'+(cy+4)+'" font-size="11" fill="#52514e"'+
+     (phai?' text-anchor="end"':'')+'>'+v[2]+'</text>';});
+ /* trục */
+ s+='<line x1="'+L+'" y1="'+y(0)+'" x2="'+(W-R)+'" y2="'+y(0)+'" stroke="#c3c2b7" stroke-width="1.5"/>';
+ s+='<line x1="'+L+'" y1="'+T+'" x2="'+L+'" y2="'+y(0)+'" stroke="#c3c2b7" stroke-width="1.5"/>';
+ s+='<text x="'+L+'" y="'+(H-30)+'" font-size="11.5" fill="#898781">chỉ MỘT đáp án đúng</text>';
+ s+='<text x="'+(W-R)+'" y="'+(H-30)+'" font-size="11.5" fill="#898781" text-anchor="end">NHIỀU đáp án đều được</text>';
+ s+='<text x="'+((L+W-R)/2)+'" y="'+(H-8)+'" font-size="12" font-weight="700" fill="#52514e" text-anchor="middle">Việc này có bao nhiêu đáp án đúng?</text>';
+ s+='<text transform="translate(16,'+y(0)+') rotate(-90)" font-size="11.5" fill="#898781">hậu quả nhẹ</text>';
+ s+='<text transform="translate(16,'+(T+2)+') rotate(-90)" font-size="11.5" fill="#898781" text-anchor="end">ảnh hưởng con người</text>';
+ s+='<text transform="translate(38,'+((T+y(0))/2)+') rotate(-90)" font-size="12" font-weight="700" fill="#52514e" text-anchor="middle">Sai thì ai chịu?</text>';
+ /* điểm của bạn */
+ var px=x(X_OUT[A.dauRa]), py=y(Y_HQ[A.hauQua]);
+ s+='<circle cx="'+px+'" cy="'+py+'" r="15" fill="#16359b" opacity=".18"/>';
+ s+='<circle cx="'+px+'" cy="'+py+'" r="8" fill="#16359b" stroke="#fff" stroke-width="2.5"/>';
+ var anchor = X_OUT[A.dauRa]>.7?'end':'start', dx = X_OUT[A.dauRa]>.7?-16:16;
+ var dy = Y_HQ[A.hauQua]>.8 ? 26 : -14;
+ s+='<text x="'+(px+dx)+'" y="'+(py+dy)+'" font-size="12.5" font-weight="800" fill="#16359b" text-anchor="'+anchor+'"'+
+    ' stroke="#fff" stroke-width="3.5" paint-order="stroke">Việc của bạn</text>';
+ $('svg').innerHTML=s;
+
+ var zx=X_OUT[A.dauRa], zy=Y_HQ[A.hauQua], d=zx-zy, h;
+ if(d<-.45) h='<div class="rule stop"><b>Góc đỏ — AI chỉ được chuẩn bị</b>Việc này gần như chỉ có một đáp án đúng, mà sai thì có người chịu thiệt. Ở góc này, giá trị của AI nằm ở chỗ <b>gom và trình bày thông tin cho người quyết</b>, không nằm ở chỗ tự quyết.</div>';
+ else if(d<.35) h='<div class="rule care"><b>Góc vàng — AI làm, người soát</b>Có thể để AI làm bản nháp đầu, nhưng phải có bước người đọc lại trước khi kết quả đi ra ngoài. Hãy ghi rõ <b>ai soát và soát cái gì</b> trong quy trình.</div>';
+ else h='<div class="rule free"><b>Góc xanh — AI được bay tự do</b>Nhiều đáp án đều dùng được và sai thì gần như vô hại. Đây là chỗ nên <b>thử nhiều phương án</b> thay vì cầu toàn ngay từ lần đầu.</div>';
+ $('zone').innerHTML=h;
+}
+
+/* ---------- rút ra ---------- */
+var TAKE=[
+ 'Câu hỏi <b>«công cụ AI nào mạnh nhất»</b> không có đáp án. Đổi một câu trả lời về <b>việc</b> là cả bảng xếp hạng đảo lộn.',
+ 'Loại công cụ mạnh nhất ở góc «nhiều đáp án đúng, hậu quả nhẹ» thường là loại <b>yếu nhất</b> ở góc đối diện. Đó là dao phay và dao gọt.',
+ '<b>«Không dùng AI» là một lựa chọn hợp lệ</b> và ở một số việc nó thắng điểm. Chọn nó không phải là thua cuộc.',
+ 'Có những việc <b>không phải chuyện điểm số</b>. Quyết định về con người thì phải có người ký — dù công cụ đạt bao nhiêu phần trăm.',
+ 'Bảng xếp hạng nào cũng có <b>người đặt trọng số</b>. Khi thấy một bảng so sánh công cụ trên mạng, câu hỏi đầu tiên là: ai chấm, và họ coi trọng điều gì?',
+ 'Tiêu chí thứ sáu — <b>có cho tạo trợ lý riêng không</b> — là tiêu chí tách hai công cụ hoà điểm. Một công cụ chỉ trả lời bạn khác hẳn một công cụ bạn <b>đóng gói được cho người khác dùng</b>.'];
+(function(){var h='';TAKE.forEach(function(t,i){h+='<li><span class="k">'+(i+1)+'</span>'+t+'</li>';});$('take').innerHTML=h;})();
+
+function ve(){danhDauChon();veLuat();veTop();veMap();}
+$('btnCopy').addEventListener('click',function(){var t=$('ghiCode').textContent,b=this;
+ if(navigator.clipboard)navigator.clipboard.writeText(t).then(function(){b.textContent='Đã chép ✓';
+  setTimeout(function(){b.textContent='Sao chép';},1600);});});
+ve();
+</script>
+</body></html>

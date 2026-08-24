@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M3 — Cây quyết định &amp; Ma trận nhầm lẫn · AIT129</title>
+<style>
+:root{color-scheme:light;
+  --ink:#0b0b0b;--ink2:#52514e;--ink3:#898781;
+  --bg:#f9f9f7;--card:#fcfcfb;--line:#e1e0d9;--axis:#c3c2b7;
+  --brand:#1f4fd8;--brand-d:#16359b;--brand-l:#eaf0ff;
+  --blue:#2a78d6;--dblue:#0d366b;--orange:#eb6834;--red:#e34948;
+  --good:#2e7d32;--bad:#c02626;
+  --warn-bg:#fff8e8;--warn-bd:#e8d5a0;--warn-ink:#5c4708;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.55;font-size:16px}
+.wrap{max-width:780px;margin:0 auto;padding:0 16px 44px}
+header{background:linear-gradient(135deg,#0d366b,#1f4fd8 60%,#3f74f0);color:#fff;padding:20px 0 18px}
+header .tag{font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.82;font-weight:700}
+header h1{margin:5px 0 3px;font-size:24px;font-weight:700;letter-spacing:-.4px}
+header p{margin:0;font-size:13.5px;opacity:.9;max-width:600px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-top:16px}
+.card h3{margin:0 0 3px;font-size:16.5px}
+.card .cap{margin:0 0 14px;font-size:13.5px;color:var(--ink2);line-height:1.55}
+.step{display:inline-block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;
+  color:var(--brand-d);background:var(--brand-l);border-radius:20px;padding:4px 11px;margin-bottom:8px}
+.story{background:var(--brand-l);border-radius:12px;padding:16px 18px;font-size:15px;margin-top:16px}
+.story>b:first-child{display:block;margin-bottom:5px;color:var(--brand-d)}
+
+table.dl{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+table.dl th,table.dl td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:right}
+table.dl th:first-child,table.dl td:first-child{text-align:left}
+table.dl th{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);font-weight:700}
+table.dl td.y1{color:var(--bad);font-weight:700} table.dl td.y0{color:var(--ink3)}
+
+.chk{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.chk label{border:1.5px solid var(--line);background:#fff;border-radius:20px;padding:8px 14px;font-size:13px;
+  font-weight:600;color:var(--ink2);cursor:pointer;user-select:none}
+.chk label.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.chk input{display:none}
+.btn{border:0;background:var(--brand);color:#fff;border-radius:10px;padding:12px 20px;font-size:14.5px;
+  font-weight:700;cursor:pointer;font-family:inherit;margin-top:14px}
+.btn:hover{background:var(--brand-d)}
+.btn.ghost{background:#fff;color:var(--brand-d);border:1.5px solid var(--line)}
+
+.tree{margin-top:14px;font-size:14px}
+.node{position:relative}
+.q{display:inline-block;background:#fff;border:1.5px solid var(--brand);color:var(--brand-d);
+  border-radius:9px;padding:8px 13px;font-weight:700;font-size:13.5px}
+.q .n{color:var(--ink3);font-weight:600;font-size:12px;margin-left:6px}
+.kids{margin:6px 0 0 12px;border-left:2px solid var(--line);padding-left:14px}
+.branch{margin:8px 0;position:relative}
+.branch>.bl{display:inline-block;font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--ink3);margin-bottom:4px}
+.leaf{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  border-radius:9px;padding:9px 13px;font-size:13.5px;font-weight:700;border:1px solid rgba(0,0,0,.06)}
+.leaf .pc{font-size:16px}
+.leaf .nn{font-weight:600;opacity:.75;font-size:12px}
+.leaf .bdg{font-size:11px;font-weight:800;letter-spacing:.05em;border-radius:20px;padding:3px 9px;
+  background:rgba(255,255,255,.9);color:#111}
+.scale{display:flex;align-items:center;gap:9px;margin-top:12px;font-size:12px;color:var(--ink2)}
+.scale .bar{flex:1;height:11px;border-radius:6px;background:linear-gradient(to right,#eaf0ff,#2a78d6,#0d366b)}
+
+.why{margin-top:14px}
+.wrow{display:grid;grid-template-columns:minmax(110px,1.05fr) 2.4fr auto;gap:9px;align-items:center;
+  font-size:13px;margin-bottom:7px}
+.wrow .tr{display:block;height:19px;background:#eeedea;border-radius:4px;overflow:hidden}
+.wrow .fl{display:block;height:100%;background:var(--blue);border-radius:0 4px 4px 0;min-width:2px;transition:width .4s ease}
+.wrow.win .fl{background:var(--dblue)} .wrow.win{font-weight:800}
+.wrow .v{font-variant-numeric:tabular-nums;font-weight:700;font-size:12.5px}
+
+.slider{margin-top:6px}
+.slider .lb{display:flex;justify-content:space-between;font-size:13.5px;font-weight:600;color:var(--ink2);margin-bottom:8px}
+.slider .lb b{color:var(--ink);font-size:15px}
+input[type=range]{width:100%;height:34px;-webkit-appearance:none;background:transparent;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:10px;border-radius:5px;
+  background:linear-gradient(to right,#eaf0ff,#2a78d6,#0d366b)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;
+  background:#fff;border:3px solid var(--brand);margin-top:-9px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+input[type=range]::-moz-range-track{height:10px;border-radius:5px;background:var(--line)}
+input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:#fff;border:3px solid var(--brand);cursor:pointer}
+.presets{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.presets button{border:1.5px solid var(--line);background:#fff;border-radius:20px;padding:8px 14px;font-size:13px;
+  font-weight:600;color:var(--ink2);cursor:pointer;font-family:inherit}
+.presets button:hover{border-color:var(--brand);color:var(--brand-d)}
+.presets button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+
+.mt{display:grid;grid-template-columns:auto 1fr 1fr;gap:0;margin-top:16px;font-size:13px}
+.mt>div{padding:11px 10px;border:1px solid var(--line);margin:-0.5px}
+.mt .hd{background:#f3f4f2;font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--ink2);text-align:center;display:flex;align-items:center;justify-content:center}
+.mt .rh{background:#f3f4f2;font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--ink2);writing-mode:horizontal-tb;display:flex;align-items:center}
+.cel{text-align:center}
+.cel .num{font-size:26px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+.cel .nm{font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;opacity:.8}
+.cel .ds{font-size:11.5px;line-height:1.35;margin-top:3px;opacity:.85}
+.cel .nm .en,.met .lb .en{opacity:.72;font-weight:600}
+.cel.tp{background:#eaf6ec;color:#28502f} .cel.tp .num{color:var(--good)}
+.cel.tn{background:#f3f4f2;color:var(--ink2)} .cel.tn .num{color:var(--ink2)}
+.cel.fp{background:#fdf0e8;color:#8a4415} .cel.fp .num{color:var(--orange)}
+.cel.fn{background:#fdeceb;color:#8a2020} .cel.fn .num{color:var(--red)}
+
+.mets{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.met{background:#12161f;color:#fff;border-radius:12px;padding:13px 12px;text-align:center}
+.met .lb{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;opacity:.65;font-weight:700}
+.met .big{font-size:31px;font-weight:800;line-height:1.1;margin:4px 0 1px;letter-spacing:-1px;font-variant-numeric:tabular-nums}
+.met .sub{font-size:11px;opacity:.7;line-height:1.35}
+@media(max-width:520px){.mets{grid-template-columns:1fr;gap:8px}
+  .met{display:flex;align-items:baseline;gap:10px;text-align:left;padding:11px 14px}
+  .met .big{font-size:24px;margin:0}.met .sub{flex:1}}
+
+.chart{margin-top:16px}
+.chart svg{width:100%;height:auto;display:block}
+.impact{background:#fdeceb;border:1px solid #f0b8b5;border-radius:12px;padding:15px 17px;margin-top:14px;
+  font-size:14.5px;color:#8a2020}
+.impact>b:first-child{display:block;margin-bottom:5px;color:var(--bad)}
+.impact.ok{background:#eaf6ec;border-color:#bfe0c5;color:#28502f}
+.impact.ok>b:first-child{color:var(--good)}
+.impact.warn{background:var(--warn-bg);border-color:var(--warn-bd);color:var(--warn-ink)}
+.impact.warn>b:first-child{color:#7a5c00}
+
+.ctx{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.ctx button{border:1.5px solid var(--line);background:#fff;border-radius:11px;padding:13px 14px;text-align:left;
+  cursor:pointer;font-family:inherit;font-size:13px;color:var(--ink2);line-height:1.45}
+.ctx button b{display:block;font-size:14.5px;color:var(--ink);margin-bottom:3px}
+.ctx button.on{border-color:var(--brand);background:var(--brand-l)}
+.ctx button.on b{color:var(--brand-d)}
+@media(max-width:520px){.ctx{grid-template-columns:1fr}}
+
+.take{margin-top:6px;padding:0;list-style:none}
+.take li{position:relative;padding:11px 0 11px 34px;border-bottom:1px solid var(--line);font-size:14.5px}
+.take li:last-child{border-bottom:0}
+.take li .k{position:absolute;left:0;top:11px;width:24px;height:24px;border-radius:50%;background:var(--brand-l);
+  color:var(--brand-d);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.take li b{color:var(--brand-d)}
+details.how{margin-top:16px;background:#f3f4f2;border-radius:11px;padding:0 16px}
+details.how summary{cursor:pointer;padding:13px 0;font-weight:700;font-size:14px;color:var(--ink2);list-style:none}
+details.how summary::-webkit-details-marker{display:none}
+details.how summary::before{content:"▸ ";color:var(--ink3)}
+details.how[open] summary::before{content:"▾ "}
+details.how .bd{padding:0 0 14px;font-size:13.5px;color:var(--ink2);line-height:1.6}
+details.how code{background:#e4e5e2;border-radius:4px;padding:1px 5px;font-size:12.5px}
+table.sw{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+table.sw th,table.sw td{border-bottom:1px solid var(--line);padding:6px 5px;text-align:right;font-variant-numeric:tabular-nums}
+table.sw th:first-child,table.sw td:first-child{text-align:left}
+table.sw th{font-size:11px;text-transform:uppercase;color:var(--ink3);font-weight:700}
+table.sw tr.now{background:var(--brand-l);font-weight:800}
+table.gloss{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+table.gloss th,table.gloss td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top}
+table.gloss th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);font-weight:700}
+table.gloss td.term{white-space:nowrap;font-weight:700;color:var(--ink)}
+table.gloss td.en{color:var(--brand-d);font-style:italic;white-space:nowrap}
+.note{font-size:12.5px;color:var(--ink3);margin-top:12px;line-height:1.5}
+.ghi{background:#12161f;color:#fff;border-radius:12px;padding:16px 18px;margin-top:16px}
+.ghi .lb{font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.6;font-weight:700}
+.ghi .code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:15px;font-weight:700;margin:7px 0 0;
+  word-break:break-all;line-height:1.5}
+.ghi button{margin-top:12px;background:#fff;color:#12161f;border:0;border-radius:9px;padding:10px 16px;
+  font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit}
+footer{text-align:center;font-size:12px;color:var(--ink3);margin-top:26px;line-height:1.6}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="tag">AIT129 · Mô phỏng M3 · Buổi 3</div>
+  <h1>Cây quyết định &amp; Ma trận nhầm lẫn</h1>
+  <p>Máy tự học một cây quyết định từ 800 hồ sơ. Bạn kéo ngưỡng và xem ai được cứu, ai bị bỏ sót.</p>
+</div></header>
+
+<div class="wrap">
+
+<div class="story">
+  <b>Bối cảnh</b>
+  Phòng khám có <b>800 hồ sơ cũ</b> đã biết kết quả (bệnh nhân có bị biến cố tim mạch hay không) và
+  <b>600 hồ sơ mới</b> để kiểm tra. Mỗi hồ sơ chỉ có 3 con số: tuổi, huyết áp tâm thu, cholesterol.
+  Không ai viết luật. Máy phải <b>tự tìm ra câu hỏi nên hỏi trước</b>.
+</div>
+
+<!-- ============ PHẦN 1 ============ -->
+<div class="card">
+  <div class="step">Phần 1 · Máy tự học</div>
+  <h3>Cho máy 800 hồ sơ và bảo: tự tìm luật</h3>
+  <p class="cap">Chọn máy được phép nhìn những cột nào, và cho phép hỏi bao nhiêu câu. Rồi bấm nút. Hãy thử bỏ bớt một cột và học lại — xem cây đổi thế nào.</p>
+
+  <table class="dl" id="tblDL"></table>
+  <p class="note" id="capDL"></p>
+
+  <div style="margin-top:16px;font-size:13px;font-weight:700;color:var(--ink2)">Máy được nhìn cột nào?</div>
+  <div class="chk" id="chkF"></div>
+
+  <div style="margin-top:14px;font-size:13px;font-weight:700;color:var(--ink2)">Được hỏi tối đa mấy câu liên tiếp?</div>
+  <div class="presets" id="chkD">
+    <button data-d="1">1 câu</button><button data-d="2">2 câu</button><button data-d="3" class="on">3 câu</button>
+  </div>
+
+  <button class="btn" id="btnHoc">▶ Cho máy học</button>
+  <div id="treeBox" style="display:none">
+    <div class="tree" id="tree"></div>
+    <div class="scale"><span>0% nguy cơ</span><div class="bar"></div><span>100%</span></div>
+    <p class="note">Mỗi ô cuối (lá) ghi <b>tỉ lệ người thực sự có nguy cơ</b> trong nhóm hồ sơ rơi vào ô đó.
+    Đây là <b>xác suất</b>, chưa phải câu trả lời có/không.</p>
+  </div>
+</div>
+
+<div class="card" id="cardWhy" style="display:none">
+  <div class="step">Phần 1b · Vì sao máy chọn câu đó?</div>
+  <h3>Máy so từng câu hỏi, giữ câu chia gọn nhất</h3>
+  <p class="cap">Với mỗi cột, máy thử mọi mốc cắt và chấm điểm “độ lộn xộn” (Gini) của hai nhóm sau khi chia.
+  Cột càng <b>dài</b> = câu hỏi đó làm <b>giảm độ lộn xộn càng nhiều</b>. Đây là câu hỏi tốt nhất của mỗi cột tại gốc cây.</p>
+  <div class="why" id="why"></div>
+  <p class="note">Trước khi chia, độ lộn xộn (Gini) của cả 800 hồ sơ là <b id="giniRoot"></b>; con số bên phải mỗi cột là <b>mức giảm</b> đạt được.
+  Máy không “hiểu” tim mạch — nó chỉ đang tìm phép chia làm giảm con số này nhiều nhất.</p>
+</div>
+
+<!-- ============ PHẦN 2 ============ -->
+<div class="card" id="card2" style="display:none">
+  <div class="step">Phần 2 · Ngưỡng quyết định</div>
+  <h3>Từ xác suất sang câu trả lời: kéo ngưỡng</h3>
+  <p class="cap">Cây cho ra một con số như “nguy cơ 44%”. Nhưng bác sĩ cần một câu trả lời: <b>gọi vào tái khám hay không?</b>
+  Ranh giới đó do <b>con người</b> đặt, không phải do máy.</p>
+
+  <div class="slider">
+    <div class="lb"><span>Gọi tái khám nếu nguy cơ ≥</span><b id="lbT">50%</b></div>
+    <input type="range" id="rgT" min="5" max="95" step="5" value="50">
+  </div>
+  <div class="presets" id="preT">
+    <button data-t="10">Rất rộng tay (10%)</button>
+    <button data-t="50" class="on">Cân bằng (50%)</button>
+    <button data-t="90">Rất chặt tay (90%)</button>
+  </div>
+
+  <div class="ctx" id="ctx">
+    <button data-c="phim" class="on"><b>Bối cảnh A — Gợi ý phim</b>Đoán sai thì người dùng lướt qua. Không ai chết.</button>
+    <button data-c="benh"><b>Bối cảnh B — Sàng lọc bệnh</b>Bỏ sót một ca có thể mất mạng. Báo nhầm thì tốn xét nghiệm.</button>
+  </div>
+
+  <div class="mt">
+    <div class="hd" style="border:0;background:transparent"></div>
+    <div class="hd">Máy nói: CÓ nguy cơ</div>
+    <div class="hd">Máy nói: KHÔNG</div>
+    <div class="rh">Thực tế<br>CÓ nguy cơ</div>
+    <div class="cel tp"><div class="num" id="nTP">0</div><div class="nm">Đúng · bắt được <span class="en">(TP)</span></div><div class="ds" id="dsTP">Người có bệnh, được gọi.</div></div>
+    <div class="cel fn"><div class="num" id="nFN">0</div><div class="nm">Bỏ sót <span class="en">(FN)</span></div><div class="ds" id="dsFN">Người có bệnh, bị cho về.</div></div>
+    <div class="rh">Thực tế<br>KHÔNG</div>
+    <div class="cel fp"><div class="num" id="nFP">0</div><div class="nm">Báo nhầm <span class="en">(FP)</span></div><div class="ds" id="dsFP">Người khoẻ, bị gọi đi xét nghiệm.</div></div>
+    <div class="cel tn"><div class="num" id="nTN">0</div><div class="nm">Đúng · cho về <span class="en">(TN)</span></div><div class="ds" id="dsTN">Người khoẻ, được cho về.</div></div>
+  </div>
+
+  <div class="mets">
+    <div class="met"><div class="lb">Độ chính xác <span class="en">(Accuracy)</span></div><div class="big" id="mAcc">—</div><div class="sub">Đoán đúng / tổng số ca</div></div>
+    <div class="met"><div class="lb">Độ chuẩn xác <span class="en">(Precision)</span></div><div class="big" id="mPre">—</div><div class="sub">Trong số bị gọi, bao nhiêu thật sự có bệnh</div></div>
+    <div class="met"><div class="lb">Độ bao phủ <span class="en">(Recall)</span></div><div class="big" id="mRec">—</div><div class="sub">Trong số có bệnh, bắt được bao nhiêu</div></div>
+  </div>
+
+  <details class="how" id="glossary">
+    <summary>Thuật ngữ tiếng Anh là gì? Vì sao dễ nhầm?</summary>
+    <div class="bd">
+      <p><b>Tiếng Việt dễ gây mơ hồ:</b> "chuẩn xác" và "chính xác" nghe gần như cùng một nghĩa, nhưng <b>Accuracy</b> (chính xác)
+      và <b>Precision</b> (chuẩn xác) là <b>hai con số hoàn toàn khác nhau</b>, có thể lệch xa nhau — như hộp cảnh báo phía trên
+      từng cho thấy: một mô hình có thể "chính xác" 85% mà "chuẩn xác" gần 0%. Khi đọc tài liệu hoặc trao đổi với người khác,
+      hãy luôn chốt lại bằng tên tiếng Anh để tránh hiểu lầm.</p>
+      <table class="gloss">
+        <tr><th>Tiếng Việt</th><th>Tiếng Anh</th><th>Nghĩa đơn giản</th></tr>
+        <tr><td class="term">Đúng · bắt được</td><td class="en">True Positive (TP)</td><td>Máy đoán <b>CÓ</b>, và thực tế đúng là <b>CÓ</b>.</td></tr>
+        <tr><td class="term">Báo nhầm</td><td class="en">False Positive (FP)</td><td>Máy đoán <b>CÓ</b>, nhưng thực tế là <b>KHÔNG</b> — "báo động giả".</td></tr>
+        <tr><td class="term">Bỏ sót</td><td class="en">False Negative (FN)</td><td>Máy đoán <b>KHÔNG</b>, nhưng thực tế là <b>CÓ</b> — điều nguy hiểm nhất khi sàng lọc bệnh.</td></tr>
+        <tr><td class="term">Đúng · cho về</td><td class="en">True Negative (TN)</td><td>Máy đoán <b>KHÔNG</b>, và thực tế đúng là <b>KHÔNG</b>.</td></tr>
+        <tr><td class="term">Độ chính xác</td><td class="en">Accuracy</td><td>Trong <b>toàn bộ</b> số ca, máy đoán đúng bao nhiêu phần trăm. Dễ bị "ăn gian" khi phần lớn người là khoẻ (xem hộp cảnh báo).</td></tr>
+        <tr><td class="term">Độ chuẩn xác</td><td class="en">Precision</td><td>Trong số ca máy <b>nói CÓ</b>, bao nhiêu phần trăm là thật sự có. Đo độ "đáng tin" của mỗi lời báo động.</td></tr>
+        <tr><td class="term">Độ bao phủ</td><td class="en">Recall<br>(= Sensitivity, Độ nhạy)</td><td>Trong số ca <b>thật sự có</b> nguy cơ, máy bắt được bao nhiêu phần trăm. Đo mức độ "không bỏ sót".</td></tr>
+        <tr><td class="term">Độ đặc hiệu <span class="note" style="margin:0">(không hiển thị ở trên)</span></td><td class="en">Specificity</td><td>Trong số ca <b>thật sự khoẻ</b>, máy nói KHÔNG đúng bao nhiêu phần trăm — mặt đối xứng của Bao phủ, nhìn từ phía người khoẻ.</td></tr>
+      </table>
+    </div>
+  </details>
+
+  <div class="impact" id="impact"></div>
+
+  <div class="chart">
+    <div style="font-size:13px;font-weight:700;color:var(--ink2);margin-bottom:4px">Ba chỉ số thay đổi thế nào khi kéo ngưỡng</div>
+    <svg id="svg" viewBox="0 0 700 300" role="img" aria-label="Biểu đồ đường ba chỉ số theo ngưỡng"></svg>
+  </div>
+
+  <details class="how"><summary>Xem bảng số (mọi ngưỡng)</summary>
+    <div class="bd"><table class="sw" id="tblSW"></table></div>
+  </details>
+
+  <div class="ghi">
+    <div class="lb">Chép dòng này vào phiếu hoạt động</div>
+    <p class="code" id="ghiCode">—</p>
+    <button id="btnCopy">Sao chép</button>
+  </div>
+</div>
+
+<!-- ============ PHẦN 3 ============ -->
+<div class="card" id="card3" style="display:none">
+  <div class="step">Phần 3 · Rút ra</div>
+  <h3>Sáu điều đáng chép vào vở</h3>
+  <ul class="take" id="take"></ul>
+</div>
+
+<details class="how"><summary>Mô phỏng này hoạt động thế nào? (không có phép màu)</summary>
+<div class="bd">
+<p><b>Dữ liệu.</b> 1 400 hồ sơ được sinh bằng bộ sinh số giả ngẫu nhiên có hạt giống cố định
+(<code>mulberry32</code>, hạt 20260821 cho tập học và 97531 cho tập kiểm tra), nên <b>mọi máy đều ra cùng một kết quả</b>.
+Tuổi ~ N(52;13). Huyết áp và cholesterol tăng nhẹ theo tuổi. Nguy cơ thật được rút ngẫu nhiên theo một hàm logistic
+<code>z = −3,7 + 0,055·tuổi + 0,030·(HA−120) + 0,0075·(chol−200)</code>. Tỉ lệ có nguy cơ ≈ 40%.
+Đây là dữ liệu <b>mô phỏng cho lớp học, không phải dữ liệu y tế thật</b>, và tuyệt đối không dùng để suy luận về sức khoẻ của ai.</p>
+<p><b>Cây.</b> Thuật toán CART tham lam thật sự chạy trong trình duyệt: tại mỗi nút, thử mọi mốc cắt của mọi cột đang bật,
+chọn mốc làm nhỏ nhất Gini có trọng số <code>(|T|·G(T) + |P|·G(P)) / |D|</code>, dừng khi đủ độ sâu, khi nút &lt; 40 hồ sơ,
+hoặc khi mỗi nhánh con sẽ &lt; 20 hồ sơ. Không có bảng kết quả nào được viết sẵn — đổi cột hay đổi độ sâu là cây đổi thật.</p>
+<p><b>Ma trận nhầm lẫn.</b> Tính trên <b>600 hồ sơ kiểm tra mà cây chưa từng nhìn thấy</b>. Con số bạn thấy là đếm thật, không phải ước lượng.</p>
+<p><b>Vì sao ngưỡng 0,3 và 0,4 đôi khi cho kết quả giống nhau?</b> Vì cây chỉ có vài lá; ngưỡng chỉ đổi kết quả khi nó
+vượt qua giá trị của một lá. Đó cũng là một bài học: mô hình đơn giản thì <b>không phải ngưỡng nào cũng chọn được</b>.</p>
+</div></details>
+
+<footer>AIT129 — Trí tuệ nhân tạo ứng dụng · Mô phỏng M3 · Chạy hoàn toàn ngoại tuyến, không gửi dữ liệu đi đâu.<br>
+Số liệu là mô phỏng phục vụ giảng dạy, không phải dữ liệu y tế thật.</footer>
+</div>
+
+<script>
+"use strict";
+/* ---------- sinh dữ liệu (hạt cố định) ---------- */
+function rng(s){let a=s>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);
+ t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function gauss(r,m,s){let u=0,v=0;while(!u)u=r();while(!v)v=r();
+ return m+s*Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+var FEAT=[{k:'tuoi',ten:'Tuổi',dv:''},{k:'ha',ten:'Huyết áp tâm thu',dv:' mmHg'},{k:'chol',ten:'Cholesterol',dv:' mg/dL'}];
+function taoDL(seed,n){var r=rng(seed),a=[],i;
+ for(i=0;i<n;i++){
+  var tuoi=Math.round(Math.max(20,Math.min(80,gauss(r,52,13))));
+  var ha=Math.round(Math.max(90,Math.min(200,gauss(r,128+(tuoi-52)*0.55,17))));
+  var chol=Math.round(Math.max(120,Math.min(400,gauss(r,215+(tuoi-52)*0.9,45))));
+  var z=-3.7+0.055*tuoi+0.030*(ha-120)+0.0075*(chol-200);
+  var p=1/(1+Math.exp(-z));
+  a.push({tuoi:tuoi,ha:ha,chol:chol,y:r()<p?1:0});}
+ return a;}
+var TRAIN=taoDL(20260821,800), TEST=taoDL(97531,600);
+var NPOS=TEST.filter(function(x){return x.y===1;}).length, NNEG=TEST.length-NPOS;
+
+/* ---------- cây quyết định (CART tham lam, Gini) ---------- */
+function gini(d){if(!d.length)return 0;var p=0,i;for(i=0;i<d.length;i++)if(d[i].y===1)p++;p/=d.length;
+ return 1-p*p-(1-p)*(1-p);}
+function chiaTotNhat(d,cols){var best=null;
+ cols.forEach(function(f){
+  var vs=[],seen={},i;
+  for(i=0;i<d.length;i++){var v=d[i][f.k];if(!seen[v]){seen[v]=1;vs.push(v);}}
+  vs.sort(function(a,b){return a-b;});
+  for(i=1;i<vs.length;i++){var t=Math.round((vs[i-1]+vs[i])/2);
+   var L=[],R=[],j;for(j=0;j<d.length;j++)(d[j][f.k]<t?L:R).push(d[j]);
+   if(L.length<20||R.length<20)continue;
+   var g=(L.length*gini(L)+R.length*gini(R))/d.length;
+   if(!best||g<best.g)best={g:g,f:f,t:t,L:L,R:R};}});
+ return best;}
+function xayCay(d,sau,cols){
+ var p=d.length?d.filter(function(x){return x.y===1;}).length/d.length:0;
+ var la={la:true,n:d.length,p:p};
+ if(sau===0||d.length<40||p===0||p===1)return la;
+ var s=chiaTotNhat(d,cols); if(!s)return la;
+ return {la:false,f:s.f,t:s.t,n:d.length,p:p,trai:xayCay(s.L,sau-1,cols),phai:xayCay(s.R,sau-1,cols)};}
+function duDoan(cay,x){var n=cay;while(!n.la)n=x[n.f.k]<n.t?n.trai:n.phai;return n.p;}
+
+/* ---------- trạng thái ---------- */
+var COLS=FEAT.slice(), SAU=3, CAY=null, T=0.5, CTX='phim';
+var $=function(id){return document.getElementById(id);};
+
+/* ---------- bảng dữ liệu mẫu ---------- */
+(function(){
+ var h='<tr><th>Hồ sơ</th><th>Tuổi</th><th>Huyết áp</th><th>Cholesterol</th><th>Thực tế</th></tr>';
+ for(var i=0;i<6;i++){var x=TRAIN[i];
+  h+='<tr><td>#'+(i+1)+'</td><td>'+x.tuoi+'</td><td>'+x.ha+'</td><td>'+x.chol+'</td>'+
+     '<td class="'+(x.y?'y1':'y0')+'">'+(x.y?'Có nguy cơ':'Không')+'</td></tr>';}
+ $('tblDL').innerHTML=h;
+ var np=TRAIN.filter(function(x){return x.y===1;}).length;
+ $('capDL').innerHTML='6 dòng đầu trong <b>800 hồ sơ học</b>. Trong cả tập, '+np+' hồ sơ ('+
+   Math.round(np/TRAIN.length*100)+'%) thực tế có nguy cơ. Tập kiểm tra riêng: '+TEST.length+' hồ sơ, '+
+   NPOS+' có nguy cơ.';
+})();
+
+/* ---------- chọn cột ---------- */
+(function(){
+ var h='';FEAT.forEach(function(f,i){
+  h+='<label class="on" data-i="'+i+'" role="button" tabindex="0">'+f.ten+'</label>';});
+ $('chkF').innerHTML=h;
+ $('chkF').addEventListener('click',function(e){
+  var l=e.target.closest('label'); if(!l)return;
+  var on=l.classList.contains('on');
+  if(on && $('chkF').querySelectorAll('label.on').length<=1)return;
+  l.classList.toggle('on',!on);
+  COLS=[];$('chkF').querySelectorAll('label.on').forEach(function(x){COLS.push(FEAT[+x.dataset.i]);});
+ });
+})();
+$('chkD').addEventListener('click',function(e){
+ var b=e.target.closest('button'); if(!b)return;
+ $('chkD').querySelectorAll('button').forEach(function(x){x.classList.remove('on');});
+ b.classList.add('on'); SAU=+b.dataset.d;});
+
+/* ---------- màu lá ---------- */
+function mauLa(p){
+ var stops=[[234,240,255],[42,120,214],[13,54,107]];
+ var t=Math.max(0,Math.min(1,p)), c;
+ if(t<0.5){var u=t/0.5;c=[0,1,2].map(function(i){return Math.round(stops[0][i]+(stops[1][i]-stops[0][i])*u);});}
+ else{var u2=(t-0.5)/0.5;c=[0,1,2].map(function(i){return Math.round(stops[1][i]+(stops[2][i]-stops[1][i])*u2);});}
+ return {bg:'rgb('+c.join(',')+')',fg:t>0.42?'#fff':'#0b0b0b'};}
+
+/* ---------- vẽ cây ---------- */
+function veCay(n){
+ if(n.la){var m=mauLa(n.p);
+  var du=n.p>=T;
+  return '<div class="leaf" style="background:'+m.bg+';color:'+m.fg+'">'+
+    '<span><span class="pc">'+Math.round(n.p*100)+'%</span> nguy cơ <span class="nn">· '+n.n+' hồ sơ</span></span>'+
+    '<span class="bdg">'+(du?'→ Máy nói CÓ':'→ Máy nói KHÔNG')+'</span></div>';}
+ return '<div class="node"><div class="q">'+n.f.ten+' &lt; '+n.t+n.f.dv+' ?<span class="n">'+n.n+' hồ sơ</span></div>'+
+  '<div class="kids">'+
+   '<div class="branch"><span class="bl">Đúng</span>'+veCay(n.trai)+'</div>'+
+   '<div class="branch"><span class="bl">Sai</span>'+veCay(n.phai)+'</div>'+
+  '</div></div>';}
+
+/* ---------- vì sao chọn ---------- */
+function veWhy(){
+ var g0=gini(TRAIN); $('giniRoot').textContent=g0.toFixed(3);
+ var rows=[];
+ COLS.forEach(function(f){var b=chiaTotNhat(TRAIN,[f]); if(b)rows.push({f:f,t:b.t,g:b.g});});
+ rows.sort(function(a,b){return a.g-b.g;});
+ var maxG=rows.length?(g0-rows[0].g):1;
+ var h='';
+ rows.forEach(function(r,i){
+  var giam=g0-r.g, w=maxG>0?Math.round(giam/maxG*100):0;
+  h+='<div class="wrow'+(i===0?' win':'')+'"><span>'+r.f.ten+' &lt; '+r.t+'</span>'+
+     '<span class="tr"><span class="fl" style="width:'+w+'%"></span></span>'+
+     '<span class="v">−'+giam.toFixed(3)+'</span></div>';});
+ $('why').innerHTML=h;}
+
+/* ---------- ma trận ---------- */
+function maTran(t){var TP=0,FP=0,FN=0,TN=0;
+ for(var i=0;i<TEST.length;i++){var x=TEST[i],pr=duDoan(CAY,x)>=t?1:0;
+  if(pr===1&&x.y===1)TP++;else if(pr===1&&x.y===0)FP++;else if(pr===0&&x.y===1)FN++;else TN++;}
+ return {TP:TP,FP:FP,FN:FN,TN:TN,
+  acc:(TP+TN)/TEST.length, pre:(TP+FP)?TP/(TP+FP):null, rec:(TP+FN)?TP/(TP+FN):null};}
+
+var CTXTXT={
+ phim:{tp:'Người thích phim này, được gợi ý đúng.',fn:'Người thích phim này, nhưng không được gợi ý.',
+  fp:'Phim được đẩy lên nhưng người dùng không thích.',tn:'Người không thích phim này, đúng là không được gợi ý.'},
+ benh:{tp:'Người có bệnh, được gọi đi tái khám.',fn:'Người có bệnh, bị cho về mà không xét nghiệm.',
+  fp:'Người khoẻ, bị gọi đi xét nghiệm thêm.',tn:'Người khoẻ, đúng là được cho về.'}};
+
+function pct(v){return v===null?'—':Math.round(v*100)+'%';}
+
+function capNhat(){
+ var m=maTran(T);
+ $('lbT').textContent=Math.round(T*100)+'%';
+ $('nTP').textContent=m.TP;$('nFP').textContent=m.FP;$('nFN').textContent=m.FN;$('nTN').textContent=m.TN;
+ $('mAcc').textContent=pct(m.acc);$('mPre').textContent=pct(m.pre);$('mRec').textContent=pct(m.rec);
+ $('dsTP').textContent=CTXTXT[CTX].tp; $('dsFN').textContent=CTXTXT[CTX].fn;
+ $('dsFP').textContent=CTXTXT[CTX].fp; $('dsTN').textContent=CTXTXT[CTX].tn;
+ $('tree').innerHTML=veCay(CAY);
+ /* hộp tác động */
+ var box=$('impact'),h='';
+ if(CTX==='benh'){
+  if(m.TP+m.FP===0){box.className='impact';
+   h='<b>Không gọi ai cả — nhưng vẫn “chính xác” '+pct(m.acc)+'</b>Không hồ sơ nào vượt ngưỡng '+Math.round(T*100)+
+   '%, nên mô hình <b>cho tất cả về nhà</b>, kể cả '+NPOS+' người thật sự có nguy cơ. '+
+   'Nó vẫn đạt độ chính xác '+pct(m.acc)+' chỉ vì phần lớn người là khoẻ. <b>Đây là cái bẫy lớn nhất của chỉ số “độ chính xác”.</b>';}
+  else if(m.rec!==null&&m.rec<0.35){box.className='impact';
+   h='<b>Nguy hiểm: mô hình trông có vẻ ổn nhưng bỏ sót gần hết</b>Độ chính xác <b>'+pct(m.acc)+
+   '</b> nghe rất ổn. Nhưng trong '+NPOS+' người thật sự có nguy cơ, mô hình <b>bỏ sót '+m.FN+
+   ' người</b> và chỉ bắt được '+m.TP+'. Với sàng lọc bệnh, đây là thất bại — dù con số “chính xác” vẫn đẹp.';}
+  else if(m.rec!==null&&m.rec>0.9){box.className='impact warn';
+   h='<b>Bắt được gần hết, nhưng phải trả giá</b>Mô hình bắt được '+m.TP+'/'+NPOS+' ca ('+pct(m.rec)+
+   '), chỉ bỏ sót '+m.FN+'. Đổi lại, <b>'+m.FP+' người khoẻ</b> bị gọi đi xét nghiệm không cần thiết — tốn tiền, tốn giường, và làm họ lo sợ. '+
+   'Trong sàng lọc bệnh, nhiều nơi <b>chấp nhận cái giá này</b>, vì bỏ sót thì mất mạng.';}
+  else{box.className='impact ok';
+   h='<b>Vùng đánh đổi</b>Bắt được '+m.TP+'/'+NPOS+' ca ('+pct(m.rec)+'), bỏ sót '+m.FN+
+   ', báo nhầm '+m.FP+' người khoẻ. Không có đáp án đúng ở đây — <b>ai chịu trách nhiệm sẽ phải chọn</b> giữa '+
+   m.FN+' người bị bỏ sót và '+m.FP+' người bị làm phiền.';}
+ }else{
+  if(m.TP+m.FP===0){box.className='impact warn';
+   h='<b>Ngưỡng chặt đến mức chẳng gợi ý gì</b>Không một phim nào vượt ngưỡng '+Math.round(T*100)+
+   '%, nên mô hình <b>không gợi ý gì cả</b>. Độ chính xác vẫn '+pct(m.acc)+' — vì đoán “không thích” cho tất cả cũng đúng '+
+   pct(m.acc)+' số lần. Một hệ thống im lặng thì vô hại, nhưng cũng vô dụng.';}
+  else if(m.pre!==null&&m.pre<0.5){box.className='impact warn';
+   h='<b>Gợi ý bừa</b>Trong số phim được đẩy lên, chỉ <b>'+pct(m.pre)+'</b> là người dùng thật sự thích. '+
+   'Người dùng lướt qua '+m.FP+' gợi ý sai. Khó chịu, nhưng không ai bị hại — nên ở bối cảnh này ngưỡng thấp <b>vẫn chấp nhận được</b>.';}
+  else{box.className='impact ok';
+   h='<b>Gợi ý an toàn</b>Trong số phim được đẩy lên, <b>'+pct(m.pre)+'</b> là trúng gu. Đổi lại bỏ lỡ '+m.FN+
+   ' phim mà người dùng có thể đã thích. Với gợi ý phim, <b>bỏ lỡ gần như vô hại</b> — nên ngưỡng cao là lựa chọn hợp lý.';}
+ }
+ box.innerHTML=h;
+ $('ghiCode').textContent='M3 · ngưỡng '+Math.round(T*100)+'% · cột: '+COLS.map(function(f){return f.ten;}).join('+')+
+   ' · sâu '+SAU+' · TP'+m.TP+' FP'+m.FP+' FN'+m.FN+' TN'+m.TN+
+   ' · chính xác '+pct(m.acc)+' chuẩn xác '+pct(m.pre)+' bao phủ '+pct(m.rec);
+ veChart(); veSweep();
+}
+
+/* ---------- biểu đồ đường ---------- */
+function quet(){var out=[],t;
+ for(t=5;t<=95;t+=5){var m=maTran(t/100);out.push({t:t,m:m});}
+ return out;}
+function veChart(){
+ var d=quet(),W=700,H=300,L=52,R=118,Tp=16,B=42;
+ var x=function(t){return L+(t-5)/90*(W-L-R);};
+ var y=function(v){return Tp+(1-v)*(H-Tp-B);};
+ var s='';
+ [0,0.25,0.5,0.75,1].forEach(function(v){
+  s+='<line x1="'+L+'" y1="'+y(v)+'" x2="'+(W-R)+'" y2="'+y(v)+'" stroke="#e1e0d9" stroke-width="1"/>'+
+     '<text x="'+(L-9)+'" y="'+(y(v)+4)+'" text-anchor="end" font-size="12" fill="#898781">'+Math.round(v*100)+'%</text>';});
+ [10,30,50,70,90].forEach(function(t){
+  s+='<text x="'+x(t)+'" y="'+(H-B+20)+'" text-anchor="middle" font-size="12" fill="#898781">'+t+'%</text>';});
+ s+='<text x="'+((L+W-R)/2)+'" y="'+(H-6)+'" text-anchor="middle" font-size="12" fill="#52514e">Ngưỡng quyết định</text>';
+ var series=[{k:'acc',c:'#52514e',n:'Chính xác'},{k:'pre',c:'#eb6834',n:'Chuẩn xác'},{k:'rec',c:'#2a78d6',n:'Bao phủ'}];
+ series.forEach(function(se){
+  var pts=[],last=null;
+  d.forEach(function(o){var v=o.m[se.k];if(v===null)return;pts.push(x(o.t)+','+y(v));last=o;});
+  s+='<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+se.c+'" stroke-width="2.5" stroke-linejoin="round"/>';
+  if(last)s+='<text x="'+(x(last.t)+8)+'" y="'+(y(last.m[se.k])+4)+'" font-size="12.5" font-weight="700" fill="'+se.c+'">'+
+    se.n+' '+Math.round(last.m[se.k]*100)+'%</text>';});
+ var cx=x(Math.round(T*100));
+ s+='<line x1="'+cx+'" y1="'+Tp+'" x2="'+cx+'" y2="'+y(0)+'" stroke="#16359b" stroke-width="2" stroke-dasharray="5 4"/>';
+ s+='<text x="'+cx+'" y="'+(Tp-3)+'" text-anchor="middle" font-size="11.5" font-weight="800" fill="#16359b">ngưỡng '+Math.round(T*100)+'%</text>';
+ $('svg').innerHTML=s;}
+
+function veSweep(){
+ var d=quet(),h='<tr><th>Ngưỡng</th><th>TP</th><th>Báo nhầm</th><th>Bỏ sót</th><th>TN</th><th>Chính xác</th><th>Chuẩn xác</th><th>Bao phủ</th></tr>';
+ d.forEach(function(o){var m=o.m,now=(Math.round(T*100)===o.t);
+  h+='<tr'+(now?' class="now"':'')+'><td>'+o.t+'%</td><td>'+m.TP+'</td><td>'+m.FP+'</td><td>'+m.FN+'</td><td>'+m.TN+
+     '</td><td>'+pct(m.acc)+'</td><td>'+pct(m.pre)+'</td><td>'+pct(m.rec)+'</td></tr>';});
+ $('tblSW').innerHTML=h;}
+
+/* ---------- rút ra ---------- */
+var TAKE=[
+ 'Máy <b>không hiểu tim mạch</b>. Nó chỉ tìm phép chia làm giảm độ lộn xộn nhiều nhất. Luật trông “thông minh” là hệ quả của phép đếm, không phải của hiểu biết.',
+ 'Cây trả về <b>xác suất</b>, không phải câu trả lời. Biến xác suất thành “có/không” là việc của <b>con người</b> — và đó là chỗ đạo đức bước vào.',
+ 'Kéo ngưỡng lên thì <b>chuẩn xác tăng, bao phủ giảm</b>; kéo xuống thì ngược lại. Không có vị trí nào tốt cho cả hai.',
+ '<b>Độ chính xác cao có thể vô dụng.</b> Ở ngưỡng 90%, mô hình vẫn “chính xác” hơn ngưỡng 10% — dù nó bỏ sót gần hết người bệnh.',
+ '<b>Cùng một mô hình, hai bối cảnh, hai lựa chọn khác nhau.</b> Gợi ý phim thì chọn chuẩn xác. Sàng lọc bệnh thì chọn bao phủ. Con số không tự nói cho bạn biết chọn cái nào.',
+ 'Bỏ bớt một cột dữ liệu, cây đổi <b>hoàn toàn</b> — và đôi khi chỉ số lại <b>đẹp hơn</b>. Vì thuật toán là <b>tham lam</b>: nó chọn câu hỏi tốt nhất ở bước hiện tại, không phải bộ câu hỏi tốt nhất. Mô hình chỉ biết những gì được cho nhìn — và cách nó nhìn cũng không hề hoàn hảo.'];
+(function(){var h='';TAKE.forEach(function(t,i){h+='<li><span class="k">'+(i+1)+'</span>'+t+'</li>';});$('take').innerHTML=h;})();
+
+/* ---------- sự kiện ---------- */
+$('btnHoc').addEventListener('click',function(){
+ CAY=xayCay(TRAIN,SAU,COLS);
+ $('treeBox').style.display='';$('cardWhy').style.display='';$('card2').style.display='';$('card3').style.display='';
+ $('btnHoc').textContent='↻ Học lại với lựa chọn mới';
+ veWhy();capNhat();
+ $('treeBox').scrollIntoView({behavior:'smooth',block:'nearest'});});
+$('rgT').addEventListener('input',function(){T=+this.value/100;
+ $('preT').querySelectorAll('button').forEach(function(b){b.classList.toggle('on',+b.dataset.t===+$('rgT').value);});
+ capNhat();});
+$('preT').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
+ $('rgT').value=b.dataset.t;T=+b.dataset.t/100;
+ $('preT').querySelectorAll('button').forEach(function(x){x.classList.remove('on');});b.classList.add('on');capNhat();});
+$('ctx').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
+ CTX=b.dataset.c;$('ctx').querySelectorAll('button').forEach(function(x){x.classList.remove('on');});
+ b.classList.add('on');capNhat();});
+$('btnCopy').addEventListener('click',function(){var t=$('ghiCode').textContent,b=this;
+ if(navigator.clipboard)navigator.clipboard.writeText(t).then(function(){b.textContent='Đã chép ✓';
+  setTimeout(function(){b.textContent='Sao chép';},1600);});});
+</script>
+</body></html>

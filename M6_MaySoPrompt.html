@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M6 — Máy so prompt · Quy tắc 5N · AIT129</title>
+<style>
+:root{color-scheme:light;
+  --ink:#0b0b0b;--ink2:#52514e;--ink3:#898781;
+  --bg:#f9f9f7;--card:#fcfcfb;--line:#e1e0d9;--axis:#c3c2b7;
+  --brand:#1f4fd8;--brand-d:#16359b;--brand-l:#eaf0ff;
+  --blue:#2a78d6;--dblue:#0d366b;--orange:#eb6834;--red:#e34948;
+  --good:#2e7d32;--bad:#c02626;
+  --warn-bg:#fff8e8;--warn-bd:#e8d5a0;--warn-ink:#5c4708;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.55;font-size:16px}
+.wrap{max-width:800px;margin:0 auto;padding:0 16px 44px}
+header{background:linear-gradient(135deg,#0d366b,#1f4fd8 60%,#3f74f0);color:#fff;padding:20px 0 18px}
+header .tag{font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.82;font-weight:700}
+header h1{margin:5px 0 3px;font-size:24px;font-weight:700;letter-spacing:-.4px}
+header p{margin:0;font-size:13.5px;opacity:.9;max-width:640px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-top:16px}
+.card h3{margin:0 0 3px;font-size:16.5px}
+.card .cap{margin:0 0 14px;font-size:13.5px;color:var(--ink2);line-height:1.55}
+.step{display:inline-block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;
+  color:var(--brand-d);background:var(--brand-l);border-radius:20px;padding:4px 11px;margin-bottom:8px}
+.story{background:var(--brand-l);border-radius:12px;padding:16px 18px;font-size:15px;margin-top:16px}
+.story>b:first-child{display:block;margin-bottom:5px;color:var(--brand-d)}
+
+/* thuật ngữ tiếng Anh trong ngoặc đơn */
+.en{opacity:.72;font-weight:600;font-style:italic}
+
+/* bảng 5N giới thiệu */
+.n5tab{display:grid;grid-template-columns:auto 1fr;gap:9px 12px;margin-top:14px;font-size:14px;align-items:start}
+.n5tab .nk{background:var(--brand);color:#fff;border-radius:7px;padding:3px 9px;font-size:11.5px;font-weight:800;
+  letter-spacing:.06em;white-space:nowrap;margin-top:2px}
+.n5tab .nv b{color:var(--brand-d)}
+.n5tab .nv .vd{display:block;color:var(--ink3);font-size:12.5px;margin-top:1px}
+
+.opts{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.opts button{border:1.5px solid var(--line);background:#fff;border-radius:20px;padding:7px 13px;font-size:13px;
+  font-weight:600;color:var(--ink2);cursor:pointer;font-family:inherit}
+.opts button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.lbl{font-size:12.5px;font-weight:700;color:var(--ink2);margin-bottom:6px}
+.lbl .en{font-weight:600}
+
+.chips{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:4px}
+@media(max-width:560px){.chips{grid-template-columns:1fr}}
+.grp{grid-column:1/-1;display:flex;align-items:center;gap:9px;margin-top:9px;font-size:13px;font-weight:800;color:var(--brand-d)}
+.grp:first-child{margin-top:2px}
+.grp .n{background:var(--brand);color:#fff;border-radius:6px;padding:2px 7px;font-size:11px;letter-spacing:.06em}
+.grp .ln{flex:1;height:1px;background:var(--line)}
+.chip.wide{grid-column:1/-1}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:11px;padding:10px 12px;cursor:pointer;
+  font-family:inherit;text-align:left;line-height:1.4}
+.chip .t{font-size:13.5px;font-weight:700;color:var(--ink2);display:flex;align-items:center;gap:8px}
+.chip .t i{width:16px;height:16px;border:1.8px solid var(--axis);border-radius:4px;display:inline-block;flex-shrink:0}
+.chip .t .mo{font-weight:600;color:var(--ink3);font-size:12px}
+.chip.on{border-color:var(--brand);background:var(--brand-l)}
+.chip.on .t{color:var(--brand-d)}
+.chip.on .t i{background:var(--brand);border-color:var(--brand);position:relative}
+.chip.on .t i::after{content:"";position:absolute;left:4px;top:.5px;width:5px;height:10px;
+  border:solid #fff;border-width:0 2px 2px 0;transform:rotate(42deg)}
+.chip .v{margin-top:6px;display:flex;gap:5px;flex-wrap:wrap}
+.chip .v span{font-size:11.5px;border:1px solid var(--line);background:#fff;border-radius:14px;padding:3px 8px;
+  color:var(--ink3);font-weight:600}
+.chip.on .v span.sel{background:var(--brand);border-color:var(--brand);color:#fff}
+.chip.cam{border-color:#e8b0ad}
+.chip.cam.on{border-color:var(--bad);background:#fdeceb}
+.chip.cam.on .t{color:var(--bad)}
+.chip.cam.on .t i{background:var(--bad);border-color:var(--bad)}
+
+.pv{background:#12161f;color:#e8e8e4;border-radius:12px;padding:14px 16px;margin-top:14px;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;font-size:13.5px;line-height:1.75;white-space:pre-wrap}
+.pv .em{color:#8fc0ff}
+.pv .dim{color:#6f7480}
+.pv .nn{color:#9aa4b5;font-weight:700}
+
+.runs{margin-top:6px}
+.run{border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin-bottom:9px;background:#fff;font-size:13.5px}
+.run .h{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:5px}
+.run .b{line-height:1.6}
+.run.bia{border-color:#e8b0ad;background:#fdf3f2}
+.run .flag{display:inline-block;font-size:11px;font-weight:800;background:var(--bad);color:#fff;border-radius:14px;
+  padding:2px 8px;margin-left:6px;vertical-align:1px}
+
+.gauge{background:#12161f;color:#fff;border-radius:13px;padding:18px 20px;margin-top:14px}
+.gauge .lb{font-size:11px;letter-spacing:.11em;text-transform:uppercase;opacity:.6;font-weight:700}
+.gauge .big{font-size:44px;font-weight:800;line-height:1.05;margin:5px 0 2px;letter-spacing:-1.5px}
+.gauge .sub{font-size:13px;opacity:.75;line-height:1.5}
+.gauge .bar{height:11px;background:rgba(255,255,255,.16);border-radius:6px;overflow:hidden;margin-top:12px}
+.gauge .fl{display:block;height:100%;border-radius:6px;transition:width .4s ease}
+
+.n5bar{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+.n5bar .b{flex:1 1 96px;border:1.5px solid var(--line);border-radius:10px;padding:8px 6px;background:#fff;text-align:center}
+.n5bar .b .t{font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--ink3)}
+.n5bar .b .m{font-size:12.5px;font-weight:700;color:var(--ink2);margin-top:2px;line-height:1.3}
+.n5bar .b.ok{border-color:#bfe0c5;background:#eaf6ec}
+.n5bar .b.ok .t,.n5bar .b.ok .m{color:#28502f}
+.n5bar .b.no{border-color:#e8b0ad;background:#fdeceb}
+.n5bar .b.no .t,.n5bar .b.no .m{color:var(--bad)}
+.n5bar .b.half{border-color:var(--warn-bd);background:var(--warn-bg)}
+.n5bar .b.half .t,.n5bar .b.half .m{color:var(--warn-ink)}
+
+.slots{display:grid;grid-template-columns:auto 1fr auto;gap:5px 10px;margin-top:13px;font-size:12.5px;align-items:center}
+.slots .g{grid-column:1/-1;font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--brand-d);margin-top:9px}
+.slots .g:first-child{margin-top:2px}
+.slots .k{color:var(--ink2);white-space:nowrap}
+.slots .tr{display:block;height:9px;background:#eeedea;border-radius:5px;overflow:hidden}
+.slots .fl2{display:block;height:100%;border-radius:0 5px 5px 0}
+.slots .v{font-variant-numeric:tabular-nums;color:var(--ink3);white-space:nowrap}
+
+.rule{border-radius:12px;padding:15px 17px;margin-top:14px;font-size:14.5px}
+.rule>b:first-child{display:block;margin-bottom:5px}
+.rule.stop{background:#fdeceb;border:1.4px solid #e88b88;color:#8a2020}
+.rule.stop>b:first-child{color:var(--bad)}
+.rule.free{background:#eaf6ec;border:1px solid #bfe0c5;color:#28502f}
+.rule.free>b:first-child{color:var(--good)}
+.rule.care{background:var(--warn-bg);border:1px solid var(--warn-bd);color:var(--warn-ink)}
+.rule.care>b:first-child{color:#7a5c00}
+
+.take{margin-top:6px;padding:0;list-style:none}
+.take li{position:relative;padding:11px 0 11px 34px;border-bottom:1px solid var(--line);font-size:14.5px}
+.take li:last-child{border-bottom:0}
+.take li .k{position:absolute;left:0;top:11px;width:24px;height:24px;border-radius:50%;background:var(--brand-l);
+  color:var(--brand-d);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.take li b{color:var(--brand-d)}
+details.how{margin-top:16px;background:#f3f4f2;border-radius:11px;padding:0 16px}
+details.how summary{cursor:pointer;padding:13px 0;font-weight:700;font-size:14px;color:var(--ink2);list-style:none}
+details.how summary::-webkit-details-marker{display:none}
+details.how summary::before{content:"▸ ";color:var(--ink3)}
+details.how[open] summary::before{content:"▾ "}
+details.how .bdy{padding:0 0 14px;font-size:13.5px;color:var(--ink2);line-height:1.6}
+details.how code{background:#e4e5e2;border-radius:4px;padding:1px 5px;font-size:12.5px}
+.presets{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.presets button{border:1.5px dashed var(--axis);background:#fff;border-radius:9px;padding:9px 13px;font-size:12.5px;
+  font-weight:600;color:var(--ink2);cursor:pointer;font-family:inherit}
+.presets button:hover{border-color:var(--brand);color:var(--brand-d);border-style:solid}
+.ghi{background:#12161f;color:#fff;border-radius:12px;padding:16px 18px;margin-top:16px}
+.ghi .lb{font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.6;font-weight:700}
+.ghi .code{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;font-size:14px;font-weight:700;margin:7px 0 0;
+  word-break:break-word;line-height:1.55}
+.ghi button{margin-top:12px;background:#fff;color:#12161f;border:0;border-radius:9px;padding:10px 16px;
+  font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit}
+
+/* chú giải thuật ngữ */
+.gloss dl{margin:10px 0 0}
+.gloss dt{font-weight:700;color:var(--ink);margin-top:14px;font-size:14.5px}
+.gloss dt:first-child{margin-top:0}
+.gloss dt .en{margin-left:5px;font-size:.82em}
+.gloss dd{margin:3px 0 0;color:var(--ink2);font-size:13.5px;line-height:1.55}
+.gloss dd b{color:var(--ink)}
+
+footer{text-align:center;font-size:12px;color:var(--ink3);margin-top:26px;line-height:1.6}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="tag">AIT129 · Mô phỏng M6 · Buổi 5</div>
+  <h1>Máy so prompt — Quy tắc 5N</h1>
+  <p>Prompt <span class="en">(câu lệnh)</span> là đơn đặt hàng gửi thợ may. Mỗi chỗ bạn không ghi rõ, thợ may tự quyết.
+  Trang này đo <b>bạn đã để cho máy tự quyết bao nhiêu thứ</b> — và chỉ cho bạn thấy <b>Quy tắc 5N</b> bịt các lỗ trống đó ở đâu.</p>
+</div></header>
+
+<div class="wrap">
+
+<!-- ===== PHẦN 0 ===== -->
+<div class="card">
+  <div class="step">Phần 0 · Bộ khung</div>
+  <h3>Quy tắc 5N — năm ô phải điền trong một đơn đặt hàng</h3>
+  <p class="cap">Năm chữ N là năm loại thông tin mà trợ lý AI <b>bắt buộc phải có một giá trị</b> để làm việc.
+  Bạn không ghi thì máy vẫn điền — bằng phỏng đoán của nó.</p>
+  <div class="n5tab">
+    <span class="nk">N1</span><span class="nv"><b>Ngữ cảnh <span class="en">(Context)</span></b> — bối cảnh: việc này phục vụ chuyện gì, xuất hiện ở đâu.
+      <span class="vd">Ví dụ: “Tôi đang dạy học phần Tư duy phản biện cho sinh viên năm 1 ngành Giáo dục…”</span></span>
+    <span class="nk">N2</span><span class="nv"><b>Nhập vai <span class="en">(Role)</span></b> — giao cho AI một vai chuyên môn cụ thể.
+      <span class="vd">Ví dụ: “Hãy nhập vai là chuyên gia giáo dục…”</span></span>
+    <span class="nk">N3</span><span class="nv"><b>Người dùng <span class="en">(User / Audience)</span></b> — ai sẽ đọc kết quả này.
+      <span class="vd">Ví dụ: “Nội dung dành cho sinh viên năm 1 để thảo luận nhóm trên lớp.”</span></span>
+    <span class="nk">N4</span><span class="nv"><b>Nhiệm vụ <span class="en">(Task)</span></b> — chính xác việc cần AI làm, và nhấn vào điều gì.
+      <span class="vd">Ví dụ: “Tạo 3 tình huống thảo luận về đạo đức nghề nghiệp giáo viên.”</span></span>
+    <span class="nk">N5</span><span class="nv"><b>Nghi thức <span class="en">(Protocol)</span></b> — định dạng, độ dài, giọng văn, cách mở đầu.
+      <span class="vd">Ví dụ: “Xuất ra bảng 3 cột · giọng sư phạm, dễ hiểu · dài khoảng 3 câu mỗi ô.”</span></span>
+  </div>
+</div>
+
+<div class="story">
+  <b>Cách đo</b>
+  Bạn bật/tắt từng ràng buộc <span class="en">(constraint)</span> trong đơn hàng. Với mỗi bộ ràng buộc, máy chạy <b>năm lần</b>.
+  Chỗ nào bạn <b>đã ghi rõ</b> thì năm lần giống nhau. Chỗ nào bạn <b>bỏ trống</b> thì máy tự chọn — và năm lần có thể khác nhau.
+  Con số duy nhất đáng nhìn là: <b>năm bản ra khác nhau đến mức nào</b> — gọi là <b>độ lệch đầu ra</b> <span class="en">(output variance)</span>.
+</div>
+
+<!-- ===== PHẦN 1 ===== -->
+<div class="card">
+  <div class="step">Phần 1 · Viết đơn hàng</div>
+  <h3>Bật những gì bạn thật sự ghi rõ trong prompt</h3>
+  <p class="cap">Tám ô dưới đây được xếp đúng theo năm nhóm của Quy tắc 5N.
+  Bấm vào ô để bật ràng buộc; bấm vào các nhãn nhỏ bên trong để đổi giá trị.</p>
+
+  <div class="lbl">Nhiệm vụ gốc <span class="en">(core task)</span> — luôn phải có, không tắt được</div>
+  <div class="opts" id="topic"></div>
+
+  <div class="chips" id="chips"></div>
+
+  <div class="presets" id="pre">
+    <button data-p="0">⟲ Prompt mơ hồ (không ghi gì)</button>
+    <button data-p="1">Prompt thường gặp (thiếu N1 &amp; N2)</button>
+    <button data-p="2">Đủ 5N + ràng buộc cấm</button>
+  </div>
+
+  <div class="pv" id="pv"></div>
+</div>
+
+<!-- ===== PHẦN 2 ===== -->
+<div class="card">
+  <div class="step">Phần 2 · Năm lần chạy</div>
+  <h3>Cùng một prompt, năm bản ra</h3>
+  <p class="cap">Đây là <b>máy giả lập</b> <span class="en">(simulator)</span> chạy trong trình duyệt, không phải AI thật.
+  Nó chỉ mô phỏng đúng một hiện tượng: chỗ nào đơn hàng không nói, máy tự chọn.</p>
+  <div class="runs" id="runs"></div>
+</div>
+
+<!-- ===== PHẦN 3 ===== -->
+<div class="card">
+  <div class="step">Phần 3 · Điểm số</div>
+  <h3>Bạn để cho máy tự quyết bao nhiêu?</h3>
+  <div class="gauge" id="gauge"></div>
+  <div class="n5bar" id="n5bar"></div>
+  <div class="slots" id="slots"></div>
+  <div id="verdict"></div>
+  <div class="ghi">
+    <div class="lb">Chép dòng này vào thẻ prompt cá nhân</div>
+    <p class="code" id="ghiCode">—</p>
+    <button id="btnCopy">Sao chép</button>
+  </div>
+</div>
+
+<!-- ===== PHẦN 4 ===== -->
+<div class="card">
+  <div class="step">Phần 4 · Rút ra</div>
+  <h3>Bảy điều đáng chép vào vở</h3>
+  <ul class="take" id="take"></ul>
+</div>
+
+<details class="how"><summary>Mô phỏng này hoạt động thế nào? (và nó KHÔNG phải cái gì)</summary>
+<div class="bdy">
+<p><b>Đây không phải một mô hình ngôn ngữ <span class="en">(language model)</span>.</b> Không có mạng nơ-ron
+<span class="en">(neural network)</span> nào trong trang này. Máy giả lập chỉ có tám <b>ô cần điền</b> — ngữ cảnh · vai của AI ·
+người đọc · trọng tâm · độ dài · giọng văn · định dạng · cách mở đầu — và một kho câu mẫu.
+Mỗi lần chạy, ô nào <b>bạn đã ghi rõ trong prompt</b> thì lấy đúng giá trị bạn chọn; ô nào <b>bỏ trống</b> thì bốc ngẫu nhiên.</p>
+<p><b>Tám ô ấy ánh xạ vào 5N thế nào.</b> N1 Ngữ cảnh = 1 ô · N2 Nhập vai = 1 ô · N3 Người dùng = 1 ô ·
+N4 Nhiệm vụ = phần nội dung gốc (luôn bật) + 1 ô trọng tâm · N5 Nghi thức = 4 ô. Nghi thức chiếm nhiều ô nhất vì
+trong thực tế nó cũng là chữ N bị viết qua loa nhất.</p>
+<p><b>Vì sao mô phỏng thế lại đúng.</b> Mô hình thật phức tạp hơn nhiều, nhưng cơ chế gây ra hiện tượng này thì giống:
+khi prompt không ràng buộc một khía cạnh nào đó, mô hình vẫn phải chọn một giá trị cho khía cạnh ấy, và nó chọn theo
+xác suất. Tính chất này gọi là <b>không tất định</b> <span class="en">(non-determinism)</span>: cùng một prompt mơ hồ,
+chạy nhiều lần sẽ ra nhiều kiểu khác nhau. Đó chính là thứ trang này đo được.</p>
+<p><b>Ngẫu nhiên có hạt giống <span class="en">(random seed)</span>.</b> Năm lần chạy dùng hạt <code>2026, 5, 129, 7, 41</code> nên
+<b>mọi máy trong lớp ra cùng kết quả</b> — cả lớp so phiếu được với nhau.</p>
+<p><b>Ràng buộc «cấm bịa số» hoạt động khác các ràng buộc kia.</b> Đó là một <b>ràng buộc cấm</b>
+<span class="en">(negative constraint)</span>. Nó không làm giảm độ lệch. Nó chỉ loại bỏ một loại đầu ra ra khỏi kho câu mẫu —
+đúng như trong thực tế: một dòng «tuyệt đối không làm» không làm câu trả lời ổn định hơn, nó chỉ chặn một kiểu sai cụ thể.</p>
+</div></details>
+
+<!-- ===== GLOSSARY ===== -->
+<div class="card gloss">
+  <div class="step">Thuật ngữ</div>
+  <h3>Chú giải thuật ngữ <span class="en">(Glossary)</span></h3>
+  <p class="cap">Các từ khoá xuất hiện trong bài, giải thích ngắn gọn theo đúng nghĩa dùng trong mô phỏng này.
+  Quên nghĩa từ nào thì quay lại đây đọc.</p>
+  <dl>
+    <dt>Prompt <span class="en">(câu lệnh / lời nhắc)</span></dt>
+    <dd>Đoạn văn bản bạn gõ vào để yêu cầu trợ lý AI làm một việc. Trong bài này, prompt được ví như một <b>đơn đặt hàng</b> gửi thợ may: bạn ghi càng rõ, thợ may càng ít phải đoán.</dd>
+
+    <dt>Quy tắc 5N <span class="en">(5N prompting framework)</span></dt>
+    <dd>Bộ khung năm chữ N — <b>Ngữ cảnh · Nhập vai · Người dùng · Nhiệm vụ · Nghi thức</b> — dùng để kiểm tra một prompt đã đủ ý chưa. Đây là danh sách kiểm <span class="en">(checklist)</span>, không phải thứ tự bắt buộc phải viết theo.</dd>
+
+    <dt>N1 · Ngữ cảnh <span class="en">(Context)</span></dt>
+    <dd>Bối cảnh xung quanh yêu cầu: việc này phục vụ chuyện gì, kết quả sẽ xuất hiện ở đâu (fanpage, email, bảng tin, slide). Thiếu ngữ cảnh, máy sẽ chọn nhầm <b>kiểu văn bản</b> — bạn cần email mà nó viết bài đăng mạng xã hội.</dd>
+
+    <dt>N2 · Nhập vai <span class="en">(Role / Persona)</span></dt>
+    <dd>Giao cho AI một vai chuyên môn (“hãy nhập vai chuyên gia giáo dục”). Vai quyết định <b>góc chuyên môn</b> mà máy mang vào bài — cùng một nội dung, nhà báo và nhân viên kinh doanh viết ra hai thứ khác nhau.</dd>
+
+    <dt>N3 · Người dùng <span class="en">(User / Audience)</span></dt>
+    <dd>Người sẽ đọc kết quả: sinh viên, khách hàng, lãnh đạo, trẻ em. Đây là ô quyết định cách xưng hô và mức độ đơn giản của câu chữ.</dd>
+
+    <dt>N4 · Nhiệm vụ <span class="en">(Task)</span></dt>
+    <dd>Việc cụ thể cần AI làm, kèm <b>trọng tâm</b> cần nhấn (lợi ích, tính năng, câu chuyện, số liệu). Không có nhiệm vụ thì không có đơn hàng — vì thế trong trang này nó luôn bật.</dd>
+
+    <dt>N5 · Nghi thức <span class="en">(Protocol / Format &amp; Style)</span></dt>
+    <dd>Quy định về hình thức trình bày: độ dài, giọng văn, định dạng (đoạn văn / gạch đầu dòng / bảng), cách mở đầu. Trong thực tế đây là chữ N bị bỏ qua nhiều nhất, dù nó là chữ N dễ ghi nhất.</dd>
+
+    <dt>Ràng buộc <span class="en">(Constraint)</span></dt>
+    <dd>Một yêu cầu cụ thể mà prompt đặt ra cho máy, ví dụ “viết đúng 3 câu”, “trình bày dạng bảng”. Mỗi ô bạn bật trong Phần 1 chính là một ràng buộc.</dd>
+
+    <dt>Ràng buộc cấm <span class="en">(Negative constraint)</span></dt>
+    <dd>Dòng “tuyệt đối không làm X” — ví dụ “không bịa số liệu”. Nó <b>chặn một kiểu sai</b> nhưng <b>không</b> làm câu trả lời ổn định hơn, nên không thay thế được các ràng buộc thường.</dd>
+
+    <dt>Mặc định ngầm <span class="en">(Implicit default)</span></dt>
+    <dd>Giá trị mà máy tự điền vào một ô bạn bỏ trống. Nguy hiểm ở chỗ nó <b>vô hình</b>: bản trả về trông vẫn hoàn chỉnh, bạn không nhìn thấy chỗ nào là do bạn quyết và chỗ nào là do máy đoán.</dd>
+
+    <dt>Độ lệch đầu ra <span class="en">(Output variance)</span></dt>
+    <dd>Mức độ khác nhau giữa nhiều lần chạy cùng một prompt. Đây là con số lớn màu đỏ/cam trong Phần 3. Độ lệch cao = prompt còn nhiều ô trống.</dd>
+
+    <dt>Tính không tất định <span class="en">(Non-determinism)</span></dt>
+    <dd>Đặc điểm khiến cùng một prompt cho ra các kết quả khác nhau ở những lần chạy khác nhau. Không phải lỗi — đó là cách mô hình sinh chữ theo xác suất.</dd>
+
+    <dt>Ảo giác <span class="en">(Hallucination)</span></dt>
+    <dd>Khi máy đưa ra thông tin nghe rất thật nhưng không có nguồn nào — như “1.240 người dùng”, “92% hài lòng” trong bài này. Máy không nói dối; nó chỉ sinh ra <b>kiểu câu thường gặp</b>, mà kiểu câu có số liệu thì rất thường gặp.</dd>
+
+    <dt>Hạt giống ngẫu nhiên <span class="en">(Random seed)</span></dt>
+    <dd>Con số đặt trước để bộ sinh ngẫu nhiên lặp lại đúng cùng một dãy lựa chọn. Nhờ nó, mọi máy trong lớp mở trang này đều thấy cùng năm bản ra và so phiếu được với nhau.</dd>
+
+    <dt>Mô hình ngôn ngữ <span class="en">(Language model)</span></dt>
+    <dd>Chương trình học từ rất nhiều văn bản để đoán chữ tiếp theo hợp lý nhất — thứ chạy phía sau ChatGPT, Claude, Gemini. Trang này <b>không</b> chứa mô hình ngôn ngữ; nó chỉ mô phỏng một hành vi của mô hình.</dd>
+
+    <dt>Máy giả lập <span class="en">(Simulator)</span></dt>
+    <dd>Chương trình bắt chước <b>một hiện tượng</b> của hệ thống thật bằng cơ chế đơn giản hơn nhiều, để người học nhìn thấy được nguyên nhân. Văn bản do máy giả lập này sinh ra không có giá trị thông tin.</dd>
+
+    <dt>Tinh chỉnh prompt <span class="en">(Prompt iteration / refinement)</span></dt>
+    <dd>Vòng lặp sửa prompt: xem bản ra → tìm ô nào máy đã tự quyết sai → ghi rõ đúng ô đó → chạy lại. Đây là cách sửa có định hướng, khác hẳn với việc chạy lại nhiều lần chờ may mắn.</dd>
+
+    <dt>Kỹ thuật prompt <span class="en">(Prompt engineering)</span></dt>
+    <dd>Tên gọi chung cho kỹ năng viết và tinh chỉnh prompt sao cho kết quả ổn định và dùng được. Quy tắc 5N là một cách làm gọn của kỹ năng này cho người mới.</dd>
+  </dl>
+</div>
+
+<footer>AIT129 — Trí tuệ nhân tạo ứng dụng · Mô phỏng M6 · Chạy hoàn toàn ngoại tuyến, không gửi dữ liệu đi đâu.<br>
+Máy giả lập phục vụ giảng dạy — không phải mô hình ngôn ngữ, và văn bản nó sinh ra không có giá trị thông tin.</footer>
+</div>
+
+<script>
+"use strict";
+var $=function(id){return document.getElementById(id);};
+function rng(s){var a=s>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);
+ t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+var HAT=[2026,5,129,7,41];
+
+var TOPICS=[
+ {k:'clb', ten:'CLB tiếng Anh của khoa', chu:'Câu lạc bộ tiếng Anh của khoa',
+  tieuDe:'Giới thiệu Câu lạc bộ tiếng Anh của khoa', tag:'#CLBTiengAnh #SinhVienKhoa #DangKyNgay'},
+ {k:'kho', ten:'Phần mềm quản lý kho',   chu:'Phần mềm quản lý kho mới của công ty',
+  tieuDe:'Giới thiệu phần mềm quản lý kho mới', tag:'#QuanLyKho #ChuyenDoiSo #PhanMemMoi'},
+ {k:'hoc', ten:'Học phần AIT129',        chu:'Học phần Trí tuệ nhân tạo ứng dụng',
+  tieuDe:'Giới thiệu học phần Trí tuệ nhân tạo ứng dụng', tag:'#AIT129 #TriTueNhanTao #HocPhanMoi'}
+];
+var TOPIC='clb';
+function topic(){return TOPICS.filter(function(t){return t.k===TOPIC;})[0];}
+
+/* tám ô cần điền, xếp theo 5N + một ràng buộc cấm */
+var SLOTS=[
+ {k:'nguCanh', n:'N1', nhom:'Ngữ cảnh', en:'Context', ten:'Ngữ cảnh', mo:'kết quả xuất hiện ở đâu',
+  vals:[['fanpage','Bài đăng fanpage'],['email','Email nội bộ'],['bangTin','Tin bảng thông báo'],['slide','Slide trình bày']]},
+ {k:'nhapVai', n:'N2', nhom:'Nhập vai', en:'Role', ten:'Nhập vai', mo:'AI đóng vai ai',
+  vals:[['truyenThong','Chuyên gia truyền thông'],['giangVien','Giảng viên'],['kinhDoanh','Nhân viên kinh doanh'],['nhaBao','Nhà báo']]},
+ {k:'nguoiDoc',n:'N3', nhom:'Người dùng', en:'User', ten:'Người đọc', mo:'ai sẽ đọc bản này',
+  vals:[['sv','Sinh viên'],['khach','Khách hàng'],['sep','Lãnh đạo'],['treEm','Trẻ em']]},
+ {k:'gocNhin',n:'N4', nhom:'Nhiệm vụ', en:'Task', ten:'Trọng tâm', mo:'nhấn vào điều gì',
+  vals:[['loiIch','Lợi ích'],['tinhNang','Tính năng'],['cauChuyen','Câu chuyện'],['soLieu','Số liệu']]},
+ {k:'doDai', n:'N5', nhom:'Nghi thức', en:'Protocol', ten:'Độ dài', mo:'bao nhiêu câu',
+  vals:[['ngan','1 câu'],['vua','3 câu'],['dai','6 câu']]},
+ {k:'giong', n:'N5', nhom:'Nghi thức', en:'Protocol', ten:'Giọng văn', mo:'viết theo giọng nào',
+  vals:[['trangTrong','Trang trọng'],['thanMat','Thân mật'],['quangCao','Quảng cáo'],['khoKhan','Khô khan']]},
+ {k:'dinhDang',n:'N5', nhom:'Nghi thức', en:'Protocol', ten:'Định dạng', mo:'trình bày kiểu gì',
+  vals:[['doan','Đoạn văn'],['gach','Gạch đầu dòng'],['bang','Bảng hai cột']]},
+ {k:'moDau', n:'N5', nhom:'Nghi thức', en:'Protocol', ten:'Cách mở đầu', mo:'mở bài thế nào',
+  vals:[['chao','Lời chào'],['thang','Vào thẳng'],['hoi','Câu hỏi gợi mở']]}
+];
+var CAM={k:'camBia', ten:'Cấm bịa số liệu', mo:'ràng buộc cấm (negative constraint)'};
+
+var ON={}, PICK={};
+SLOTS.forEach(function(s){ON[s.k]=false;PICK[s.k]=s.vals[0][0];});
+ON.camBia=false;
+
+/* ---------- kho câu ---------- */
+var MO_={
+ chao:{sv:'Xin chào các bạn sinh viên,',khach:'Kính chào quý khách,',sep:'Kính gửi ban lãnh đạo,',treEm:'Chào các em,'},
+ thang:{sv:'',khach:'',sep:'',treEm:''},
+ hoi:{sv:'Bạn đã bao giờ thấy mình học mãi mà vẫn không dám mở miệng nói chưa?',
+      khach:'Quý khách đã bao giờ mất nửa buổi chỉ để tìm một món hàng trong kho chưa?',
+      sep:'Chúng ta đang mất bao nhiêu giờ mỗi tuần cho những việc lặp đi lặp lại?',
+      treEm:'Các em có muốn biết máy tính học được như thế nào không?'}
+};
+var GOC_={
+ loiIch:['giúp người tham gia tiết kiệm được thời gian mỗi tuần','mang lại thay đổi thấy được ngay trong tháng đầu tiên','gỡ bớt phần việc lặp đi lặp lại mà ai cũng ngại'],
+ tinhNang:['có ba phần chính, mỗi phần phụ trách một việc riêng','theo dõi được trên cả điện thoại lẫn máy tính','cho phép mỗi người tự đặt quy tắc riêng của mình'],
+ cauChuyen:['bắt đầu từ một nhóm bốn người và đúng một bảng tính','ra đời sau khi cả phòng cùng lỡ một hạn nộp','được đặt tên theo quán cà phê nơi mọi thứ được bàn lần đầu'],
+ soLieu:['hiện đã có 1.240 người dùng thường xuyên','giúp tiết kiệm trung bình 6,4 giờ mỗi tuần cho mỗi người','đạt tỉ lệ hài lòng 92% trong khảo sát gần nhất']
+};
+var GIONG_={
+ trangTrong:{noi:'Đây là một sáng kiến được chuẩn bị kỹ lưỡng.',ket:'Trân trọng kính mời quý vị quan tâm.'},
+ thanMat:{noi:'Nói thật là ai thử rồi cũng thấy dễ chịu hơn hẳn.',ket:'Ghé thử một buổi xem sao nhé!'},
+ quangCao:{noi:'Đây chính là thứ bạn đang tìm bấy lâu nay.',ket:'Đừng bỏ lỡ — số lượng có hạn!'},
+ khoKhan:{noi:'Nội dung được mô tả theo đúng tài liệu hiện hành.',ket:'Hết.'}
+};
+/* N2 · vai của AI: dẫn nhập + một câu mang màu chuyên môn của vai đó */
+var VAI_={
+ truyenThong:{dan:'Điều đáng nói là ',
+   cau:['Điểm mạnh nhất nằm ở chỗ chỉ cần một câu là kể lại được.',
+        'Thông điệp này nên được nhắc lại đều đặn trên mọi kênh để người đọc nhớ.',
+        'Cách lan toả nhanh nhất là để chính người đã dùng kể lại trải nghiệm của họ.']},
+ giangVien:{dan:'Nói cho dễ hiểu, ',
+   cau:['Người tiếp cận lần đầu chỉ cần nắm ba ý chính là đủ dùng.',
+        'Phần khó nhất luôn nằm ở bước đầu tiên, nên có người hướng dẫn sẽ đỡ nản.',
+        'Mỗi bước đều kết thúc bằng một kết quả nhìn thấy được, để người dùng tự đo tiến bộ.']},
+ kinhDoanh:{dan:'Nói ngắn gọn, ',
+   cau:['Công sức bỏ ra được bù lại ngay trong vài tuần đầu.',
+        'So với cách làm cũ, phần việc phải xử lý bằng tay giảm đi thấy rõ.',
+        'Có thể thử trước rồi quyết định sau, không ràng buộc gì.']},
+ nhaBao:{dan:'Theo ghi nhận, ',
+   cau:['Đây là hoạt động được triển khai theo kế hoạch đã công bố từ đầu kỳ.',
+        'Đơn vị chủ trì cho biết mô hình này sẽ được mở rộng trong thời gian tới.',
+        'Thông tin trên được ghi nhận từ phía đơn vị tổ chức.']}
+};
+var DOI_={sv:'sinh viên',khach:'khách hàng',sep:'ban lãnh đạo',treEm:'các em nhỏ'};
+var TEN_NGU={fanpage:'bài đăng fanpage',email:'email nội bộ',bangTin:'tin bảng thông báo',slide:'slide trình bày'};
+
+function socau(d){return d==='ngan'?1:(d==='vua'?3:6);}
+function low(s){return s.charAt(0).toLowerCase()+s.slice(1);}
+function boc(arr,r){return arr[Math.floor(r()*arr.length)];}
+
+/* N1 · ngữ cảnh quyết định "vỏ" của văn bản */
+function voNguCanh(k){
+ var T=topic();
+ if(k==='email')   return {truoc:'Chủ đề: '+T.tieuDe, sau:''};
+ if(k==='slide')   return {truoc:'Tiêu đề slide: '+T.tieuDe, sau:''};
+ if(k==='bangTin') return {truoc:'THÔNG BÁO', sau:'Chi tiết xin liên hệ văn phòng khoa.'};
+ return {truoc:'', sau:T.tag};
+}
+
+function sinh(s){
+ var T=topic(), chu=T.chu;
+ var n=socau(s.doDai), cau=[], r=rng(s._seed*7919+13);
+ var mo=MO_[s.moDau][s.nguoiDoc];
+ var banks=[s.gocNhin];
+ ['loiIch','tinhNang','cauChuyen','soLieu'].forEach(function(g){
+  if(g!==s.gocNhin && !(g==='soLieu'&&ON.camBia)) banks.push(g);});
+
+ /* câu 1: trọng tâm N4, dẫn nhập theo vai N2 */
+ cau.push(VAI_[s.nhapVai].dan+low(chu)+' '+boc(GOC_[s.gocNhin],r)+'.');
+ var idx=0;
+ while(cau.length<n){
+  idx++;
+  if(idx===1){cau.push(boc(VAI_[s.nhapVai].cau,r));continue;}
+  if(idx===2){cau.push(GIONG_[s.giong].noi);continue;}
+  var g=banks[idx%banks.length];
+  cau.push('Ngoài ra, '+low(chu)+' '+boc(GOC_[g],r)+'.');
+ }
+ if(n>1) cau[cau.length-1]=GIONG_[s.giong].ket;
+
+ var than;
+ if(s.dinhDang==='gach') than=cau.map(function(c){return '• '+c;}).join('\n');
+ else if(s.dinhDang==='bang'){
+  than=cau.map(function(c,i){return (i===0?'Nội dung chính':'Ý bổ sung '+i)+'  |  '+c;}).join('\n');}
+ else than=cau.join(' ');
+
+ var vo=voNguCanh(s.nguCanh);
+ var full='';
+ if(vo.truoc) full+=vo.truoc+'\n';
+ if(mo) full+=mo+(s.dinhDang==='doan'?' ':'\n');
+ full+=than;
+ if(vo.sau) full+='\n'+vo.sau;
+
+ var bia = s.gocNhin==='soLieu' || /1\.240|6,4|92%/.test(full);
+ return {text:full, bia:bia, huong:TEN_NGU[s.nguCanh]+' · cho '+DOI_[s.nguoiDoc]};
+}
+
+/* ---------- chạy 5 lần ---------- */
+function chay(){
+ var out=[];
+ for(var i=0;i<5;i++){
+  var r=rng(HAT[i]), s={_seed:HAT[i]};
+  SLOTS.forEach(function(sl){
+   if(ON[sl.k]) s[sl.k]=PICK[sl.k];
+   else{
+    var vs=sl.vals.filter(function(v){return !(sl.k==='gocNhin'&&v[0]==='soLieu'&&ON.camBia);});
+    s[sl.k]=vs[Math.floor(r()*vs.length)][0];
+   }});
+  out.push({s:s, kq:sinh(s)});
+ }
+ return out;
+}
+
+/* ---------- dựng giao diện ---------- */
+(function(){
+ var h='';TOPICS.forEach(function(t){h+='<button data-k="'+t.k+'">'+t.ten+'</button>';});
+ $('topic').innerHTML=h;
+ $('topic').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
+  TOPIC=b.dataset.k;ve();});
+
+ var demN={};SLOTS.forEach(function(s){demN[s.n]=(demN[s.n]||0)+1;});
+ var c='', nCur='';
+ SLOTS.forEach(function(s){
+  if(s.n!==nCur){nCur=s.n;
+   c+='<div class="grp"><span class="n">'+s.n+'</span>'+s.nhom+' <span class="en">('+s.en+')</span><span class="ln"></span></div>';}
+  c+='<div class="chip'+(demN[s.n]===1?' wide':'')+'" data-k="'+s.k+'"><div class="t"><i></i>'+s.ten+' <span class="mo">— '+s.mo+'</span></div><div class="v">';
+  s.vals.forEach(function(v){c+='<span data-v="'+v[0]+'">'+v[1]+'</span>';});
+  c+='</div></div>';});
+ c+='<div class="chip cam wide" data-k="camBia"><div class="t"><i></i>'+CAM.ten+' <span class="mo">— '+CAM.mo+'</span></div>'+
+    '<div class="v"><span style="border:0;padding-left:0">Chặn hẳn kho câu số liệu bịa ra</span></div></div>';
+ $('chips').innerHTML=c;
+
+ $('chips').addEventListener('click',function(e){
+  var sp=e.target.closest('.v span'), ch=e.target.closest('.chip'); if(!ch)return;
+  var k=ch.dataset.k;
+  if(sp&&sp.dataset.v){ PICK[k]=sp.dataset.v; ON[k]=true; }
+  else ON[k]=!ON[k];
+  ve();});
+
+ $('pre').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
+  var p=+b.dataset.p;
+  SLOTS.forEach(function(s){ON[s.k]=false;});ON.camBia=false;
+  if(p>=1){['nguoiDoc','gocNhin','doDai','dinhDang'].forEach(function(k){ON[k]=true;});
+   PICK.nguoiDoc='sv';PICK.gocNhin='loiIch';PICK.doDai='vua';PICK.dinhDang='gach';}
+  if(p>=2){['nguCanh','nhapVai','giong','moDau'].forEach(function(k){ON[k]=true;});
+   ON.camBia=true;PICK.nguCanh='fanpage';PICK.nhapVai='truyenThong';PICK.giong='thanMat';PICK.moDau='hoi';}
+  ve();});
+})();
+
+function danhDau(){
+ $('topic').querySelectorAll('button').forEach(function(b){b.classList.toggle('on',b.dataset.k===TOPIC);});
+ $('chips').querySelectorAll('.chip').forEach(function(ch){
+  var k=ch.dataset.k; ch.classList.toggle('on',!!ON[k]);
+  ch.querySelectorAll('.v span').forEach(function(sp){
+   if(sp.dataset.v) sp.classList.toggle('sel',ON[k]&&PICK[k]===sp.dataset.v);});});
+}
+
+function vePrompt(){
+ var T=topic();
+ var L=['Viết cho tôi một đoạn giới thiệu về '+T.chu+'.  <span class="nn">← N4 · Nhiệm vụ (luôn có)</span>',''];
+ SLOTS.forEach(function(s){
+  var dau=s.n+' · '+s.nhom+(s.ten===s.nhom?'':' — '+s.ten);
+  if(ON[s.k]){
+   var ten=s.vals.filter(function(v){return v[0]===PICK[s.k];})[0][1];
+   L.push('<span class="nn">'+dau+'</span>: '+ten);
+  }else{
+   L.push('<span class="dim">'+dau+': (bỏ trống — máy tự quyết)</span>');
+  }});
+ L.push('');
+ if(ON.camBia) L.push('<span class="em">TUYỆT ĐỐI KHÔNG: bịa ra số liệu thống kê nào không có trong nguồn tôi cung cấp.</span>');
+ else L.push('<span class="dim">(không có dòng «tuyệt đối không làm»)</span>');
+ $('pv').innerHTML=L.join('\n');
+}
+
+function veRuns(rs){
+ var h='';
+ rs.forEach(function(r,i){
+  h+='<div class="run'+(r.kq.bia?' bia':'')+'"><div class="h">Lần chạy '+(i+1)+' · '+r.kq.huong+
+     (r.kq.bia?'<span class="flag">có số liệu bịa</span>':'')+'</div><div class="b">'+
+     r.kq.text.replace(/\n/g,'<br>')+'</div></div>';});
+ $('runs').innerHTML=h;
+}
+
+/* mức phủ của từng chữ N */
+function phu5N(){
+ var g={};
+ SLOTS.forEach(function(s){
+  if(!g[s.n]) g[s.n]={n:s.n,nhom:s.nhom,en:s.en,tong:0,bat:0};
+  g[s.n].tong++; if(ON[s.k]) g[s.n].bat++;});
+ return ['N1','N2','N3','N4','N5'].map(function(k){return g[k];});
+}
+
+function veDiem(rs){
+ var tuQuyet=0, khac=0, rows='', nCur='';
+ SLOTS.forEach(function(s){
+  if(s.n!==nCur){nCur=s.n; rows+='<span class="g">'+s.n+' · '+s.nhom+' ('+s.en+')</span>';}
+  var set={},n=0;
+  rs.forEach(function(r){if(!set[r.s[s.k]]){set[r.s[s.k]]=1;n++;}});
+  if(!ON[s.k]) tuQuyet++;
+  if(n>1) khac++;
+  var w=Math.round((n-1)/(s.vals.length-1)*100);
+  rows+='<span class="k">'+s.ten+'</span><span class="tr"><span class="fl2" style="width:'+Math.max(w,3)+
+        '%;background:'+(n>1?'#eb6834':'#2a78d6')+'"></span></span>'+
+        '<span class="v">'+(ON[s.k]?'bạn chọn':n+' kiểu khác nhau')+'</span>';});
+ $('slots').innerHTML=rows;
+
+ var g5=phu5N(), duN=0, hb='';
+ g5.forEach(function(g){
+  var cls = g.bat===g.tong?'ok':(g.bat===0?'no':'half');
+  if(g.bat===g.tong) duN++;
+  hb+='<div class="b '+cls+'"><div class="t">'+g.n+'</div><div class="m">'+g.nhom+'<br>'+g.bat+'/'+g.tong+'</div></div>';});
+ $('n5bar').innerHTML=hb;
+
+ var pct=Math.round(khac/SLOTS.length*100);
+ var mau = pct>=60?'#e34948':(pct>=25?'#eb6834':'#4caf50');
+ $('gauge').innerHTML='<div class="lb">Độ lệch đầu ra giữa năm bản (output variance)</div>'+
+  '<div class="big" style="color:'+mau+'">'+pct+'%</div>'+
+  '<div class="sub">'+khac+' trong 8 ô đã ra kết quả khác nhau giữa các lần chạy. '+
+  'Bạn để trống '+tuQuyet+' ô, máy tự quyết '+tuQuyet+' thứ. '+
+  'Quy tắc 5N: <b>đủ '+duN+'/5 chữ N</b>.</div>'+
+  '<div class="bar"><span class="fl" style="width:'+pct+'%;background:'+mau+'"></span></div>';
+
+ var thieu=g5.filter(function(g){return g.bat<g.tong;}).map(function(g){return g.n+' '+g.nhom;});
+ var soBia=rs.filter(function(r){return r.kq.bia;}).length, h='';
+ if(pct>=60) h='<div class="rule stop"><b>Đơn hàng gần như bỏ trống</b>Năm lần chạy ra năm kiểu khác nhau. Nếu đây là AI thật, bạn sẽ phải chạy lại nhiều lần cho tới khi «may mắn» ra bản vừa ý — và bạn <b>không biết vì sao lần đó lại vừa ý</b>, nên lần sau vẫn phải may rủi tiếp.</div>';
+ else if(pct>=25) h='<div class="rule care"><b>Đã rõ hơn, nhưng còn chỗ để trống</b>Vẫn còn '+khac+' ô máy tự quyết. Các chữ N chưa đủ: <b>'+thieu.join(' · ')+'</b>. Hãy tự hỏi: <b>ô nào mà nếu máy chọn sai thì mình phải viết lại từ đầu?</b> Ghi rõ đúng ô đó trước.</div>';
+ else h='<div class="rule free"><b>Đơn đặt hàng đã đủ 5N</b>Năm bản ra <b>vẫn khác nhau ở câu chữ</b> — điều đó là bình thường và không tránh được. Nhưng chúng đã <b>thống nhất ở mọi thứ bạn quan tâm</b>: đúng ngữ cảnh, đúng vai, đúng người đọc, đúng trọng tâm, đúng nghi thức. Từ đây, nếu bản ra chưa vừa ý thì <b>lỗi nằm ở yêu cầu chứ không phải ở may rủi</b> — mà yêu cầu thì sửa được.</div>';
+ if(soBia>0 && !ON.camBia) h+='<div class="rule stop" style="margin-top:10px"><b>'+soBia+' / 5 bản có số liệu bịa ra</b>Những con số như «1.240 người dùng» hay «92% hài lòng» <b>không có trong nguồn nào cả</b> — máy tự sinh ra vì kho câu của nó có sẵn kiểu câu đó. Đây chính là <b>ảo giác</b> <span class="en">(hallucination)</span>. Bật ràng buộc <b>«Cấm bịa số liệu»</b> và chạy lại.</div>';
+ else if(ON.camBia) h+='<div class="rule free" style="margin-top:10px"><b>Không bản nào bịa số</b>Ràng buộc cấm <span class="en">(negative constraint)</span> đã chặn hẳn loại đầu ra đó. Chú ý: nó <b>không</b> làm độ lệch giảm xuống — một điều cấm chặn được kiểu sai, nhưng không làm câu trả lời ổn định hơn.</div>';
+ $('verdict').innerHTML=h;
+
+ var ten=[];SLOTS.forEach(function(s){if(ON[s.k])ten.push(s.n+':'+s.ten);});
+ $('ghiCode').textContent='M6 · '+topic().ten+
+  ' · 5N đủ '+duN+'/5'+(thieu.length?' (thiếu '+thieu.join(', ')+')':'')+
+  ' · ghi rõ '+ten.length+'/8 ràng buộc: '+(ten.join(', ')||'(không)')+
+  (ON.camBia?' · có ràng buộc cấm bịa số':' · KHÔNG có ràng buộc cấm')+
+  ' → độ lệch '+pct+'%, số bản bịa số '+soBia+'/5';
+}
+
+var TAKE=[
+ 'Prompt <span class="en">(câu lệnh)</span> là <b>đơn đặt hàng</b>. Mỗi ô bạn bỏ trống, thợ may vẫn phải quyết — và họ quyết theo thói quen của họ, không theo ý bạn. Giá trị họ tự điền gọi là <b>mặc định ngầm</b> <span class="en">(implicit default)</span>.',
+ '<b>Quy tắc 5N</b> chính là danh sách năm ô đó: <b>Ngữ cảnh</b> <span class="en">(Context)</span> · <b>Nhập vai</b> <span class="en">(Role)</span> · <b>Người dùng</b> <span class="en">(User)</span> · <b>Nhiệm vụ</b> <span class="en">(Task)</span> · <b>Nghi thức</b> <span class="en">(Protocol)</span>. Đọc lại prompt của mình và soi đủ năm chữ, thế là xong.',
+ 'Hai chữ N bị bỏ quên nhiều nhất là <b>N1 Ngữ cảnh</b> và <b>N2 Nhập vai</b> — vì người viết đã có sẵn hai thứ đó trong đầu nên quên rằng máy thì không. Bấm nút «Prompt thường gặp» để thấy đúng cái lỗ hổng ấy.',
+ 'Prompt mơ hồ không cho ra kết quả <b>xấu</b>, nó cho ra kết quả <b>hên xui</b>. Lần này hay, lần sau dở, và bạn không biết vì sao. Tên của hiện tượng này là <b>tính không tất định</b> <span class="en">(non-determinism)</span>.',
+ 'Cách sửa một prompt không phải là viết dài hơn, mà là <b>tìm đúng chữ N đang để trống</b> rồi điền nó. Ô đáng điền trước là ô mà <b>nếu máy chọn sai thì bạn phải viết lại từ đầu</b> — thường là N1 Ngữ cảnh và N3 Người dùng.',
+ '<b>Ràng buộc cấm</b> <span class="en">(negative constraint)</span> — dòng «tuyệt đối không làm» — hoạt động khác hẳn các ràng buộc kia: nó không làm câu trả lời ổn định hơn, nó chỉ chặn một kiểu sai cụ thể. Vì thế nó <b>không thay được</b> 5N.',
+ 'Máy sinh ra «1.240 người dùng» không phải vì nó nói dối, mà vì <b>kiểu câu có số liệu là kiểu câu thường gặp</b>. Đó chính là <b>ảo giác</b> <span class="en">(hallucination)</span> — và nó trông rất giống sự thật.'];
+(function(){var h='';TAKE.forEach(function(t,i){h+='<li><span class="k">'+(i+1)+'</span>'+t+'</li>';});$('take').innerHTML=h;})();
+
+function ve(){danhDau();vePrompt();var rs=chay();veRuns(rs);veDiem(rs);}
+$('btnCopy').addEventListener('click',function(){var t=$('ghiCode').textContent,b=this;
+ if(navigator.clipboard)navigator.clipboard.writeText(t).then(function(){b.textContent='Đã chép ✓';
+  setTimeout(function(){b.textContent='Sao chép';},1600);});});
+ve();
+</script>
+</body></html>

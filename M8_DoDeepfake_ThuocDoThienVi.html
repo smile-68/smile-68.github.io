@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M8 — Bộ dò Deepfake &amp; Thước đo thiên vị (Bias) · AIT129</title>
+<style>
+:root{color-scheme:light;
+  --ink:#0b0b0b;--ink2:#52514e;--ink3:#898781;
+  --bg:#f9f9f7;--card:#fcfcfb;--line:#e1e0d9;--axis:#c3c2b7;
+  --brand:#1f4fd8;--brand-d:#16359b;--brand-l:#eaf0ff;
+  --blue:#2a78d6;--dblue:#0d366b;--orange:#eb6834;--red:#e34948;
+  --good:#2e7d32;--bad:#c02626;
+  --warn-bg:#fff8e8;--warn-bd:#e8d5a0;--warn-ink:#5c4708;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.55;font-size:16px}
+.wrap{max-width:800px;margin:0 auto;padding:0 16px 44px}
+header{background:linear-gradient(135deg,#0d366b,#1f4fd8 60%,#3f74f0);color:#fff;padding:20px 0 18px}
+header .tag{font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.82;font-weight:700}
+header h1{margin:5px 0 3px;font-size:24px;font-weight:700;letter-spacing:-.4px}
+header p{margin:0;font-size:13.5px;opacity:.9;max-width:620px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-top:16px}
+.card h3{margin:0 0 3px;font-size:16.5px}
+.card .cap{margin:0 0 14px;font-size:13.5px;color:var(--ink2);line-height:1.55}
+.step{display:inline-block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;
+  color:var(--brand-d);background:var(--brand-l);border-radius:20px;padding:4px 11px;margin-bottom:8px}
+.story{background:var(--brand-l);border-radius:12px;padding:16px 18px;font-size:15px;margin-top:16px}
+.story>b:first-child{display:block;margin-bottom:5px;color:var(--brand-d)}
+.big-sec{margin-top:30px;padding-top:6px;border-top:3px solid var(--line)}
+
+.slider{margin-top:14px}
+.slider .lb{display:flex;justify-content:space-between;font-size:13.5px;font-weight:600;color:var(--ink2);margin-bottom:6px;gap:10px}
+.slider .lb b{color:var(--ink);font-size:15px;white-space:nowrap}
+input[type=range]{width:100%;height:32px;-webkit-appearance:none;background:transparent;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:9px;border-radius:5px;background:linear-gradient(to right,#eaf0ff,#2a78d6,#0d366b)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;
+  background:#fff;border:3px solid var(--brand);margin-top:-8.5px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+input[type=range]::-moz-range-track{height:9px;border-radius:5px;background:var(--line)}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--brand);cursor:pointer}
+.presets{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.presets button{border:1.5px dashed var(--axis);background:#fff;border-radius:9px;padding:9px 13px;font-size:12.5px;
+  font-weight:600;color:var(--ink2);cursor:pointer;font-family:inherit;text-align:left;line-height:1.35}
+.presets button:hover{border-color:var(--brand);color:var(--brand-d);border-style:solid}
+.presets button.on{background:var(--brand);border-color:var(--brand);color:#fff;border-style:solid}
+
+.gauge{background:#12161f;color:#fff;border-radius:13px;padding:19px 20px;margin-top:16px;text-align:center}
+.gauge .lb{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;opacity:.62;font-weight:700;line-height:1.5}
+.gauge .big{font-size:54px;font-weight:800;line-height:1.05;margin:6px 0 2px;letter-spacing:-2px}
+.gauge .sub{font-size:13.5px;opacity:.78;line-height:1.5}
+
+.grid{display:flex;flex-wrap:wrap;gap:1.5px;margin-top:14px;line-height:0}
+.grid i{width:8px;height:8px;border-radius:1.5px;display:inline-block}
+.leg{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink2);margin-top:11px}
+.leg span{display:flex;align-items:center;gap:6px}
+.leg i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.leg b{font-variant-numeric:tabular-nums}
+
+.sc-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.sw{width:100%;min-width:540px;border-collapse:collapse;font-size:13px;margin-top:10px}
+table.sw th,table.sw td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:center;font-variant-numeric:tabular-nums}
+table.sw th:first-child,table.sw td:first-child{text-align:left;min-width:160px}
+table.sw th{font-size:11px;text-transform:uppercase;color:var(--ink3);font-weight:700;line-height:1.3}
+table.sw tr.now{background:var(--brand-l);font-weight:800}
+
+.bars{margin-top:10px}
+.brow{margin-bottom:11px}
+.brow .hl{display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:4px;gap:8px;align-items:baseline}
+.brow .nm{font-weight:700}
+.brow .v{font-weight:800;font-size:13.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.brow .track{height:22px;background:#eeedea;border-radius:5px;overflow:hidden;display:flex}
+.brow .f{height:100%}
+.brow .fm{background:#2a78d6} .brow .ff{background:#eb6834}
+
+.inp{display:grid;grid-template-columns:1.4fr repeat(3,minmax(58px,.6fr));gap:7px;align-items:center;margin-bottom:7px}
+.inp input,.inp select{border:1.5px solid var(--line);border-radius:8px;padding:8px 9px;font-family:inherit;
+  font-size:14px;width:100%;background:#fff;color:var(--ink)}
+.inp input:focus{outline:0;border-color:var(--brand)}
+.inp .hd{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);text-align:center}
+.inp .hd:first-child{text-align:left}
+.btn{border:0;background:var(--brand);color:#fff;border-radius:10px;padding:11px 18px;font-size:14px;
+  font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px}
+.btn.ghost{background:#fff;color:var(--brand-d);border:1.5px solid var(--line);margin-left:8px}
+
+.rule{border-radius:12px;padding:15px 17px;margin-top:14px;font-size:14.5px}
+.rule>b:first-child{display:block;margin-bottom:5px}
+.rule.stop{background:#fdeceb;border:1.4px solid #e88b88;color:#8a2020}
+.rule.stop>b:first-child{color:var(--bad)}
+.rule.free{background:#eaf6ec;border:1px solid #bfe0c5;color:#28502f}
+.rule.free>b:first-child{color:var(--good)}
+.rule.care{background:var(--warn-bg);border:1px solid var(--warn-bd);color:var(--warn-ink)}
+.rule.care>b:first-child{color:#7a5c00}
+
+.take{margin-top:6px;padding:0;list-style:none}
+.take li{position:relative;padding:11px 0 11px 34px;border-bottom:1px solid var(--line);font-size:14.5px}
+.take li:last-child{border-bottom:0}
+.take li .k{position:absolute;left:0;top:11px;width:24px;height:24px;border-radius:50%;background:var(--brand-l);
+  color:var(--brand-d);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.take li b{color:var(--brand-d)}
+details.how{margin-top:16px;background:#f3f4f2;border-radius:11px;padding:0 16px}
+details.how summary{cursor:pointer;padding:13px 0;font-weight:700;font-size:14px;color:var(--ink2);list-style:none}
+details.how summary::-webkit-details-marker{display:none}
+details.how summary::before{content:"▸ ";color:var(--ink3)}
+details.how[open] summary::before{content:"▾ "}
+details.how .bdy{padding:0 0 14px;font-size:13.5px;color:var(--ink2);line-height:1.6}
+details.how code{background:#e4e5e2;border-radius:4px;padding:1px 5px;font-size:12.5px}
+.note{font-size:12.5px;color:var(--ink3);margin-top:12px;line-height:1.5}
+.ghi{background:#12161f;color:#fff;border-radius:12px;padding:16px 18px;margin-top:16px}
+.ghi .lb{font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.6;font-weight:700}
+.ghi .code{font-size:14px;font-weight:700;margin:7px 0 0;word-break:break-word;line-height:1.55}
+.ghi button{margin-top:12px;background:#fff;color:#12161f;border:0;border-radius:9px;padding:10px 16px;
+  font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit}
+footer{text-align:center;font-size:12px;color:var(--ink3);margin-top:26px;line-height:1.6}
+
+.q-card{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:10px}
+.q-num{font-size:11.5px;font-weight:800;color:var(--brand);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.q-stmt{font-size:15px;font-weight:600;line-height:1.55;margin-bottom:12px}
+.q-btns{display:flex;gap:10px}
+.q-btns button{flex:1;border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:10px;
+  font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s,border-color .15s,color .15s}
+.q-btns button:hover{border-color:var(--brand);color:var(--brand)}
+.q-btns button.right{background:var(--good);border-color:var(--good);color:#fff}
+.q-btns button.wrong{background:var(--bad);border-color:var(--bad);color:#fff}
+.q-btns button.dim{opacity:.3;pointer-events:none}
+.q-ex{margin-top:10px;font-size:14px;line-height:1.6;padding:12px 15px;border-radius:10px;display:none}
+.q-ex.show{display:block}
+.q-ex.ok{background:#eaf6ec;border:1px solid #bfe0c5;color:#28502f}
+.q-ex.ko{background:#fdeceb;border:1px solid #e88b88;color:#8a2020}
+
+.glossary dl{margin:0}
+.glossary dt{font-weight:700;font-size:15px;color:var(--brand-d);margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
+.glossary dt:first-child{margin-top:0;padding-top:0;border-top:none}
+.glossary dd{margin:4px 0 0 0;font-size:14.5px;color:var(--ink2);line-height:1.6}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="tag">AIT129 · Mô phỏng M8 · Buổi 7</div>
+  <h1>Bộ dò Deepfake & Thước đo thiên vị (Bias)</h1>
+  <p>Bắt đầu bằng 5 câu Đúng/Sai để thử trực giác, rồi khám phá hai dụng cụ: bộ dò deepfake (detector) cho thấy vì sao «chính xác 95%» vẫn buộc tội oan phần lớn, và thước đo thiên vị (bias) đếm bằng dữ liệu thật.</p>
+</div></header>
+
+<div class="wrap">
+
+<div class="story">
+  <b>Chiếc cân bị lệch</b>
+  Nó không cố tình nói dối. Nó chỉ trung thành lặp lại cái sai đã có sẵn trong nó — và làm việc đó rất đều đặn,
+  rất nhanh, với vẻ ngoài của một phép đo khách quan. Cả hai dụng cụ dưới đây đều <b>tính thật</b>, không diễn.
+</div>
+
+<!-- ============ THỬ SỨC ============ -->
+<div class="card">
+  <div class="step">Khởi động · Thử trực giác</div>
+  <h3>Đúng hay Sai? Trả lời bằng trực giác trước khi tính</h3>
+  <p class="cap">5 câu hỏi nhanh. Bấm «Đúng» hoặc «Sai» rồi xem đáp án — phần mô phỏng bên dưới sẽ giải thích chi tiết.</p>
+  <div id="quiz"></div>
+  <div id="quizResult" style="display:none" class="gauge">
+    <div class="lb">Kết quả thử trực giác</div>
+    <div class="big" id="quizScore">0/5</div>
+    <div class="sub" id="quizMsg"></div>
+  </div>
+</div>
+
+<!-- ============ PHẦN A ============ -->
+<div class="card">
+  <div class="step">Phần A · Nghịch lý bộ dò (The Detector Paradox)</div>
+  <h3>Bộ dò đạt 95%. Nó vừa báo động. Xác suất video đó thật sự giả là bao nhiêu?</h3>
+  <p class="cap">Hầu như ai cũng trả lời «95%». Hãy kéo thanh trượt và tự tính lại.</p>
+
+  <div class="slider">
+    <div class="lb"><span>Trong 1 000 video, có bao nhiêu video <b style="font-size:13.5px">thật sự</b> là giả?</span><b id="lP">10</b></div>
+    <input type="range" id="rP" min="1" max="500" step="1" value="10">
+  </div>
+  <div class="slider">
+    <div class="lb"><span>Độ nhạy (Sensitivity) — bắt được bao nhiêu % video giả</span><b id="lSe">95%</b></div>
+    <input type="range" id="rSe" min="50" max="100" step="1" value="95">
+  </div>
+  <div class="slider">
+    <div class="lb"><span>Độ đặc hiệu (Specificity) — bỏ qua đúng bao nhiêu % video thật</span><b id="lSp">95%</b></div>
+    <input type="range" id="rSp" min="50" max="100" step="0.5" value="95">
+  </div>
+  <div class="presets" id="pre"></div>
+
+  <div class="gauge" id="gauge"></div>
+  <div class="grid" id="grid"></div>
+  <div class="leg" id="leg"></div>
+  <div id="vA"></div>
+
+  <details class="how"><summary>Xem bảng số — bộ dò này gặp các mức tỉ lệ giả khác nhau</summary>
+    <div class="bdy"><div class="sc-wrap"><table class="sw" id="tblA"></table></div>
+    <p class="note">Cùng một bộ dò, không đổi gì cả. Chỉ đổi <b>tỉ lệ cơ sở (base rate)</b> — tức tỉ lệ video giả có thật trong kho.</p></div>
+  </details>
+</div>
+
+<!-- ============ PHẦN B ============ -->
+<div class="big-sec"></div>
+<div class="card">
+  <div class="step">Phần B · Thước đo thiên vị (Measuring Bias)</div>
+  <h3>Đo bằng dữ liệu thật, không bằng cảm giác</h3>
+  <p class="cap">Hai chế độ: đọc một bộ dữ liệu thật đã có sẵn, hoặc nhập chính số liệu nhóm em đếm được ở Lab 2.</p>
+  <div class="presets" id="mode">
+    <button data-m="that" class="on">Dữ liệu thật — 279 người trên tiền giấy</button>
+    <button data-m="tay">Nhập số nhóm em đếm được</button>
+  </div>
+
+  <div id="boxThat">
+    <div class="gauge" id="gB"></div>
+    <div class="lbl" style="font-size:12.5px;font-weight:700;color:var(--ink2);margin:16px 0 6px">
+      Tỉ lệ nữ theo từng nghề — sắp xếp từ thấp lên cao</div>
+    <div class="bars" id="barsB"></div>
+    <div class="leg">
+      <span><i style="background:#2a78d6"></i>Nam</span>
+      <span><i style="background:#eb6834"></i>Nữ</span>
+    </div>
+    <div class="rule care" style="margin-top:14px"><b>Dữ liệu này không sai</b>
+    Nó ghi đúng một thế giới đã từng bất bình đẳng: ai được in lên tiền giấy (banknote), ở 38 quốc gia.
+    Vấn đề bắt đầu khi một mô hình học từ dữ liệu huấn luyện (training data) này rồi <b>gọi cái lệch đó là quy luật</b> — và dùng nó để đoán về tương lai.</div>
+  </div>
+
+  <div id="boxTay" style="display:none">
+    <p class="cap">Điền số người mà AI mô tả cho mỗi nghề. Bấm «Tính» để ra biểu đồ của lớp.</p>
+    <div class="inp"><span class="hd">Nghề</span><span class="hd">Nam</span><span class="hd">Nữ</span><span class="hd">Không rõ</span></div>
+    <div id="rows"></div>
+    <button class="btn" id="btnThem">+ Thêm dòng</button>
+    <button class="btn ghost" id="btnTinh">Tính</button>
+    <div id="ketQua"></div>
+  </div>
+
+  <div class="ghi">
+    <div class="lb">Chép dòng này vào phiếu kiểm toán thiên vị (Bias Audit)</div>
+    <p class="code" id="ghiCode">—</p>
+    <button id="btnCopy">Sao chép</button>
+  </div>
+</div>
+
+<!-- ============ RÚT RA ============ -->
+<div class="card">
+  <div class="step">Rút ra (Takeaways)</div>
+  <h3>Sáu điều đáng chép vào vở</h3>
+  <ul class="take" id="take"></ul>
+</div>
+
+<!-- ============ BẢNG THUẬT NGỮ ============ -->
+<div class="card">
+  <div class="step">Bảng thuật ngữ (Glossary)</div>
+  <h3>Giải thích các thuật ngữ quan trọng</h3>
+  <p class="cap">Những khái niệm cần nắm để hiểu bài mô phỏng này, giải thích đơn giản nhất có thể.</p>
+  <div class="glossary"><dl>
+    <dt>Deepfake</dt>
+    <dd>Nội dung giả (video, hình ảnh, hoặc giọng nói) được tạo bằng trí tuệ nhân tạo, trông hoặc nghe rất giống thật, khiến người xem khó phân biệt bằng mắt thường.</dd>
+
+    <dt>Bộ dò (Detector)</dt>
+    <dd>Công cụ — thường dùng AI — được thiết kế để phát hiện nội dung giả mạo. Ví dụ: bộ dò deepfake, bộ dò đạo văn (plagiarism detector), bộ dò gian lận (fraud detector).</dd>
+
+    <dt>Độ nhạy (Sensitivity / Recall)</dt>
+    <dd>Khả năng bắt đúng các trường hợp cần tìm. Độ nhạy 95% nghĩa là cứ 100 video giả, bộ dò bắt được 95 video. Còn gọi là tỉ lệ phát hiện (detection rate).</dd>
+
+    <dt>Độ đặc hiệu (Specificity)</dt>
+    <dd>Khả năng nhận đúng những trường hợp không cần tìm. Độ đặc hiệu 95% nghĩa là cứ 100 video thật, bộ dò để yên 95 video, chỉ báo nhầm 5.</dd>
+
+    <dt>Dương tính thật (True Positive — TP)</dt>
+    <dd>Bộ dò báo «giả» và video đó đúng là giả. Đây là kết quả đúng mong muốn — «bắt đúng».</dd>
+
+    <dt>Dương tính giả (False Positive — FP)</dt>
+    <dd>Bộ dò báo «giả» nhưng video đó thật sự là thật. Hay gọi là «buộc tội oan» hoặc «báo động nhầm». Đây là lỗi gây thiệt hại cho người vô tội.</dd>
+
+    <dt>Âm tính giả (False Negative — FN)</dt>
+    <dd>Bộ dò bỏ qua nhưng video đó thật sự là giả — tức là bỏ lọt. Hay gọi là «lọt lưới».</dd>
+
+    <dt>Âm tính thật (True Negative — TN)</dt>
+    <dd>Bộ dò bỏ qua và video đó đúng là thật. Đây cũng là kết quả đúng mong muốn — «được yên».</dd>
+
+    <dt>Giá trị dự đoán dương (Positive Predictive Value — PPV)</dt>
+    <dd>Khi bộ dò báo động, xác suất video đó thật sự là giả. Đây là con số người dùng cần biết nhất nhưng ít khi được công bố. Nó phụ thuộc rất lớn vào tỉ lệ cơ sở.</dd>
+
+    <dt>Tỉ lệ cơ sở (Base Rate)</dt>
+    <dd>Tỉ lệ thực sự của sự kiện cần phát hiện trong toàn bộ dữ liệu, trước khi bộ dò kiểm tra. Ví dụ: nếu 1 trong 1 000 video là giả thì tỉ lệ cơ sở là 0,1%. Con số này ảnh hưởng cực lớn đến PPV.</dd>
+
+    <dt>Nghịch lý tỉ lệ cơ sở (Base Rate Fallacy)</dt>
+    <dd>Lỗi suy luận phổ biến: bỏ qua tỉ lệ cơ sở khi đánh giá kết quả bộ dò. Dẫn đến niềm tin rằng «chính xác 95%» nghĩa là «đáng tin 95%» — trong khi thực tế có thể oan sai phần lớn nếu sự kiện cần tìm rất hiếm.</dd>
+
+    <dt>Thiên vị (Bias)</dt>
+    <dd>Sự lệch có hệ thống trong dữ liệu hoặc mô hình AI, khiến kết quả nghiêng về một phía. Ví dụ: mô hình luôn gán nghề bác sĩ cho nam và y tá cho nữ vì dữ liệu huấn luyện lệch theo hướng đó.</dd>
+
+    <dt>Kiểm toán thiên vị (Bias Audit)</dt>
+    <dd>Quá trình đo lường mức độ thiên vị trong hệ thống AI bằng cách đếm, so sánh và phân tích kết quả theo từng nhóm (giới tính, sắc tộc, vùng miền…). Đếm và chia — đó là cốt lõi của kiểm toán thiên vị.</dd>
+
+    <dt>Dữ liệu huấn luyện (Training Data)</dt>
+    <dd>Bộ dữ liệu dùng để «dạy» mô hình AI. Nếu dữ liệu huấn luyện phản ánh sự bất bình đẳng lịch sử, mô hình sẽ học và lặp lại những thiên lệch đó — không phải vì nó «muốn», mà vì nó chỉ biết bắt chước.</dd>
+  </dl></div>
+</div>
+
+<details class="how"><summary>Mô phỏng này hoạt động thế nào?</summary>
+<div class="bdy">
+<p><b>Phần A tính bằng số học phổ thông, không có mô hình nào.</b> Trong 1 000 video có <code>G</code> video giả:
+bộ dò bắt được <code>G × độ nhạy (sensitivity)</code> video giả (báo đúng — true positive), và báo nhầm <code>(1000−G) × (1 − độ đặc hiệu)</code>
+video thật (false positive). Giá trị dự đoán dương (PPV) =
+<code>báo đúng / (báo đúng + báo nhầm)</code>. Bạn có thể tự tính lại bằng máy tính bỏ túi — và nên tự tính một lần.</p>
+<p><b>Vì sao con số lại thấp đến thế.</b> Vì video thật <b>nhiều hơn rất nhiều</b> video giả — tức tỉ lệ cơ sở (base rate) rất thấp. Chỉ cần báo nhầm 5% của
+một đám đông lớn là đã vượt xa toàn bộ số video giả bắt đúng. Hiện tượng này đúng với <b>mọi</b> bộ dò trong <b>mọi</b>
+lĩnh vực — dò bệnh hiếm, dò gian lận, dò đạo văn — chứ không riêng deepfake.</p>
+<p><b>Phần B dùng dữ liệu thật.</b> 279 người xuất hiện trên tiền giấy (banknote) của 38 quốc gia, có ghi giới tính và nghề nghiệp.
+Bộ dữ liệu nằm trong kho học liệu của học phần (thư mục gói ngành Khoa học xã hội, tệp
+<code>people-on-banknotes.csv</code>); các con số trong trang là kết quả đếm trực tiếp từ tệp đó, không làm tròn ý nghĩa.
+Đây là dữ liệu lịch sử, mô tả một thực tế đã có, <b>không phải một nhận định về năng lực của bất kỳ giới nào</b>.</p>
+<p><b>Chế độ nhập tay</b> chỉ cộng và chia trên đúng số các em nhập vào. Nó không lưu gì, không gửi đi đâu.</p>
+</div></details>
+
+<footer>AIT129 — Trí tuệ nhân tạo ứng dụng · Mô phỏng M8 · Chạy hoàn toàn ngoại tuyến, không gửi dữ liệu đi đâu.<br>
+Phần A là phép tính xác suất, không phải đánh giá một sản phẩm dò deepfake nào.</footer>
+</div>
+
+<script>
+"use strict";
+var $=function(id){return document.getElementById(id);};
+
+/* ============ THỬ SỨC ============ */
+var QUIZ=[
+ {q:'Một bộ dò deepfake có độ chính xác (accuracy) 95%. Khi nó phát ra báo động, khả năng video đó thật sự là giả cũng vào khoảng 95%.',
+  a:false, ex:'<b>Sai.</b> Xác suất báo động đúng (PPV) phụ thuộc rất lớn vào tỉ lệ cơ sở (base rate) — tức tỉ lệ video giả thật sự có trong kho. Nếu video giả rất hiếm, phần lớn báo động là oan dù bộ dò rất «chính xác». Kéo xuống <b>Phần A</b> để tự kiểm chứng.'},
+ {q:'Muốn giảm số lần buộc tội oan (false positive), cần tập trung tăng độ nhạy (sensitivity) của bộ dò.',
+  a:false, ex:'<b>Sai.</b> Cần tăng <b>độ đặc hiệu (specificity)</b> — khả năng nhận đúng video thật. Độ nhạy giúp bắt nhiều video giả hơn, nhưng không giảm số lần báo nhầm video thật.'},
+ {q:'Trên tiền giấy (banknote) của 38 quốc gia, tỉ lệ phụ nữ xuất hiện chưa đến 25%.',
+  a:true, ex:'<b>Đúng.</b> Chỉ khoảng 21% (59 trong 279 người). <b>Phần B</b> bên dưới cho thấy chi tiết theo từng ngành nghề — một số nghề như «Người sáng lập quốc gia» hay «Quân nhân» có 0% phụ nữ.'},
+ {q:'Dữ liệu lịch sử bị thiên lệch (biased data) thì bản thân dữ liệu đó là sai.',
+  a:false, ex:'<b>Sai.</b> Dữ liệu phản ánh đúng thực tế đã từng bất bình đẳng — nó không sai. Vấn đề bắt đầu khi mô hình AI học từ dữ liệu huấn luyện (training data) đó rồi coi sự thiên lệch là quy luật để áp dụng cho tương lai.'},
+ {q:'Hiện tượng «báo động phần lớn là oan» chỉ xảy ra riêng với bộ dò deepfake, không xảy ra trong y khoa hay tài chính.',
+  a:false, ex:'<b>Sai.</b> Đây là hiện tượng toán học phổ biến gọi là <b>Nghịch lý tỉ lệ cơ sở (Base Rate Fallacy)</b>, xảy ra ở mọi lĩnh vực dùng bộ dò: xét nghiệm bệnh hiếm, phát hiện gian lận thẻ tín dụng, kiểm tra đạo văn…'}
+];
+var qDone=0, qOk=0;
+function renderQuiz(){
+ var h='';
+ QUIZ.forEach(function(q,i){
+  h+='<div class="q-card" id="q'+i+'">'+
+   '<div class="q-num">Câu '+(i+1)+' / '+QUIZ.length+'</div>'+
+   '<div class="q-stmt">'+q.q+'</div>'+
+   '<div class="q-btns">'+
+   '<button data-qi="'+i+'" data-v="1">Đúng</button>'+
+   '<button data-qi="'+i+'" data-v="0">Sai</button>'+
+   '</div>'+
+   '<div class="q-ex" id="qex'+i+'">'+q.ex+'</div></div>';
+ });
+ $('quiz').innerHTML=h;
+ $('quiz').addEventListener('click',function(e){
+  var b=e.target.closest('button[data-qi]');if(!b)return;
+  var i=+b.dataset.qi, q=QUIZ[i], ua=b.dataset.v==='1', ok=ua===q.a;
+  var card=$('q'+i);
+  card.querySelectorAll('.q-btns button').forEach(function(x){
+   if(x===b) x.classList.add(ok?'right':'wrong');
+   else x.classList.add('dim');
+  });
+  var ex=$('qex'+i); ex.classList.add('show'); ex.classList.add(ok?'ok':'ko');
+  qDone++; if(ok) qOk++;
+  if(qDone===QUIZ.length){
+   $('quizResult').style.display='';
+   $('quizScore').textContent=qOk+'/'+QUIZ.length;
+   $('quizScore').style.color=qOk<=1?'#e34948':qOk<=3?'#eb6834':'#4caf50';
+   var m=qOk<=1?'Đừng lo — phần mô phỏng bên dưới sẽ giải thích tất cả!':
+    qOk<=3?'Khá tốt! Kéo xuống để hiểu sâu hơn bằng mô phỏng.':
+    qOk===4?'Rất tốt! Mô phỏng bên dưới sẽ xác nhận hiểu biết của bạn.':
+    'Xuất sắc! Bạn đã nắm vững. Hãy khám phá mô phỏng để thấy chi tiết.';
+   $('quizMsg').textContent=m;
+  }
+ });
+}
+
+/* ============ PHẦN A ============ */
+var N=1000, P=10, SE=95, SP=95;
+var PRE=[
+ ['Mạng xã hội ngày thường<br><span style="font-weight:600;opacity:.75">1/1000 video là giả</span>',{p:1,se:95,sp:95}],
+ ['Mùa bầu cử, tin nóng<br><span style="font-weight:600;opacity:.75">100/1000 video là giả</span>',{p:100,se:95,sp:95}],
+ ['Bộ dò xịn hơn nhiều<br><span style="font-weight:600;opacity:.75">đặc hiệu 99,5% · vẫn 1/1000</span>',{p:1,se:95,sp:99.5}],
+ ['Kho đã bị nghi ngờ sẵn<br><span style="font-weight:600;opacity:.75">500/1000 video là giả</span>',{p:500,se:95,sp:95}]
+];
+(function(){
+ var h='';PRE.forEach(function(x,i){h+='<button data-i="'+i+'">'+x[0]+'</button>';});$('pre').innerHTML=h;
+ $('pre').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
+  var c=PRE[+b.dataset.i][1];P=c.p;SE=c.se;SP=c.sp;
+  $('rP').value=P;$('rSe').value=SE;$('rSp').value=SP;veA();});
+ ['rP','rSe','rSp'].forEach(function(id){$(id).addEventListener('input',function(){
+  P=+$('rP').value;SE=+$('rSe').value;SP=+$('rSp').value;veA();});});
+})();
+
+function tinhA(p,se,sp){
+ var gia=p, that=N-p;
+ var TP=gia*se/100, FN=gia-TP;
+ var FP=that*(1-sp/100), TN=that-FP;
+ return {TP:TP,FN:FN,FP:FP,TN:TN, ppv:(TP+FP)>0?TP/(TP+FP):null};
+}
+function veA(){
+ $('lP').textContent=P; $('lSe').textContent=SE+'%'; $('lSp').textContent=SP+'%';
+ $('pre').querySelectorAll('button').forEach(function(b){var c=PRE[+b.dataset.i][1];
+  b.classList.toggle('on',c.p===P&&c.se===SE&&c.sp===SP);});
+ var r=tinhA(P,SE,SP), pct=r.ppv===null?null:Math.round(r.ppv*100);
+ var mau = pct===null?'#898781':(pct<35?'#e34948':(pct<70?'#eb6834':'#4caf50'));
+ $('gauge').innerHTML='<div class="lb">Bộ dò vừa báo động — Xác suất video đó THẬT SỰ là giả (PPV)</div>'+
+  '<div class="big" style="color:'+mau+'">'+(pct===null?'—':pct+'%')+'</div>'+
+  '<div class="sub">Trong '+Math.round(r.TP+r.FP)+' lần báo động, chỉ <b>'+Math.round(r.TP)+
+  '</b> lần là đúng — còn <b>'+Math.round(r.FP)+'</b> lần là buộc tội oan một video thật.</div>';
+
+ var cells=[];
+ function push(n,c){for(var i=0;i<Math.round(n);i++)cells.push(c);}
+ push(r.TP,'#c02626'); push(r.FP,'#eb6834'); push(r.FN,'#f0c9c7'); push(r.TN,'#dcdbd5');
+ $('grid').innerHTML=cells.slice(0,N).map(function(c){return '<i style="background:'+c+'"></i>';}).join('');
+ $('leg').innerHTML=
+  '<span><i style="background:#c02626"></i>Giả, bắt đúng · TP <b>'+Math.round(r.TP)+'</b></span>'+
+  '<span><i style="background:#eb6834"></i>Thật, buộc tội oan · FP <b>'+Math.round(r.FP)+'</b></span>'+
+  '<span><i style="background:#f0c9c7"></i>Giả, lọt lưới · FN <b>'+Math.round(r.FN)+'</b></span>'+
+  '<span><i style="background:#dcdbd5"></i>Thật, được yên · TN <b>'+Math.round(r.TN)+'</b></span>';
+
+ var h='';
+ if(pct===null) h='';
+ else if(pct<35) h='<div class="rule stop"><b>Phần lớn tiếng báo động là oan</b>'+
+  'Bộ dò vẫn «chính xác '+Math.round((r.TP+r.TN)/N*100)+'%» nếu tính theo kiểu thông thường. Nhưng khi nó lên tiếng, '+
+  '<b>'+(100-pct)+'% số lần là buộc tội nhầm một người thật</b>. Nếu tiếng báo động đó dẫn tới khoá tài khoản, '+
+  'gỡ bài, hay một tin «đã xác minh là giả», thì mỗi ngày có '+Math.round(r.FP)+' người bị oan trên mỗi nghìn video.';
+ else if(pct<70) h='<div class="rule care"><b>Vùng phải có người xem lại</b>'+
+  'Cứ 10 tiếng báo động thì khoảng '+Math.round(pct/10)+' lần là đúng. Đủ hữu ích để <b>xếp thứ tự ưu tiên cho người kiểm</b>, '+
+  'nhưng chưa đủ để tự động ra quyết định.';
+ else h='<div class="rule free"><b>Đáng tin trong bối cảnh này</b>'+
+  'Vì tỉ lệ giả trong kho đã cao sẵn, hoặc bộ dò rất ít báo nhầm. Chú ý: <b>chính bối cảnh làm nên con số này</b>, '+
+  'không phải riêng chất lượng bộ dò. Kéo thanh «tỉ lệ giả» về 1 và xem điều gì xảy ra.';
+ h+='</div>';
+ $('vA').innerHTML=h;
+
+ var th='<tr><th>Tỉ lệ giả trong kho<br>(Base Rate)</th><th>Bắt đúng<br>(TP)</th><th>Buộc tội oan<br>(FP)</th><th>Lọt lưới<br>(FN)</th>'+
+        '<th>Báo động đúng<br>(PPV)</th></tr>';
+ [1,5,10,25,50,100,250,500].forEach(function(p){
+  var x=tinhA(p,SE,SP);
+  th+='<tr'+(p===P?' class="now"':'')+'><td>'+p+' / 1 000 ('+(p/10)+'%)</td><td>'+Math.round(x.TP)+'</td><td>'+
+     Math.round(x.FP)+'</td><td>'+Math.round(x.FN)+'</td><td><b>'+
+     (x.ppv===null?'—':Math.round(x.ppv*100)+'%')+'</b></td></tr>';});
+ $('tblA').innerHTML=th;
+ veGhi();
+}
+
+/* ============ PHẦN B ============ */
+var BANK={tong:{m:220,f:59},
+ nghe:[['Người sáng lập quốc gia',45,0],['Quân nhân',13,0],['Người đứng đầu chính phủ',42,1],
+       ['Khoa học & kỹ thuật',14,2],['Chính trị gia',23,4],['Nhà cách mạng',19,9],
+       ['Nhà văn',31,14],['Nhạc sĩ',7,5],['Hoạ sĩ, nhà điêu khắc',7,6],['Vua chúa',10,8]]};
+var MODE='that';
+var ROWS=[['Bác sĩ','',''],['Y tá','',''],['Kỹ sư','',''],['Giáo viên mầm non','','']];
+
+(function(){
+ $('mode').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
+  MODE=b.dataset.m;
+  $('mode').querySelectorAll('button').forEach(function(x){x.classList.toggle('on',x.dataset.m===MODE);});
+  $('boxThat').style.display=MODE==='that'?'':'none';
+  $('boxTay').style.display=MODE==='tay'?'':'none';
+  veGhi();});
+ $('btnThem').addEventListener('click',function(){ROWS.push(['','','']);veRows();});
+ $('btnTinh').addEventListener('click',veTay);
+})();
+
+function veB(){
+ var t=BANK.tong, tong=t.m+t.f, pf=t.f/tong;
+ $('gB').innerHTML='<div class="lb">279 người xuất hiện trên tiền giấy (banknotes) của 38 quốc gia</div>'+
+  '<div class="big" style="color:#eb6834">'+Math.round(pf*100)+'%</div>'+
+  '<div class="sub">là nữ — <b>'+t.f+'</b> người, so với <b>'+t.m+'</b> nam.</div>';
+ var rows=BANK.nghe.slice().sort(function(a,b){return (a[2]/(a[1]+a[2]))-(b[2]/(b[1]+b[2]));});
+ $('barsB').innerHTML=rows.map(function(r){
+  var m=r[1],f=r[2],n=m+f,pw=f/n*100;
+  return '<div class="brow"><div class="hl"><span class="nm">'+r[0]+'</span>'+
+   '<span class="v" style="color:'+(pw===0?'var(--bad)':'var(--ink2)')+'">'+Math.round(pw)+'% nữ · '+n+' người</span></div>'+
+   '<div class="track"><span class="f fm" style="width:'+(100-pw)+'%"></span>'+
+   '<span class="f ff" style="width:'+pw+'%"></span></div></div>';}).join('');
+}
+
+function veRows(){
+ $('rows').innerHTML=ROWS.map(function(r,i){
+  return '<div class="inp" data-i="'+i+'">'+
+   '<input placeholder="tên nghề" value="'+r[0].replace(/"/g,'&quot;')+'" data-c="0">'+
+   '<input inputmode="numeric" placeholder="0" value="'+r[1]+'" data-c="1">'+
+   '<input inputmode="numeric" placeholder="0" value="'+r[2]+'" data-c="2">'+
+   '<input inputmode="numeric" placeholder="0" value="'+(r[3]||'')+'" data-c="3">'+
+   '</div>';}).join('');
+ $('rows').querySelectorAll('input').forEach(function(el){
+  el.addEventListener('input',function(){
+   var i=+el.closest('.inp').dataset.i, c=+el.dataset.c; ROWS[i][c]=el.value;});});
+}
+function veTay(){
+ var tm=0,tf=0,tk=0,rs=[];
+ ROWS.forEach(function(r){
+  var m=+r[1]||0, f=+r[2]||0, k=+r[3]||0;
+  if(!r[0]||(m+f+k)===0)return;
+  tm+=m;tf+=f;tk+=k; rs.push([r[0],m,f,k]);});
+ if(!rs.length){$('ketQua').innerHTML='<div class="rule care"><b>Chưa có số nào</b>Điền tên nghề và ít nhất một con số rồi bấm Tính.</div>';return;}
+ var tong=tm+tf, pf=tong?tf/tong:0;
+ var h='<div class="gauge"><div class="lb">Kết quả nhóm em đếm được</div>'+
+  '<div class="big" style="color:#eb6834">'+Math.round(pf*100)+'%</div>'+
+  '<div class="sub">là nữ — <b>'+tf+'</b> nữ, <b>'+tm+'</b> nam'+(tk?', <b>'+tk+'</b> không rõ giới':'')+'.</div></div>';
+ rs.sort(function(a,b){return (a[2]/(a[1]+a[2]||1))-(b[2]/(b[1]+b[2]||1));});
+ h+='<div class="bars">'+rs.map(function(r){
+  var m=r[1],f=r[2],n=m+f;if(!n)return '';
+  var pw=f/n*100;
+  return '<div class="brow"><div class="hl"><span class="nm">'+r[0].replace(/</g,'&lt;')+'</span>'+
+   '<span class="v">'+Math.round(pw)+'% nữ · '+n+' mô tả</span></div>'+
+   '<div class="track"><span class="f fm" style="width:'+(100-pw)+'%"></span>'+
+   '<span class="f ff" style="width:'+pw+'%"></span></div></div>';}).join('')+'</div>';
+ h+='<div class="leg"><span><i style="background:#2a78d6"></i>Nam</span><span><i style="background:#eb6834"></i>Nữ</span></div>';
+ var maxL=rs[0], maxH=rs[rs.length-1];
+ h+='<div class="rule '+(Math.abs(pf-0.5)>0.2?'stop':'care')+'"><b>Chênh lệch lớn nhất trong bảng của nhóm em</b>'+
+  '«'+maxL[0]+'» có '+Math.round(maxL[2]/(maxL[1]+maxL[2])*100)+'% nữ, còn «'+maxH[0]+'» có '+
+  Math.round(maxH[2]/(maxH[1]+maxH[2])*100)+'% nữ. '+
+  'Câu hỏi để ghi vào phiếu: <b>mô hình lấy tỉ lệ này ở đâu ra, và nó có phải là điều nên tiếp tục không?</b></div>';
+ $('ketQua').innerHTML=h;
+ veGhi();
+}
+
+function veGhi(){
+ var r=tinhA(P,SE,SP);
+ var s='M8 · dò: '+P+'/1000 giả, nhạy '+SE+'%, đặc hiệu '+SP+'% → báo động đúng '+
+  (r.ppv===null?'—':Math.round(r.ppv*100)+'%')+' ('+Math.round(r.FP)+' người bị oan)';
+ if(MODE==='that') s+=' · thiên vị: 279 người trên tiền giấy, '+
+   Math.round(BANK.tong.f/(BANK.tong.f+BANK.tong.m)*100)+'% nữ';
+ $('ghiCode').textContent=s;
+}
+
+var TAKE=[
+ '<b>«Chính xác 95%» không trả lời câu bạn cần hỏi.</b> Câu cần hỏi là: khi nó báo động, xác suất nó đúng là bao nhiêu? Đó gọi là <b>giá trị dự đoán dương (Positive Predictive Value — PPV)</b>. Hai con số này khác nhau rất xa.',
+ 'Ở nơi <b>video giả rất hiếm</b> — tức <b>tỉ lệ cơ sở (base rate)</b> thấp — phần lớn tiếng báo động là oan, vì báo nhầm 5% của một đám đông lớn vẫn nhiều hơn toàn bộ số video giả.',
+ 'Muốn giảm oan thì phải tăng <b>độ đặc hiệu (specificity)</b>, không phải tăng <b>độ nhạy (sensitivity)</b>. Kéo thử: đặc hiệu 95% → 99,5% làm con số nhảy vọt, còn độ nhạy thì gần như không đổi gì.',
+ 'Hiện tượng này đúng với <b>mọi bộ dò (detector)</b>: dò bệnh hiếm, dò gian lận thi cử, dò đạo văn, dò gian lận thẻ. Ai nói với bạn một con số «chính xác», hãy hỏi tiếp: <b>tỉ lệ cơ sở (base rate)</b> là bao nhiêu?',
+ '<b>Dữ liệu trên tiền giấy không sai.</b> Nó ghi đúng một thế giới đã bất bình đẳng. Cái sai bắt đầu khi mô hình học từ <b>dữ liệu huấn luyện (training data)</b> thiên lệch rồi gọi cái lệch ấy là quy luật và dùng để đoán tương lai.',
+ '<b>Thiên vị (bias) đo được.</b> Đếm, chia, vẽ ra — đó là <b>kiểm toán thiên vị (bias audit)</b>. Ai bảo «cảm giác thôi, làm sao chứng minh» thì đưa cho họ một bảng đếm — đó là toàn bộ nội dung của Lab hôm nay.'];
+(function(){var h='';TAKE.forEach(function(t,i){h+='<li><span class="k">'+(i+1)+'</span>'+t+'</li>';});$('take').innerHTML=h;})();
+
+$('btnCopy').addEventListener('click',function(){var t=$('ghiCode').textContent,b=this;
+ if(navigator.clipboard)navigator.clipboard.writeText(t).then(function(){b.textContent='Đã chép ✓';
+  setTimeout(function(){b.textContent='Sao chép';},1600);});});
+renderQuiz(); veA(); veB(); veRows();
+</script>
+</body></html>
