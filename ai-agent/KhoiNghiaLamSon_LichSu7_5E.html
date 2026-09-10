@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hành trình Khởi nghĩa Lam Sơn — Lịch sử 7 (5E · THCS)</title>
+<!--
+  Ứng dụng học tập 5E — Khởi nghĩa Lam Sơn · Lịch sử 7 · hướng Trung học cơ sở
+  Một tệp HTML duy nhất · vanilla JavaScript · chạy được khi tắt mạng.
+  Toàn bộ nội dung bài học nằm giữa các mốc /* ===DATA START=== */ và /* ===DATA END=== */.
+  Dữ liệu nguồn: Bo5_LichSu7_NoiDungApp.xlsx (NganHang10Cau, MocThoiGian, DiaDanh, KichBanHoatHinh)
+  và tệp hướng dẫn 5E_App_Design_Instructions.html (hợp đồng chung, mục 5, 6, 7).
+-->
+<style>
+/* ==== Bảng màu và chữ theo hướng THCS — tệp hướng dẫn, mục 4 ==== */
+:root{
+  --bg-0:#F4F8FD; --bg-1:#FFFFFF; --bg-2:#E8F1FB; --border:#C7DAF0;
+  --text-1:#16232E; --text-2:#5B6B7A;
+  --accent:#2E86DE; --accent-strong:#1B5FA8; --accent-soft:rgba(46,134,222,.14);
+  --success:#22A45D; --success-soft:#E8F7EE;
+  --error:#E05252; --error-soft:#FBEAEA;
+  --warning:#F0A202; --gold:#F5B301;
+  --fs-body:17px; --fs-question:20px; --btn-h:48px; --r-lg:14px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg-0);color:var(--text-1);
+     font:var(--fs-body)/1.6 'Be Vietnam Pro','Segoe UI',system-ui,-apple-system,Arial,sans-serif}
+button{font-family:inherit}
+.wrap{max-width:780px;margin:0 auto;padding:0 14px}
+
+/* ==== Thanh đầu trang ==== */
+.topbar{background:linear-gradient(135deg,#1B5FA8,#2E86DE);color:#fff;padding:16px 0 14px}
+.topbar h1{margin:0;font-size:21px;line-height:1.3}
+.topbar .sub{margin:2px 0 10px;font-size:14px;opacity:.92}
+.prog{height:8px;background:rgba(255,255,255,.25);border-radius:99px;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:#FFD666;border-radius:99px;transition:width .5s}
+.badgebar{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.badge{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);
+       border-radius:99px;padding:2px 10px;font-size:13px;opacity:.5;transition:.3s}
+.badge.co{opacity:1;background:rgba(255,214,102,.95);color:#5B4300;border-color:#FFD666;font-weight:700}
+
+/* ==== Thanh điều hướng pha ==== */
+.nav{position:sticky;top:0;z-index:30;display:flex;gap:6px;overflow-x:auto;
+     padding:10px 12px;background:var(--bg-0);border-bottom:1px solid var(--border);
+     scrollbar-width:thin}
+.chip{flex:0 0 auto;min-height:40px;padding:8px 12px;border-radius:10px;border:1.5px solid var(--border);
+      background:var(--bg-1);color:var(--text-2);font-size:14.5px;font-weight:600;cursor:pointer;white-space:nowrap}
+.chip.cur{background:var(--accent);border-color:var(--accent);color:#fff}
+.chip:disabled{opacity:.45;cursor:not-allowed}
+.chip:not(:disabled):not(.cur):hover{border-color:var(--accent);color:var(--accent-strong)}
+
+/* ==== Khối chung ==== */
+.card{background:var(--bg-1);border:1px solid var(--border);border-radius:var(--r-lg);
+      padding:16px;margin:14px 0;box-shadow:0 1px 4px rgba(22,35,46,.06)}
+.card>h2{margin:0 0 6px;font-size:19px;color:var(--accent-strong)}
+.card>h2 .doi{color:var(--text-2);font-weight:600;font-size:15px}
+.lead{color:var(--text-2);font-size:15.5px;margin:0 0 10px}
+hr{border:none;border-top:1px dashed var(--border);margin:14px 0}
+.q{font-size:var(--fs-question);font-weight:700;line-height:1.45;margin:6px 0 10px}
+.small{font-size:14px;color:var(--text-2)}
+.center{text-align:center}
+
+/* ==== Nút bấm — cao tối thiểu 48px ==== */
+.btn{min-height:var(--btn-h);border-radius:12px;border:2px solid var(--accent);
+     background:var(--bg-1);color:var(--accent-strong);font-size:16.5px;font-weight:600;
+     padding:9px 16px;cursor:pointer;line-height:1.35;transition:background .15s,border-color .15s}
+.btn:hover:not(:disabled){background:var(--accent-soft)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.pri:hover:not(:disabled){background:var(--accent-strong);border-color:var(--accent-strong)}
+.btn.ghost{border-color:var(--border);color:var(--text-2)}
+.btn.ghost:hover:not(:disabled){border-color:var(--accent);color:var(--accent-strong);background:var(--bg-1)}
+.btn.big{width:100%;font-size:18px;min-height:54px}
+.btn:disabled{opacity:.45;cursor:not-allowed;border-color:var(--border);color:var(--text-2);background:var(--bg-1)}
+.btn.pri:disabled{background:var(--bg-2);color:var(--text-2)}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>*{flex:1 1 auto}
+
+/* Phương án trả lời */
+.opt{display:flex;align-items:flex-start;gap:10px;width:100%;text-align:left;margin:9px 0;
+     min-height:var(--btn-h);padding:10px 14px;border-radius:12px;border:2px solid var(--border);
+     background:var(--bg-1);color:var(--text-1);font-size:16.5px;cursor:pointer;line-height:1.45}
+.opt:hover:not(:disabled){border-color:var(--accent);background:var(--accent-soft)}
+.opt:disabled{cursor:not-allowed;opacity:.85}
+.opt .och{flex:0 0 auto;width:28px;height:28px;border-radius:50%;border:2px solid var(--border);
+          display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;margin-top:1px}
+.opt.ok{border-color:var(--success);background:var(--success-soft)}
+.opt.ok .och{border-color:var(--success);background:var(--success);color:#fff}
+.opt.sel-ok{border-color:var(--accent);background:var(--accent-soft)}
+.field{margin:10px 0}
+.field label{display:block;font-weight:700;font-size:15px;margin-bottom:4px}
+.field input{width:100%;min-height:48px;border:2px solid var(--border);border-radius:12px;
+  padding:10px 14px;font-size:17px;font-family:inherit;color:var(--text-1);background:var(--bg-1)}
+.field input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.timerchip{display:flex;align-items:center;gap:10px;background:var(--bg-2);border-radius:12px;
+  padding:6px 12px;width:fit-content;font-size:19px;font-weight:800;color:var(--accent-strong);margin:6px 0}
+.timerchip .btn{min-height:40px;padding:4px 12px;font-size:14px}
+.opt.ko{border-color:var(--error);background:var(--error-soft)}
+.opt.ko .och{border-color:var(--error);background:var(--error);color:#fff}
+.why{background:var(--bg-2);border-left:4px solid var(--accent);border-radius:8px;
+     padding:10px 14px;font-size:16px;margin:10px 0}
+.why b{color:var(--accent-strong)}
+.feedback-ok{color:var(--success);font-weight:700}
+.feedback-ko{color:var(--error);font-weight:700}
+.qmeta{font-size:14.5px;color:var(--text-2);margin:0 0 4px}
+
+/* ==== Hoạt hình pha 1 ==== */
+.stage{width:100%;max-width:330px;margin:0 auto;display:block;background:#DCEBF9;
+       border-radius:12px;border:1px solid var(--border)}
+.stage svg{display:block;width:100%;height:auto}
+.scenetitle{font-size:16px;font-weight:800;color:var(--accent-strong);text-align:center;margin:10px 0 2px}
+.loidan{min-height:54px;text-align:center;font-size:17px;margin:4px auto 10px;max-width:46ch}
+.ctl{display:flex;flex-wrap:wrap;gap:7px;align-items:center;justify-content:center}
+.ctl .btn{min-height:48px;padding:7px 11px;font-size:15.5px}
+.ctl .btn.main{min-width:96px;background:var(--accent);border-color:var(--accent);color:#fff;font-weight:800}
+.ctl .btn.main:hover:not(:disabled){background:var(--accent-strong)}
+.ctl .btn:disabled{opacity:.4}
+.dots{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);background:transparent;
+     padding:0;cursor:pointer;transition:.2s}
+.dot.seen{background:var(--accent-soft)}
+.dot.cur{background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.status{text-align:center;color:var(--text-2);font-size:15px;margin-top:8px;font-weight:600}
+.khint{text-align:center;font-size:13px;color:var(--text-2);margin-top:4px}
+@media (hover:none),(pointer:coarse){.khint{display:none}}
+@media (max-width:429px){.ctl .btn:not(.main) .ctl-txt{display:none}.ctl .btn{padding:7px 10px}}
+
+/* Cảnh hoạt hình trên bản đồ */
+#p1-land,#a-land{fill:#F8F3E7;stroke:#B9CCE0;stroke-width:2;transition:fill .8s}
+#p1-split.go{transform:translate(-52px,-44px);opacity:0}
+svg.toi #p1-land{fill:#93A5B6;stroke:#7C8FA0}
+svg.vang #p1-land,svg.vang #a-land{fill:#FFE7A3;stroke:#E8C25A}
+.rdot{fill:#E05252;animation:blink 1.15s infinite}
+@keyframes blink{50%{opacity:.12}}
+#p1-ring{fill:none;stroke:#6B7B8A;stroke-width:4;transform-box:fill-box;transform-origin:center}
+#p1-ring.si{animation:squeeze 1.8s ease-in-out infinite alternate}
+@keyframes squeeze{from{transform:scale(1.25)}to{transform:scale(.72)}}
+#p1-bigtxt{font-size:46px;font-weight:800;fill:#B07800;text-anchor:middle}
+.fade{transition:opacity .7s}
+#p1-split{transition:transform 1.6s ease,opacity 1.6s ease}
+.mrk{transition:opacity .5s}
+.hide-el{opacity:0;pointer-events:none}
+.glow{filter:drop-shadow(0 0 6px rgba(245,179,1,.85))}
+@media (prefers-reduced-motion:reduce){
+  .rdot,#p1-ring.si{animation:none}
+  .fin{transition:none!important}
+}
+
+/* ==== Bản đồ trạm A ==== */
+.tickrow{display:flex;justify-content:space-between;font-size:13px;color:var(--text-2);margin-top:2px}
+input[type=range]{width:100%;accent-color:var(--accent);height:40px;margin:2px 0 0}
+.yearchip{display:inline-block;background:var(--accent-soft);color:var(--accent-strong);
+          font-weight:800;font-size:22px;border-radius:10px;padding:2px 14px}
+.moccard{background:var(--bg-2);border-radius:10px;padding:10px 14px;margin-top:10px}
+.moccard b{color:var(--accent-strong)}
+.diadanh{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.ddchip{background:var(--bg-1);border:1px solid var(--border);border-radius:10px;padding:7px 11px;font-size:14.5px}
+.ddchip b{color:var(--accent-strong)}
+
+/* ==== Trạm B ==== */
+.pa-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:540px){.pa-grid{grid-template-columns:1fr}}
+.stepwrap{list-style:none;counter-reset:st;padding:0;margin:10px 0}
+.stepwrap li{position:relative;padding:8px 0 8px 40px;margin:0;opacity:.22;transition:opacity .4s}
+.stepwrap li.on{opacity:1}
+.stepwrap li::before{counter-increment:st;content:counter(st);position:absolute;left:0;top:8px;
+     width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;
+     display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px}
+.ketluan{background:var(--success-soft);border:1.5px solid var(--success);border-radius:10px;padding:10px 14px;margin-top:10px}
+.ketluan.canhbao{background:#FFF6E8;border-color:var(--warning)}
+.pabadge{display:inline-block;font-size:13px;font-weight:800;border-radius:99px;padding:2px 10px;margin-left:6px}
+.pabadge.da{background:var(--success-soft);color:var(--success);border:1px solid var(--success)}
+
+/* ==== Trạm C ghép đôi ==== */
+.pairwrap{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:520px){.pairwrap{grid-template-columns:1fr}}
+.pcol h4{margin:6px 0;font-size:15px;color:var(--text-2)}
+.pairbtn{display:block;width:100%;text-align:left;min-height:var(--btn-h);margin:7px 0;padding:10px 12px;
+     border-radius:12px;border:2px solid var(--border);background:var(--bg-1);font-size:15.5px;cursor:pointer;line-height:1.4}
+.pairbtn:hover:not(:disabled):not(.done){border-color:var(--accent)}
+.pairbtn.sel{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 3px var(--accent-soft)}
+.pairbtn.done{border-color:var(--success);background:var(--success-soft);cursor:default;color:var(--text-2)}
+.pairbtn.wrong{animation:shake .35s;border-color:var(--error)}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+/* ==== Thẻ lật pha 3 — mỗi lần MỘT thẻ, chữ lớn, bấm lật qua lật lại ==== */
+.fstage{display:flex;justify-content:center}
+.flip{width:100%;max-width:560px;height:300px;perspective:1000px;cursor:pointer;outline-offset:3px}
+.flip:focus-visible{outline:3px solid var(--accent);border-radius:14px}
+.fin{position:relative;width:100%;height:100%;transition:transform .55s;transform-style:preserve-3d}
+.flip.on .fin{transform:rotateY(180deg)}
+.fface{position:absolute;inset:0;-webkit-backface-visibility:hidden;backface-visibility:hidden;overflow:auto;
+     border-radius:14px;border:2px solid var(--border);background:var(--bg-1);padding:20px 22px;
+     display:flex;flex-direction:column;justify-content:center;text-align:center;gap:10px}
+.fface .ftxt{margin:0;font-size:21px;line-height:1.5;font-weight:600}
+.fback{transform:rotateY(180deg);background:var(--bg-2);border-color:var(--accent)}
+.fback .ftxt{font-weight:500}
+.ftag{font-size:13px;font-weight:800;color:var(--accent-strong);letter-spacing:.06em;text-transform:uppercase}
+.fhint{font-size:13px;color:var(--text-2)}
+.fnav{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:14px;flex-wrap:wrap}
+.fpos{font-weight:800;color:var(--text-2);min-width:130px;text-align:center}
+@media (max-width:430px){
+  .flip{height:330px}
+  .fface{padding:16px}
+  .fface .ftxt{font-size:19px}
+  .fpos{min-width:110px}
+}
+
+/* ==== Huy hiệu / toast / chứng nhận ==== */
+.hbrow{display:flex;gap:8px;flex-wrap:wrap}
+.hb{display:flex;align-items:center;gap:7px;border:1.5px solid var(--border);border-radius:12px;
+    padding:6px 10px;font-size:14px;background:var(--bg-1);opacity:.5}
+.hb.co{opacity:1;border-color:var(--gold);background:#FFF8E1;font-weight:600}
+.hb .ico{font-size:20px}
+#toast{position:fixed;left:50%;transform:translateX(-50%) translateY(8px);bottom:88px;z-index:70;
+   background:var(--text-1);color:#fff;padding:10px 16px;border-radius:12px;font-size:15.5px;
+   max-width:88vw;opacity:0;pointer-events:none;transition:.3s}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.cert-card{border:3px double var(--accent-strong);border-radius:10px;background:#fff;
+   max-width:560px;margin:0 auto;padding:28px 22px;text-align:center}
+.cert-card .kicker{font-size:14px;letter-spacing:.22em;color:var(--accent-strong);font-weight:800}
+.cert-card h2{margin:6px 0 2px;font-size:24px}
+.cert-card .name{font-size:26px;font-weight:800;color:var(--accent-strong);margin:12px 0 2px;border-bottom:2px solid var(--border);display:inline-block;padding:0 18px 4px}
+.cert-score{font-size:19px;margin:10px 0 2px}
+.cert-hb{font-size:24px;letter-spacing:6px;margin:10px 0}
+.cert-date{color:var(--text-2);font-size:15px;margin-top:8px}
+
+/* ==== Cụm nút Xuất/Nạp cố định góc dưới phải ==== */
+.fx{position:fixed;right:12px;bottom:12px;z-index:55;display:flex;flex-direction:column;gap:8px}
+.fxbtn{min-height:48px;padding:8px 14px;border-radius:12px;border:2px solid var(--border);
+   background:var(--bg-1);color:var(--accent-strong);font-size:15px;font-weight:700;cursor:pointer;
+   box-shadow:0 2px 8px rgba(22,35,46,.14);line-height:1.2}
+.fxbtn:hover{border-color:var(--accent);background:var(--accent-soft)}
+/* Màn hình hẹp dưới 430px: xếp ngang, chỉ hiện biểu tượng, không đè nút chính */
+@media (max-width:429px){
+  .fx{flex-direction:row}
+  .fxbtn .lbl{display:none}
+  .fxbtn{width:50px;padding:8px 0;font-size:19px;text-align:center}
+}
+#main{padding-bottom:150px} /* id để thắng độ đặc hiệu trước .wrap; chừa chỗ cho cụm nút góc */
+
+/* ==== In chứng nhận ==== */
+@media print{
+  body{background:#fff}
+  .topbar,.nav,.fx,#toast,.no-print{display:none!important}
+  main{padding:0}
+  .screen{display:none!important}
+  #scr-cert{display:block!important}
+  .cert-card{max-width:100%;border-width:3px;box-shadow:none;page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="wrap">
+    <h1>Hành trình Khởi nghĩa Lam Sơn</h1>
+    <p class="sub">Lịch sử 7 · Mô hình học tập 5E · Hướng Trung học cơ sở</p>
+    <div class="prog" aria-label="Tiến độ bài học"><i id="prog-bar"></i></div>
+    <div class="badgebar" id="badgebar" aria-label="Huy hiệu"></div>
+  </div>
+</div>
+
+<nav class="nav" id="nav" aria-label="Các pha của bài học"></nav>
+
+<main class="wrap" id="main"></main>
+
+<div class="fx">
+  <button type="button" class="fxbtn" id="fx-xuat" onclick="xlXuat()"
+          title="Xuất dữ liệu ra tệp .json" aria-label="Xuất dữ liệu">
+    💾<span class="lbl"> Xuất dữ liệu</span></button>
+  <button type="button" class="fxbtn" id="fx-nap" onclick="document.getElementById('napfile').click()"
+          title="Nạp dữ liệu từ tệp .json đã xuất" aria-label="Nạp dữ liệu">
+    📂<span class="lbl"> Nạp dữ liệu</span></button>
+  <input type="file" id="napfile" accept=".json,application/json" hidden
+         onchange="xlNapFile(this)">
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+/* =====================================================================
+   DỮ LIỆU BÀI HỌC — giáo viên chỉ cần sửa trong vùng này.
+   Nguồn: Bo5_LichSu7_NoiDungApp.xlsx. Không thêm số liệu ngoài tệp này.
+   ===================================================================== */
+/* ===DATA START=== */
+const LESSON = {
+  meta:{
+    app:'khoi-nghia-lam-son-5e',
+    appName:'Hành trình Khởi nghĩa Lam Sơn',
+    title:'Khởi nghĩa Lam Sơn',
+    subtitle:'Lịch sử 7 · Mô hình học tập 5E',
+    khoi:'thcs',
+    subject:'hist',
+    lop:'Lớp 7',
+    truong:''
+  },
+
+  /* ---------- PHA 1 · GÂY TÒ MÒ — hoạt hình 10 cảnh + đoán trước rồi hé lộ ---------- */
+  engage:{
+    kichBan:[
+      {ten:'Nước non đầu thế kỷ XV',
+       hinh:'Bản đồ tối, nhiều chấm đỏ nhấp nháy rải rác.',
+       loiDan:'Đầu thế kỷ XV, nhà Minh đô hộ nước ta. Nhiều cuộc nổi dậy bùng lên rồi tắt.'},
+      {ten:'Một chấm sáng ở Lam Sơn',
+       hinh:'Một điểm vàng bật sáng ở Thanh Hoá.',
+       loiDan:'Năm 1418, Lê Lợi dựng cờ khởi nghĩa ở Lam Sơn.'},
+      {ten:'Vòng vây siết lại',
+       hinh:'Vòng tròn xám thu nhỏ dần quanh điểm vàng.',
+       loiDan:'Nghĩa quân ba lần phải rút lên núi Chí Linh.'},
+      {ten:'Chỉ còn một nhúm người',
+       hinh:'Điểm vàng mờ đi gần tắt, hiện dòng chữ lớn: hơn một trăm.',
+       loiDan:'Có lúc nghĩa quân chỉ còn hơn một trăm người.'},
+      {ten:'Người mặc áo bào',
+       hinh:'Một chấm sáng nhỏ tách ra khỏi điểm vàng rồi tắt.',
+       loiDan:'Lê Lai cải trang thành chủ tướng, đánh lạc hướng địch và hy sinh.'},
+      {ten:'Một mũi tên xuống phía nam',
+       hinh:'Mũi tên vàng nối Thanh Hoá với Nghệ An.',
+       loiDan:'Năm 1424, Nguyễn Chích hiến kế chuyển quân vào Nghệ An.'},
+      {ten:'Vùng sáng lan rộng',
+       hinh:'Dải sáng chạy dọc miền Trung tới đèo Hải Vân.',
+       loiDan:'Nghĩa quân có hậu phương và nguồn lực để đánh lớn.'},
+      {ten:'Ba mũi tên ra Bắc',
+       hinh:'Ba mũi tên vàng cùng lúc hướng lên phía bắc.',
+       loiDan:'Tháng 9 năm 1426, nghĩa quân tiến quân ra Bắc.'},
+      {ten:'Viện binh bị chặn',
+       hinh:'Mũi tên đỏ từ phương bắc đâm vào ải Chi Lăng rồi vỡ.',
+       loiDan:'Tháng 10 năm 1427, viện binh quân Minh bị tiêu diệt ở Chi Lăng.'},
+      {ten:'Toàn bản đồ sáng',
+       hinh:'Cả bản đồ chuyển sang màu vàng ấm.',
+       loiDan:'Đầu năm 1428, quân Minh rút hết. Đất nước giành lại độc lập.'}
+    ],
+    duDoan:{
+      q:'Năm 1418 nghĩa quân Lam Sơn có lúc chỉ còn bao nhiêu người?',
+      options:['Hơn một nghìn người','Hơn năm trăm người','Hơn hai trăm người','Hơn một trăm người'],
+      heLo:'Sự thật: có lúc nghĩa quân chỉ còn hơn một trăm người.',
+      khoangCach:[
+        'Bạn đoán hơn một nghìn người. Sự thật còn vất vả hơn nhiều: nghĩa quân bị vây ngặt trên núi Chí Linh, thiếu lương trầm trọng.',
+        'Bạn đoán hơn năm trăm người. Sự thật chỉ còn hơn một trăm — ít hơn bạn nghĩ rất nhiều, nhưng cả nhóm vẫn giữ vững ý chí.',
+        'Bạn đoán hơn hai trăm người. Sự thật chỉ còn hơn một trăm người. Với một cuộc khởi nghĩa, mỗi người đều vô cùng quý.',
+        'Bạn đoán rất sát! Sự thật là hơn một trăm người. Số người ít ỏi ấy đã giữ được lửa cho cả cuộc khởi nghĩa.'
+      ],
+      chuyen:'Từ hơn một trăm người trên núi Chí Linh, đến đầu năm 1428 nghĩa quân giành lại độc lập. Họ làm thế nào? Hãy sang pha Khám phá để tìm hiểu.'
+    }
+  },
+
+  /* ---------- PHA 2 · KHÁM PHÁ — ba trạm ---------- */
+  explore:{
+    tramA:{
+      tuNam:1416, denNam:1428,
+      moc:[
+        {thoiGian:'1416', suKien:'Hội thề Lũng Nhai. Lê Lợi cùng 18 người đồng chí thề sống chết có nhau.', yNghia:'Xác lập hạt nhân lãnh đạo trước khi khởi nghĩa nổ ra.'},
+        {thoiGian:'1418', suKien:'Lê Lợi dựng cờ khởi nghĩa ở Lam Sơn, tự xưng Bình Định Vương.', yNghia:'Mốc mở đầu cuộc khởi nghĩa.'},
+        {thoiGian:'1418', suKien:'Lê Lai cải trang mặc áo bào chủ tướng, dẫn quân ra ngoài và hy sinh.', yNghia:'Cứu được Lê Lợi và bộ chỉ huy trong lúc bị vây ngặt.'},
+        {thoiGian:'1418–1423', suKien:'Giai đoạn gian khổ. Ba lần rút lên núi Chí Linh, có lúc chỉ còn hơn một trăm người.', yNghia:'Thử thách lớn nhất về ý chí. Lực lượng được bảo toàn.'},
+        {thoiGian:'1424', suKien:'Nguyễn Chích hiến kế chuyển quân vào Nghệ An.', yNghia:'Bước ngoặt chiến lược. Từ thế bị vây sang thế mở rộng địa bàn.'},
+        {thoiGian:'1424–1425', suKien:'Giải phóng Nghệ An, mở rộng vùng giải phóng đến đèo Hải Vân.', yNghia:'Có hậu phương và nguồn lực để đánh lớn.'},
+        {thoiGian:'9/1426', suKien:'Tiến quân ra Bắc, chia làm ba đạo.', yNghia:'Chuyển sang thế tiến công chiến lược trên cả nước.'},
+        {thoiGian:'7/11/1426', suKien:'Trận Tốt Động — Chúc Động.', yNghia:'Đập tan chủ lực quân Minh ở phía Bắc, buộc chúng co về Đông Quan.'},
+        {thoiGian:'10/1427', suKien:'Trận Chi Lăng — Xương Giang. Liễu Thăng tử trận ở ải Chi Lăng.', yNghia:'Tiêu diệt viện binh, cắt hy vọng cuối cùng của quân Minh.'},
+        {thoiGian:'10/12/1427', suKien:'Hội thề Đông Quan. Quân Minh cam kết rút hết về nước.', yNghia:'Kết thúc chiến tranh bằng con đường hoà bình.'},
+        {thoiGian:'Đầu 1428', suKien:'Quân Minh rút hết. Lê Lợi lên ngôi, lập ra nhà Lê sơ.', yNghia:'Đất nước giành lại độc lập hoàn toàn.'}
+      ],
+      /* năm kích hoạt của từng mốc để đồng bộ với bản đồ */
+      mocNam:[1416,1418,1418,1418,1424,1424,1426,1426,1427,1427,1428],
+      diaDanh:[
+        {namBat:1418, ten:'Lam Sơn, Thanh Hoá', vido:19.85, kinhdo:105.45, chuThich:'Nơi dựng cờ khởi nghĩa.'},
+        {namBat:1418, ten:'Núi Chí Linh, Thanh Hoá', vido:20.05, kinhdo:105.15, chuThich:'Ba lần rút lên núi.', loai:'vong'},
+        {namBat:1424, ten:'Nghệ An', vido:18.95, kinhdo:105.45, chuThich:'Kế của Nguyễn Chích.'},
+        {namBat:1425, ten:'Từ Thanh Hoá đến đèo Hải Vân', vido:17.5, kinhdo:106.5, chuThich:'Vùng sáng lan rộng dọc dải đất miền Trung.', loai:'daisang'},
+        {namBat:1426, ten:'Chương Mỹ, Hà Nội', vido:20.9, kinhdo:105.7, chuThich:'Trận Tốt Động — Chúc Động.'},
+        {namBat:1427, ten:'Ải Chi Lăng, Lạng Sơn', vido:21.65, kinhdo:106.6, chuThich:'Mũi tên viện binh từ phía Bắc bị chặn lại.', loai:'vienbinh'},
+        {namBat:1427, ten:'Đông Quan, Hà Nội', vido:21.03, kinhdo:105.85, chuThich:'Hội thề Đông Quan. Toàn bản đồ sáng.'}
+      ]
+    },
+    tramB:{
+      datDe:'Nghĩa quân nên chọn cách nào để đối phó với thành Đông Quan?',
+      phuongAn:[
+        {ten:'Đánh thẳng vào thành Đông Quan',
+         goiY:'Mô phỏng giả định — để thấy vì sao không nên.',
+         buoc:[
+           'Thành Đông Quan kiên cố, quân Minh cố thủ bên trong.',
+           'Nghĩa quân phải công phá thành trì, sẽ tổn thất rất lớn.',
+           'Trong lúc dồn sức đánh thành, viện binh quân Minh từ ngoài vẫn kéo vào, nghĩa quân dễ bị đánh từ hai phía.'
+         ],
+         ketLuan:'Đánh thành khi viện binh còn mạnh: tổn thất lớn mà khó thắng. Đây không phải lựa chọn khôn ngoan.',
+         canhBao:true},
+        {ten:'Vây thành, đánh diệt viện binh',
+         goiY:'Cách mà nghĩa quân đã chọn và làm.',
+         buoc:[
+           'Nghĩa quân vây chặt thành Đông Quan, không dốc sức công phá.',
+           'Ngày 7 tháng 11 năm 1426, trận Tốt Động — Chúc Động đập tan chủ lực quân Minh ở phía Bắc, buộc chúng co về Đông Quan.',
+           'Tháng 10 năm 1427, trận Chi Lăng — Xương Giang tiêu diệt viện binh của quân Minh.',
+           'Thành Đông Quan mất chỗ dựa. Ngày 10 tháng 12 năm 1427, Hội thề Đông Quan: quân Minh cam kết rút hết về nước.'
+         ],
+         ketLuan:'Diệt viện binh thì thành mất chỗ dựa — chiến thắng đến với tổn thất nhỏ nhất. Đó là cách nghĩa quân đã chọn.',
+         canhBao:false}
+      ],
+      chot:'Vì thành kiên cố, đánh trực tiếp sẽ tổn thất lớn; còn diệt viện binh thì thành mất chỗ dựa. Nghĩa quân đã chọn phương án 2 và thắng lợi.'
+    },
+    tramC:{
+      datDe:'Mỗi người một vai. Hãy chạm một nhân vật rồi chạm đúng vai trò của người đó.',
+      nhanVat:[
+        {ten:'Lê Lợi', vai:'Chủ tướng nghĩa quân. Dựng cờ khởi nghĩa ở Lam Sơn năm 1418, tự xưng Bình Định Vương.'},
+        {ten:'Nguyễn Trãi', vai:'Quân sư của nghĩa quân, người cùng dựng kế sách cho cuộc khởi nghĩa.'},
+        {ten:'Lê Lai', vai:'Cải trang mặc áo bào chủ tướng, dẫn quân ra ngoài và hy sinh để cứu Lê Lợi năm 1418.'}
+      ]
+    }
+  },
+
+  /* ---------- PHA 3 · GIẢI THÍCH — 12 thẻ lật ---------- */
+  flashcards:[
+    {front:'Hội thề Lũng Nhai (1416): 18 người cùng thề sống chết có nhau.',
+     back:'Giống như nhóm bạn hứa cùng ôn thi, không ai bỏ cuộc giữa chừng.'},
+    {front:'Năm 1418, Lê Lợi dựng cờ khởi nghĩa ở Lam Sơn, tự xưng Bình Định Vương.',
+     back:'Giống như cả nhóm cùng đặt tên đội và treo bảng để mọi người biết đội ra đời.'},
+    {front:'Lê Lai cải trang mặc áo bào chủ tướng, hy sinh để cứu Lê Lợi (1418).',
+     back:'Giống như bạn đổi áo cho bạn thân trong trò chơi để bạn ấy thoát khỏi bị đuổi bắt.'},
+    {front:'Ba lần rút lên núi Chí Linh (1418–1423): lui để giữ người, giữ sức.',
+     back:'Giống như bỏ vài ván game để ngủ sớm, giữ sức cho kì thi ngày mai.'},
+    {front:'Có lúc nghĩa quân chỉ còn hơn một trăm người, nhưng không tan rã.',
+     back:'Giống như đội bóng của lớp thiếu mấy trạm nhưng vẫn giữ đội và tập tiếp.'},
+    {front:'Năm 1424, Nguyễn Chích hiến kế: chuyển quân vào Nghệ An — tìm lối đi mới.',
+     back:'Giống như đổi từ học thuộc lòng sang vẽ sơ đồ tư duy và thấy dễ nhớ hơn.'},
+    {front:'Nghĩa quân mở rộng vùng giải phóng tới đèo Hải Vân (1424–1425).',
+     back:'Giống như nhóm bạn lớn dần: ban đầu ba người, rồi cả lớp cùng chơi.'},
+    {front:'Tháng 9/1426, chia ba đạo tiến ra Bắc — chuyển sang thế tiến công.',
+     back:'Giống như khi đã ôn chắc, bạn chuyển từ đọc sách sang luyện đề từng phần.'},
+    {front:'Trận Tốt Động — Chúc Động (7/11/1426): đập tan chủ lực quân Minh ở phía Bắc.',
+     back:'Giống như đội bạn mạnh nhất của đối thủ bị loại khỏi giải, cả đội lúng túng.'},
+    {front:'Trận Chi Lăng — Xương Giang (10/1427): tiêu diệt viện binh, Liễu Thăng tử trận.',
+     back:'Giống như đội đối thủ chờ người tiếp ứng nhưng người đó không bao giờ tới được.'},
+    {front:'Hội thề Đông Quan (10/12/1427): quân Minh cam kết rút hết về nước.',
+     back:'Giống như hai nhóm bạn thỏa thuận dừng trò chơi, trả lại đồ và ra về trong hoà bình.'},
+    {front:'Đầu năm 1428: quân Minh rút hết, Lê Lợi lên ngôi, lập ra nhà Lê sơ.',
+     back:'Giống như sau cả mùa giải đầy khó khăn, đội bạn cuối cùng nâng được cúp.'}
+  ],
+
+  /* ---------- PHA 3 · KIỂM TRA NHANH — 15 câu (10 câu ngân hàng + 5 câu bổ sung) ---------- */
+  knowledgeQuiz:[
+    {q:'Cuộc khởi nghĩa Lam Sơn nổ ra vào năm nào?',
+     correct:'Năm 1418, năm dựng cờ khởi nghĩa',
+     distractors:['Năm 1416, năm Hội thề Lũng Nhai','Năm 1424, năm chuyển quân vào Nghệ An','Năm 1428, năm quân Minh rút hết'],
+     why:'Năm 1416 là Hội thề Lũng Nhai, diễn ra trước khi dựng cờ. Năm 1424 là năm chuyển quân vào Nghệ An. Năm 1428 là năm kết thúc.'},
+    {q:'Ai là người dựng cờ khởi nghĩa ở Lam Sơn?',
+     correct:'Lê Lợi, người tự xưng Bình Định Vương',
+     distractors:['Nguyễn Trãi, người làm quân sư','Lê Lai, người cải trang cứu chủ tướng','Nguyễn Chích, người hiến kế vào Nghệ An'],
+     why:'Nguyễn Trãi là quân sư, Lê Lai là người cải trang cứu chủ tướng, Nguyễn Chích là người hiến kế vào Nghệ An. Cả ba đều không phải người dựng cờ.'},
+    {q:'Hội thề Lũng Nhai diễn ra vào năm nào?',
+     correct:'Năm 1416, năm Hội thề Lũng Nhai',
+     distractors:['Năm 1418, năm Lê Lợi dựng cờ','Năm 1424, năm chuyển quân vào Nghệ An','Năm 1428, năm quân Minh rút hết'],
+     why:'Năm 1418 là năm Lê Lợi dựng cờ khởi nghĩa. Năm 1424 là năm chuyển quân vào Nghệ An. Năm 1428 là năm quân Minh rút hết, đất nước giành lại độc lập.'},
+    {q:'Khởi nghĩa Lam Sơn nổ ra ở vùng đất nào?',
+     correct:'Vùng Lam Sơn, Thanh Hoá',
+     distractors:['Nghệ An, nơi nghĩa quân chuyển vào năm 1424','Lạng Sơn, nơi diễn ra trận Chi Lăng','Hà Nội, vùng Đông Quan ngày nay'],
+     why:'Nghệ An là nơi nghĩa quân chuyển vào năm 1424. Lạng Sơn là nơi diễn ra trận Chi Lăng. Hà Nội ngày nay là vùng Đông Quan.'},
+    {q:'Ai là người hiến kế chuyển quân vào Nghệ An?',
+     correct:'Nguyễn Chích, người hiến kế chuyển quân vào Nghệ An',
+     distractors:['Nguyễn Trãi, người làm quân sư','Lê Lai, người cải trang cứu chủ tướng','Liễu Thăng, viên tướng tử trận ở ải Chi Lăng'],
+     why:'Nguyễn Trãi là quân sư. Lê Lai là người cải trang cứu chủ tướng. Liễu Thăng là viên tướng quân Minh tử trận ở ải Chi Lăng, không thuộc nghĩa quân.'},
+    {q:'Vì sao nghĩa quân ba lần phải rút lên núi Chí Linh?',
+     correct:'Vì lực lượng còn yếu, bị quân Minh vây ép nên phải bảo toàn lực lượng',
+     distractors:['Vì muốn dụ quân Minh vào thế trận đã bày sẵn ở chân núi Chí Linh','Vì trên núi Chí Linh có sẵn kho lương lớn đủ nuôi quân qua mùa đông','Vì phải chờ viện binh từ Nghệ An kéo ra rồi mới đánh trả quân Minh'],
+     why:'Rút lên núi là để giữ lực lượng chứ không phải mưu kế dụ địch. Trên núi nghĩa quân thiếu lương trầm trọng, và lúc đó chưa có địa bàn Nghệ An.'},
+    {q:'Việc Lê Lai cải trang mặc áo bào chủ tướng có ý nghĩa gì?',
+     correct:'Đánh lạc hướng quân Minh, cứu được Lê Lợi và bộ chỉ huy',
+     distractors:['Đánh lạc hướng quân Minh, giúp nghĩa quân chiếm được thành Đông Quan','Thu hút quân Minh về phía bắc, mở đường cho nghĩa quân tiến ra Bắc','Gây sức ép buộc quân Minh phải ký hoà nghị ngay trong năm ấy'],
+     why:'Chiếm Đông Quan, tiến ra Bắc và hoà nghị đều là những việc xảy ra nhiều năm sau, không liên quan tới hành động của Lê Lai năm 1418.'},
+    {q:'Nghĩa quân chia làm ba đạo tiến quân ra Bắc vào thời điểm nào?',
+     correct:'Tháng 9 năm 1426, khi mở cuộc tiến quân ra Bắc',
+     distractors:['Tháng 11 năm 1426, lúc trận Tốt Động — Chúc Động','Tháng 10 năm 1427, lúc trận Chi Lăng','Tháng 12 năm 1427, lúc Hội thề Đông Quan'],
+     why:'Trận Tốt Động — Chúc Động diễn ra ngày 7 tháng 11 năm 1426. Trận Chi Lăng — Xương Giang diễn ra tháng 10 năm 1427. Hội thề Đông Quan diễn ra tháng 12 năm 1427.'},
+    {q:'Kế chuyển quân vào Nghệ An của Nguyễn Chích đem lại thay đổi gì?',
+     correct:'Đưa nghĩa quân từ thế bị vây sang thế mở rộng địa bàn',
+     distractors:['Đưa nghĩa quân từ thế bị vây sang thế đánh chiếm ngay thành Đông Quan','Buộc quân Minh phải rút toàn bộ lực lượng về nước ngay trong năm đó','Kết thúc giai đoạn gian khổ chỉ trong vài tháng đầu năm 1424'],
+     why:'Vào Nghệ An là bước ngoặt chiến lược, nhưng chưa phải là chiến thắng. Đông Quan còn cố thủ tới năm 1427, và quân Minh chỉ rút sau Hội thề.'},
+    {q:'Giai đoạn nào nghĩa quân ba lần rút lên núi Chí Linh?',
+     correct:'Từ năm 1418 đến năm 1423, giai đoạn gian khổ',
+     distractors:['Năm 1424 đến 1425, lúc giải phóng Nghệ An','Tháng 9 năm 1426, lúc tiến quân ra Bắc','Tháng 10 năm 1427, lúc trận Chi Lăng'],
+     why:'Năm 1424 đến 1425 là giai đoạn giải phóng Nghệ An và mở rộng vùng giải phóng. Tháng 9 năm 1426 nghĩa quân tiến ra Bắc. Tháng 10 năm 1427 diễn ra trận Chi Lăng — Xương Giang.'},
+    {q:'Trận Tốt Động — Chúc Động diễn ra ở vùng nào ngày nay?',
+     correct:'Chương Mỹ, Hà Nội',
+     distractors:['Ải Chi Lăng, Lạng Sơn','Lam Sơn, Thanh Hoá, nơi dựng cờ','Thành Đông Quan, nơi quân Minh cố thủ'],
+     why:'Ải Chi Lăng là nơi diễn ra trận cuối năm 1427. Lam Sơn là nơi dựng cờ. Đông Quan là nơi quân Minh cố thủ, không phải nơi giao chiến năm 1426.'},
+    {q:'Vì sao nghĩa quân chọn cách vây thành mà không dốc sức đánh thành?',
+     correct:'Vì thành kiên cố, đánh sẽ tổn thất lớn, còn diệt viện binh thì thành mất chỗ dựa',
+     distractors:['Vì nghĩa quân không đủ vũ khí và máy bắn đá để công phá thành','Vì quân Minh trong thành đã xin hàng từ trước nên nghĩa quân không cần đánh','Vì nhà Minh cấm quân trong thành không được ra ngoài giao chiến'],
+     why:'Lý do là tính toán chiến thuật chứ không phải thiếu vũ khí. Quân Minh chỉ chấp nhận rút sau khi viện binh bị tiêu diệt, không hàng từ trước.'},
+    {q:'Đầu năm 1428, việc gì đã xảy ra?',
+     correct:'Quân Minh rút hết và Lê Lợi lên ngôi',
+     distractors:['Nghĩa quân chia làm ba đạo tiến ra Bắc','Nguyễn Chích hiến kế chuyển quân vào Nghệ An','Lê Lai cải trang cứu chủ tướng và hy sinh'],
+     why:'Chia ba đạo tiến ra Bắc diễn ra tháng 9 năm 1426. Nguyễn Chích hiến kế chuyển quân vào Nghệ An là năm 1424. Lê Lai cải trang cứu chủ tướng là năm 1418.'},
+    {q:'Trận Chi Lăng — Xương Giang tháng 10 năm 1427 có vai trò quyết định vì lý do nào?',
+     correct:'Tiêu diệt viện binh, cắt đứt hy vọng cuối cùng của quân Minh trong thành',
+     distractors:['Giải phóng được toàn bộ vùng đất chạy từ Thanh Hoá vào đến đèo Hải Vân','Đưa Lê Lợi lên ngôi hoàng đế và lập ra nhà Lê sơ ngay sau đó','Mở đầu giai đoạn nghĩa quân chia ba đạo tiến quân ra vùng Bắc Bộ'],
+     why:'Việc giải phóng tới đèo Hải Vân xảy ra năm 1425, tiến quân ra Bắc là tháng 9 năm 1426, còn Lê Lợi lên ngôi vào đầu năm 1428.'},
+    {q:'Hội thề Đông Quan cho thấy điều gì trong cách kết thúc chiến tranh của nghĩa quân?',
+     correct:'Biết dừng đúng lúc, mở đường cho địch rút về để giữ hoà hiếu lâu dài',
+     distractors:['Nghĩa quân đã kiệt sức sau mười năm nên buộc phải thoả hiệp với quân Minh','Quân Minh vẫn còn mạnh hơn nên nghĩa quân buộc phải nhượng bộ để giữ hoà','Nhà Minh chủ động đề nghị hoà nghị và nghĩa quân chỉ việc chấp thuận'],
+     why:'Lúc đó nghĩa quân đang ở thế thắng sau Chi Lăng — Xương Giang. Việc mở đường rút là lựa chọn chủ động của bộ chỉ huy, không phải thế bị ép.'}
+  ],
+
+  /* ---------- PHA 4 · VẬN DỤNG — hai tình huống đời sống tuổi 11–15 ---------- */
+  useCases:[
+    {boiCanh:'Kì thi cuối học kì sắp tới. Bạn có bảy môn phải ôn nhưng chỉ còn một tuần. Ôn tới đâu quên tới đó, bạn thấy áp lực đè lên quanh mình.',
+     cauHoi:[
+       {q:'Bạn đang ở tình huống nào giống nghĩa quân trên núi Chí Linh nhất?',
+        correct:'Bị áp lực bao vây quanh, cứ chống đỡ kiểu cũ thì dễ kiệt sức',
+        distractors:['Đã thắng lợi to lớn, chỉ cần giữ vững thành quả đã có','Có đủ người giúp sức nên không phải lo lắng điều gì','Không có mục tiêu rõ ràng nên chưa biết phải làm gì'],
+        why:'Nghĩa quân lúc đó bị vây ngặt, lực lượng còn yếu. Bạn cũng đang bị áp lực vây quanh, thời gian và sức khoẻ đều có hạn.'},
+       {q:'Nếu học như nghĩa quân "lui về bảo toàn lực lượng", bạn sẽ làm gì?',
+        correct:'Dừng ôn dàn trải, chọn vài phần cốt lõi để ôn cho thật chắc',
+        distractors:['Thức cả đêm ôn hết bảy môn trong một đêm duy nhất','Bỏ thi luôn để khỏi phải mệt mỏi và lo lắng thêm','Học thêm ba lớp nữa mỗi tối cho tới ngày thi'],
+        why:'Rút lên núi là giữ người, giữ sức chứ không phải từ bỏ. Bạn cũng giữ sức và chọn phần quan trọng nhất để ôn cho chắc.'},
+       {q:'"Tìm lối đi mới" khi chuyển quân vào Nghệ An giống việc gì của bạn?',
+        correct:'Đổi cách học: tự làm đề, học nhóm, xin thầy cô chỉ chỗ yếu',
+        distractors:['Tiếp tục ôn đúng cách cũ nhưng cố gắng gấp ba lần','Chỉ học môn yêu thích và bỏ hẳn các môn còn lại','Chờ tới hôm thi rồi làm gì được thì làm'],
+        why:'Nghĩa quân đổi cách đánh, mở địa bàn mới thay vì đứng yên chịu vây. Bạn cũng đổi phương pháp học thay vì ôn theo kiểu cũ.'}
+     ]},
+    {boiCanh:'Bạn đăng kí hội thi kể chuyện lịch sử của trường nhưng đã bị dừng ngay vòng lớp. Bạn buồn và muốn gỡ gạc thật nhanh.',
+     cauHoi:[
+       {q:'Ngay sau khi bị dừng, cách nghĩ nào giống "ba lần rút lên núi Chí Linh"?',
+        correct:'Tạm lùi lại, giữ tinh thần và sức để luyện tiếp chứ không bỏ cuộc',
+        distractors:['Tôi kém cỏi nên từ nay không dám tham gia việc gì nữa','Tôi sẽ đăng kí lại ngay hôm sau để gỡ gạc cho nhanh','Cuộc thi này thiên vị người khác nên tôi đành chịu thua'],
+        why:'Rút lên núi là tạm lùi để bảo toàn lực lượng, không phải từ bỏ. Gỡ gạc vội khi chưa sẵn sàng cũng như đánh thành khi lực lượng còn yếu.'},
+       {q:'Bước "tìm lối đi mới" của bạn sẽ là gì?',
+        correct:'Xem lại chỗ hụt, tập nói trước lớp nhỏ rồi mới thi lần sau',
+        distractors:['Luyện chăm hơn theo đúng cách cũ, hẹn may mắn lần tới','Không luyện gì thêm, trông chờ vào ban giám khảo thương tình','Chuyển sang chơi game cho quên chuyện buồn ở cuộc thi'],
+        why:'Nghĩa quân đổi kế: chuyển quân vào Nghệ An để mở ra thế mới. Bạn cũng đổi cách luyện tập dựa trên chỗ mình còn yếu.'},
+       {q:'Điều nào bạn học được nhất từ cuộc khởi nghĩa Lam Sơn qua tình huống này?',
+        correct:'Thất bại tạm thời không đáng sợ, quan trọng là giữ sức và tìm lối đi mới',
+        distractors:['Muốn thành công thì phải thắng ngay từ lần đầu tiên ra mắt','Người giỏi là người chưa bao giờ phải rút lui trong cuộc đời','Chỉ cần may mắn thì mọi khó khăn sẽ tự tan biến đi'],
+        why:'Nghĩa quân thua nhiều trận nhưng giữ được người và tìm ra lối đi mới. Đầu năm 1428, đất nước giành lại độc lập hoàn toàn.'}
+     ]}
+  ],
+
+  /* ---------- PHA 5 · ĐÁNH GIÁ — 15 câu (10 câu ngân hàng + 5 câu bổ sung) ---------- */
+  finalQuiz:[
+    {q:'Cuộc khởi nghĩa Lam Sơn nổ ra vào năm nào?',
+     correct:'Năm 1418, năm dựng cờ khởi nghĩa',
+     distractors:['Năm 1416, năm Hội thề Lũng Nhai','Năm 1424, năm chuyển quân vào Nghệ An','Năm 1428, năm quân Minh rút hết'],
+     why:'Năm 1416 là Hội thề Lũng Nhai, diễn ra trước khi dựng cờ. Năm 1424 là năm chuyển quân vào Nghệ An. Năm 1428 là năm kết thúc.'},
+    {q:'Ai đã cải trang mặc áo bào chủ tướng để cứu Lê Lợi và hy sinh?',
+     correct:'Lê Lai, người cải trang cứu chủ tướng',
+     distractors:['Nguyễn Trãi, người làm quân sư','Nguyễn Chích, người hiến kế vào Nghệ An','Liễu Thăng, viên tướng quân Minh'],
+     why:'Người làm quân sư là Nguyễn Trãi. Người hiến kế vào Nghệ An là Nguyễn Chích. Liễu Thăng là viên tướng quân Minh, tử trận ở ải Chi Lăng.'},
+    {q:'Ai là người dựng cờ khởi nghĩa ở Lam Sơn?',
+     correct:'Lê Lợi, người tự xưng Bình Định Vương',
+     distractors:['Nguyễn Trãi, người làm quân sư','Lê Lai, người cải trang cứu chủ tướng','Nguyễn Chích, người hiến kế vào Nghệ An'],
+     why:'Nguyễn Trãi là quân sư, Lê Lai là người cải trang cứu chủ tướng, Nguyễn Chích là người hiến kế vào Nghệ An. Cả ba đều không phải người dựng cờ.'},
+    {q:'Khởi nghĩa Lam Sơn nổ ra ở vùng đất nào?',
+     correct:'Vùng Lam Sơn, Thanh Hoá',
+     distractors:['Nghệ An, nơi nghĩa quân chuyển vào năm 1424','Lạng Sơn, nơi diễn ra trận Chi Lăng','Hà Nội, vùng Đông Quan ngày nay'],
+     why:'Nghệ An là nơi nghĩa quân chuyển vào năm 1424. Lạng Sơn là nơi diễn ra trận Chi Lăng. Hà Nội ngày nay là vùng Đông Quan.'},
+    {q:'Việc giải phóng Nghệ An và mở rộng vùng giải phóng tới đèo Hải Vân diễn ra giai đoạn nào?',
+     correct:'Từ năm 1424 đến năm 1425, khi mở rộng vùng giải phóng',
+     distractors:['Năm 1418 đến 1423, giai đoạn gian khổ trên núi Chí Linh','Tháng 9 năm 1426, lúc tiến quân ra Bắc','Tháng 10 năm 1427, lúc trận Chi Lăng'],
+     why:'Năm 1418 đến 1423 là giai đoạn ba lần rút lên núi Chí Linh. Tháng 9 năm 1426 nghĩa quân tiến quân ra Bắc. Tháng 10 năm 1427 diễn ra trận Chi Lăng — Xương Giang.'},
+    {q:'Vì sao nghĩa quân ba lần phải rút lên núi Chí Linh?',
+     correct:'Vì lực lượng còn yếu, bị quân Minh vây ép nên phải bảo toàn lực lượng',
+     distractors:['Vì muốn dụ quân Minh vào thế trận đã bày sẵn ở chân núi Chí Linh','Vì trên núi Chí Linh có sẵn kho lương lớn đủ nuôi quân qua mùa đông','Vì phải chờ viện binh từ Nghệ An kéo ra rồi mới đánh trả quân Minh'],
+     why:'Rút lên núi là để giữ lực lượng chứ không phải mưu kế dụ địch. Trên núi nghĩa quân thiếu lương trầm trọng, và lúc đó chưa có địa bàn Nghệ An.'},
+    {q:'Việc Lê Lai cải trang mặc áo bào chủ tướng có ý nghĩa gì?',
+     correct:'Đánh lạc hướng quân Minh, cứu được Lê Lợi và bộ chỉ huy',
+     distractors:['Đánh lạc hướng quân Minh, giúp nghĩa quân chiếm được thành Đông Quan','Thu hút quân Minh về phía bắc, mở đường cho nghĩa quân tiến ra Bắc','Gây sức ép buộc quân Minh phải ký hoà nghị ngay trong năm ấy'],
+     why:'Chiếm Đông Quan, tiến ra Bắc và hoà nghị đều là những việc xảy ra nhiều năm sau, không liên quan tới hành động của Lê Lai năm 1418.'},
+    {q:'Tại trận Chi Lăng — Xương Giang, viên tướng quân Minh nào đã tử trận?',
+     correct:'Liễu Thăng, viên tướng quân Minh tử trận ở ải Chi Lăng',
+     distractors:['Lê Lợi, chủ tướng của nghĩa quân','Lê Lai, người cải trang cứu chủ tướng','Nguyễn Trãi, người làm quân sư'],
+     why:'Lê Lợi là chủ tướng nghĩa quân. Lê Lai là người cải trang cứu chủ tướng. Nguyễn Trãi là quân sư. Cả ba đều thuộc nghĩa quân, còn Liễu Thăng là tướng quân Minh.'},
+    {q:'Kế chuyển quân vào Nghệ An của Nguyễn Chích đem lại thay đổi gì?',
+     correct:'Đưa nghĩa quân từ thế bị vây sang thế mở rộng địa bàn',
+     distractors:['Đưa nghĩa quân từ thế bị vây sang thế đánh chiếm ngay thành Đông Quan','Buộc quân Minh phải rút toàn bộ lực lượng về nước ngay trong năm đó','Kết thúc giai đoạn gian khổ chỉ trong vài tháng đầu năm 1424'],
+     why:'Vào Nghệ An là bước ngoặt chiến lược, nhưng chưa phải là chiến thắng. Đông Quan còn cố thủ tới năm 1427, và quân Minh chỉ rút sau Hội thề.'},
+    {q:'Hội thề Đông Quan diễn ra vào thời điểm nào?',
+     correct:'Tháng 12 năm 1427, sau trận Chi Lăng – Xương Giang',
+     distractors:['Tháng 11 năm 1426, khi trận Tốt Động — Chúc Động nổ ra','Tháng 10 năm 1427, khi viện binh quân Minh bị tiêu diệt','Đầu năm 1428, khi đất nước giành lại độc lập'],
+     why:'Trận Tốt Động — Chúc Động diễn ra tháng 11 năm 1426. Viện binh quân Minh bị tiêu diệt ở Chi Lăng tháng 10 năm 1427. Quân Minh rút hết vào đầu năm 1428.'},
+    {q:'Trận Tốt Động — Chúc Động diễn ra ở vùng nào ngày nay?',
+     correct:'Chương Mỹ, Hà Nội',
+     distractors:['Ải Chi Lăng, Lạng Sơn','Lam Sơn, Thanh Hoá, nơi dựng cờ','Thành Đông Quan, nơi quân Minh cố thủ'],
+     why:'Ải Chi Lăng là nơi diễn ra trận cuối năm 1427. Lam Sơn là nơi dựng cờ. Đông Quan là nơi quân Minh cố thủ, không phải nơi giao chiến năm 1426.'},
+    {q:'Vì sao nghĩa quân chọn cách vây thành mà không dốc sức đánh thành?',
+     correct:'Vì thành kiên cố, đánh sẽ tổn thất lớn, còn diệt viện binh thì thành mất chỗ dựa',
+     distractors:['Vì nghĩa quân không đủ vũ khí và máy bắn đá để công phá thành','Vì quân Minh trong thành đã xin hàng từ trước nên nghĩa quân không cần đánh','Vì nhà Minh cấm quân trong thành không được ra ngoài giao chiến'],
+     why:'Lý do là tính toán chiến thuật chứ không phải thiếu vũ khí. Quân Minh chỉ chấp nhận rút sau khi viện binh bị tiêu diệt, không hàng từ trước.'},
+    {q:'Hội thề Lũng Nhai có ý nghĩa gì?',
+     correct:'Xác lập hạt nhân lãnh đạo trước khi khởi nghĩa nổ ra',
+     distractors:['Chuẩn bị cho việc chuyển quân vào Nghệ An','Mở đầu cho cuộc tiến quân ra Bắc năm 1426','Kết thúc thời gian gian khổ ở núi Chí Linh'],
+     why:'Hội thề Lũng Nhai diễn ra năm 1416, trước khi khởi nghĩa nổ ra, để xác lập hạt nhân lãnh đạo. Chuyển quân vào Nghệ An, tiến quân ra Bắc và rút lên núi Chí Linh đều là những diễn biến sau đó.'},
+    {q:'Trận Chi Lăng — Xương Giang tháng 10 năm 1427 có vai trò quyết định vì lý do nào?',
+     correct:'Tiêu diệt viện binh, cắt đứt hy vọng cuối cùng của quân Minh trong thành',
+     distractors:['Giải phóng được toàn bộ vùng đất chạy từ Thanh Hoá vào đến đèo Hải Vân','Đưa Lê Lợi lên ngôi hoàng đế và lập ra nhà Lê sơ ngay sau đó','Mở đầu giai đoạn nghĩa quân chia ba đạo tiến quân ra vùng Bắc Bộ'],
+     why:'Việc giải phóng tới đèo Hải Vân xảy ra năm 1425, tiến quân ra Bắc là tháng 9 năm 1426, còn Lê Lợi lên ngôi vào đầu năm 1428.'},
+    {q:'Đầu năm 1428, việc gì đã xảy ra?',
+     correct:'Quân Minh rút hết và Lê Lợi lên ngôi',
+     distractors:['Nghĩa quân chia làm ba đạo tiến ra Bắc','Nguyễn Chích hiến kế chuyển quân vào Nghệ An','Lê Lai cải trang cứu chủ tướng và hy sinh'],
+     why:'Chia ba đạo tiến ra Bắc diễn ra tháng 9 năm 1426. Nguyễn Chích hiến kế chuyển quân vào Nghệ An là năm 1424. Lê Lai cải trang cứu chủ tướng là năm 1418.'}
+  ],
+
+  /* ---------- HUY HIỀU — gắn với hành vi học tốt ---------- */
+  huyHieu:[
+    {id:'hb1', ico:'🧭', ten:'Nhà khám phá',   moTa:'Hoàn thành một trạm ở pha Khám phá.'},
+    {id:'hb2', ico:'🏕️', ten:'Ba trạm trọn vẹn', moTa:'Hoàn thành cả ba trạm Khám phá.'},
+    {id:'hb3', ico:'⭐', ten:'Năm câu liền đúng', moTa:'Trả lời đúng năm câu liên tiếp.'},
+    {id:'hb4', ico:'💪', ten:'Không bỏ cuộc',   moTa:'Trả lời sai nhưng vẫn làm hết phần câu hỏi.'},
+    {id:'hb5', ico:'🏆', ten:'Hoàn thành hành trình', moTa:'Đi hết cả năm pha của bài học.'}
+  ]
+};
+/* ===DATA END=== */
+
+/* =====================================================================
+   CÂN BẰNG ĐÁP ÁN — dán nguyên khối từ mục 7 của tệp hướng dẫn.
+   ===================================================================== */
+/* ===BALANCE START=== */
+function demTu(s){ return s.trim().split(/\s+/).length; }
+function bacDoDai(s){ const w=demTu(s); return w<=8?'A':w<=12?'B':'C'; }
+function xaoTron(a){ a=[...a];
+for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+return a; }
+
+function xaoTronCanBang(quiz){
+const viTri=[]; const lech=Math.floor(Math.random()*4);
+for(let i=0;i<quiz.length;i++) viTri.push((i+lech)%4);
+const t=xaoTron(viTri);
+return quiz.map((q,i)=>{
+const opts=xaoTron(q.distractors);
+opts.splice(Math.min(t[i],opts.length),0,q.correct);
+return { question:q.q, options:opts, correctIndex:opts.indexOf(q.correct), explanation:q.why||'' };
+});
+}
+
+function kiemCanBang(quiz){
+const c={A:0,B:0,C:0};
+quiz.forEach(q=>c[bacDoDai(q.correct)]++);
+const n=quiz.length, max=Math.max(c.A,c.B,c.C);
+const nhieuOk=quiz.every(q=>q.distractors.every(d=>{const w=demTu(d);return w>=5&&w<=16;}));
+const dat=(max/n)<=0.4 && nhieuOk;
+console.assert(dat,'CAN BANG DAP AN CHUA DAT',c,{nhieuOk});
+return { counts:c, pass:dat, nhieuOk };
+}
+/* ===BALANCE END=== */
+
+/* =====================================================================
+   PHẦN MÁY CHẠY — phần dưới đây không cần sửa khi đổi bài.
+   ===================================================================== */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---- Trạng thái toàn cục (không dùng localStorage — mọi dữ liệu nằm trong máy, giữ bằng tệp .json) ---- */
+function trangThaiGoc(){
+  const q=()=>({list:null,idx:0,chon:-1,traLoi:false,dung:0,coSai:false,done:false});
+  return {
+    man:'chao', hoTen:'', lop:'',
+    xong:{p1:false,p2:false,p3:false,p4:false,p5:false},
+    p1:{eFrame:0, eChay:false, daTuChay:false, duDoan:-1},
+    p2:{aMax:1416, aMoc:-1, aDone:false, bSel:-1, bSteps:[0,0], bSim:[false,false],
+        cSel:-1, cOrder:[2,0,1], cPair:[false,false,false], cDone:false},
+    p3:{seen:[false,false,false,false,false,false,false,false,false,false,false,false], cur:0, lat:false, k:q()},
+    p4:{s1:q(), s2:q()},
+    p5:{k:q(), time:0, timerOn:true, started:false, best:0, bestDate:''},
+    hb:{hb1:false,hb2:false,hb3:false,hb4:false,hb5:false},
+    streak:0
+  };
+}
+let S=trangThaiGoc();
+const A={timer:null};            /* bộ hẹn giờ hoạt hình pha 1 */
+const T5={iv:null};              /* đồng hồ đếm lên pha 5 */
+const NAM_MO=12;                 /* 12/15 câu = 80% — ngưỡng chứng nhận */
+
+/* Bổ sung 5 câu cùng mức độ cho mỗi bộ đã nằm trong LESSON ở trên. */
+function quizSt(p){ return p==='k3'?S.p3.k : p==='k5'?S.p5.k : p==='s1'?S.p4.s1 : S.p4.s2; }
+function nguonQuiz(p){
+  return p==='k3'?LESSON.knowledgeQuiz : p==='k5'?LESSON.finalQuiz :
+         p==='s1'?LESSON.useCases[0].cauHoi : LESSON.useCases[1].cauHoi;
+}
+function sinhDsCauHoi(){
+  ['k3','k5','s1','s2'].forEach(p=>{
+    const st=quizSt(p);
+    if(!Array.isArray(st.list)||st.list.length!==nguonQuiz(p).length||!st.list.every(x=>x&&typeof x.correctIndex==='number')){
+      st.list=xaoTronCanBang(nguonQuiz(p));
+    }
+  });
+}
+
+/* ---- Toast ---- */
+let toastTimer=null;
+function toast(msg){
+  const t=$('#toast'); t.textContent=msg; t.classList.add('on');
+  if(toastTimer)clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('on'),2800);
+}
+
+/* ---- Huy hiệu ---- */
+function veHuyHieu(){
+  $('#badgebar').innerHTML=LESSON.huyHieu.map(h=>
+    `<span class="badge${S.hb[h.id]?' co':''}" title="${esc(h.ten)} — ${esc(h.moTa)}">${h.ico} ${esc(h.ten)}</span>`).join('');
+}
+function thuongHuyHieu(id){
+  if(S.hb[id])return;
+  S.hb[id]=true;
+  const h=LESSON.huyHieu.find(x=>x.id===id);
+  toast(`${h.ico} Bạn nhận được huy hiệu: ${h.ten}!`);
+  veHuyHieu();
+}
+function kiemHuyHieu(){
+  const t2=S.p2;
+  if(t2.aDone||t2.bSim[0]||t2.bSim[1]||t2.cDone) thuongHuyHieu('hb1');
+  if(t2.aDone&&t2.bSim[0]&&t2.bSim[1]&&t2.cDone) thuongHuyHieu('hb2');
+  if(S.xong.p1&&S.xong.p2&&S.xong.p3&&S.xong.p4&&S.xong.p5) thuongHuyHieu('hb5');
+}
+
+/* ---- Cập nhật thanh tiến độ ---- */
+function veTienDo(){
+  const n=['p1','p2','p3','p4','p5'].filter(k=>S.xong[k]).length;
+  $('#prog-bar').style.width=(n/5*100)+'%';
+}
+
+/* ---- Điều hướng pha — khoá tuần tự ---- */
+const PHA=[
+  {id:'chao', ten:'Chào'},
+  {id:'p1',   ten:'1 · Tò mò'},
+  {id:'p2',   ten:'2 · Khám phá'},
+  {id:'p3',   ten:'3 · Giải thích'},
+  {id:'p4',   ten:'4 · Vận dụng'},
+  {id:'p5',   ten:'5 · Đánh giá'},
+  {id:'cert', ten:'🏆 Chứng nhận'}
+];
+function moPha(id){
+  if(id==='chao'||id==='p1')return true;
+  if(id==='p2')return S.xong.p1;
+  if(id==='p3')return S.xong.p2;
+  if(id==='p4')return S.xong.p3;
+  if(id==='p5')return S.xong.p4;
+  if(id==='cert')return S.xong.p5&&S.p5.best>=NAM_MO;
+  return false;
+}
+function veNav(){
+  $('#nav').innerHTML=PHA.map(p=>{
+    const mo=moPha(p.id), cur=S.man===p.id;
+    const ten=(p.id!=='chao'&&p.id!=='cert'&&!mo)?'🔒 '+p.ten:p.ten;
+    return `<button type="button" class="chip${cur?' cur':''}" ${mo?'':'disabled'}
+      ${cur?'aria-current="step"':''} onclick="show('${p.id}')" title="${mo?'':'Chưa xong pha trước'}">${ten}</button>`;
+  }).join('');
+  veTienDo(); veHuyHieu();
+}
+
+/* ---- Chuyển màn hình ---- */
+function show(man){
+  if(!moPha(man)){
+    toast('Hãy hoàn thành pha trước đã nhé!');
+    return;
+  }
+  if(S.man==='p1'&&man!=='p1'){ tayDieuKhien(); S.p1.eChay=false; } /* rời pha 1: huỷ hẹn giờ */
+  if(S.man==='p5'&&man!=='p5'){ dungHen5(); }                      /* rời pha 5: tạm dừng đồng hồ */
+  S.man=man;
+  veNav(); veMan();
+  window.scrollTo(0,0);
+}
+
+function veMan(){
+  const m=$('#main');
+  if(S.man==='chao')m.innerHTML=vChao();
+  else if(S.man==='p1'){m.innerHTML=vP1(); sauP1();}
+  else if(S.man==='p2'){m.innerHTML=vP2(); sauP2();}
+  else if(S.man==='p3'){m.innerHTML=vP3(); sauP3();}
+  else if(S.man==='p4'){m.innerHTML=vP4(); sauP4();}
+  else if(S.man==='p5'){m.innerHTML=vP5(); sauP5();}
+  else if(S.man==='cert')m.innerHTML=vCert();
+  capNhatCtaKhung();
+}
+
+/* Cục nút "Tiếp" cuối mỗi pha — trạng thái khoá/mở do capNhatCtaKhung quyết định */
+function ctaHTML(mucTieu,nhan){
+  return `<div class="cta center" style="margin-top:18px">
+    <button type="button" id="cta-btn" class="btn pri big" onclick="show('${mucTieu}')">${esc(nhan)}</button>
+    <p class="small" id="cta-hint"></p>
+  </div>`;
+}
+
+/* ---- Kiểm pha hoàn thành ---- */
+function kiemTraXong(ph){
+  let x=false;
+  if(ph==='p1') x=S.p1.duDoan>=0;
+  if(ph==='p2') x=S.p2.aDone&&S.p2.bSim[0]&&S.p2.bSim[1]&&S.p2.cDone;
+  if(ph==='p3') x=S.p3.seen.every(Boolean)&&S.p3.k.done;
+  if(ph==='p4') x=S.p4.s1.done&&S.p4.s2.done;
+  if(ph==='p5') x=S.p5.k.done;
+  if(x&&!S.xong[ph]){
+    S.xong[ph]=true;
+    toast('🎉 Bạn vừa hoàn thành pha này!');
+    kiemHuyHieu(); veNav();
+  }else{ veTienDo(); }
+  return x;
+}
+
+/* =====================================================================
+   BẢN ĐỒ PHÁC HOẠ (SVG) — dùng chung cho hoạt hình pha 1 và Trạm A.
+   Toạ độ lấy theo bảng DiaDanh; vẽ phác hoạ, không dùng để đo đạc.
+   ===================================================================== */
+function tog(svg,id,on){ const e=svg.querySelector('#'+id); if(e)e.classList.toggle('hide-el',!on); }
+
+function mapSVG(p){
+  const X=l=>((l-103.6)*100).toFixed(0), Y=l=>((23.4-l)*100).toFixed(0);
+  const LAND=[[103.9,22.5],[104.3,22.9],[104.9,23.15],[105.4,22.7],[105.9,22.8],[106.4,23.0],[106.7,22.5],[107.4,22.4],[107.95,21.55],[107.6,21.1],[107.05,20.95],[106.75,20.8],[106.5,20.55],[106.25,20.2],[106.05,19.85],[105.85,19.5],[105.7,19.0],[105.9,18.55],[106.35,18.1],[106.55,17.6],[106.95,17.15],[107.6,16.6],[107.2,16.25],[106.6,16.4],[106.2,17.0],[105.6,17.9],[104.9,18.7],[104.55,19.4],[104.45,20.0],[104.8,20.6],[104.3,21.2],[103.85,21.8]];
+  const d='M'+LAND.map(q=>X(q[0])+','+Y(q[1])).join(' L')+' Z';
+  const SHORT=['Lam Sơn','Núi Chí Linh','Nghệ An','Đèo Hải Vân','Chương Mỹ','Ải Chi Lăng','Đông Quan'];
+  const OFF=[[16,26,'start'],[-6,-44,'end'],[0,30,'middle'],[12,8,'start'],[14,-16,'start'],[14,-8,'start'],[14,22,'start']];
+  const DD=LESSON.explore.tramA.diaDanh;
+  const mk=DD.map((dd,i)=>{
+    const cx=X(dd.kinhdo), cy=Y(dd.vido), o=OFF[i];
+    return `<g id="${p}-dd-${i}" class="mrk hide-el">
+      <circle cx="${cx}" cy="${cy}" r="10" fill="#F5B301" stroke="#fff" stroke-width="3"/>
+      <text x="${+cx+o[0]}" y="${+cy+o[1]}" text-anchor="${o[2]}" font-size="19" font-weight="700"
+        fill="#16232E" stroke="#ffffff" stroke-width="4" style="paint-order:stroke">${SHORT[i]}</text></g>`;
+  }).join('');
+  const RD=[[104.8,22.2],[105.3,21.6],[106.0,21.6],[106.6,21.2],[104.9,20.3],[105.9,19.6],[106.7,18.5],[106.0,18.0],[107.1,20.5],[104.7,19.3]];
+  const rd=RD.map((q,i)=>`<circle class="rdot" cx="${X(q[0])}" cy="${Y(q[1])}" r="8" style="animation-delay:${(i*0.17).toFixed(2)}s"/>`).join('');
+  return `<svg id="${p}-svg" viewBox="0 0 480 740" role="img" aria-label="Bản đồ phác hoạ vùng khởi nghĩa Lam Sơn">
+    <rect x="0" y="0" width="480" height="740" fill="#DCEBF9"/>
+    <path id="${p}-land" d="${d}"/>
+    <g id="${p}-band" class="fade hide-el"><path d="M200,375 C210,430 240,480 258,520 C270,548 283,565 291,583"
+      fill="none" stroke="#F5B301" stroke-width="24" stroke-linecap="round" opacity="0.45"/></g>
+    <g id="${p}-rdots" class="hide-el">${rd}</g>
+    <circle id="${p}-ring" class="hide-el" cx="155" cy="335" r="36"/>
+    <g id="${p}-ar-na" class="hide-el"><line x1="185" y1="372" x2="185" y2="426" stroke="#F5B301" stroke-width="7" marker-end="url(#${p}-ar-g)"/></g>
+    <g id="${p}-ar3" class="hide-el">
+      <line x1="170" y1="430" x2="203" y2="296" stroke="#F5B301" stroke-width="6" marker-end="url(#${p}-ar-g)"/>
+      <line x1="196" y1="438" x2="234" y2="286" stroke="#F5B301" stroke-width="6" marker-end="url(#${p}-ar-g)"/>
+      <line x1="222" y1="426" x2="263" y2="298" stroke="#F5B301" stroke-width="6" marker-end="url(#${p}-ar-g)"/></g>
+    <g id="${p}-ar-minh" class="hide-el"><line x1="400" y1="45" x2="322" y2="152" stroke="#E05252" stroke-width="7" marker-end="url(#${p}-ar-r)"/></g>
+    <g id="${p}-break" class="hide-el" stroke="#E05252" stroke-width="6" stroke-linecap="round">
+      <line x1="292" y1="158" x2="316" y2="182"/><line x1="316" y1="158" x2="292" y2="182"/></g>
+    <g id="${p}-flag" class="hide-el"><line x1="185" y1="352" x2="185" y2="318" stroke="#7A5A00" stroke-width="4"/>
+      <polygon points="185,318 212,326 185,334" fill="#E05252" stroke="#B07800"/></g>
+    <circle id="${p}-split" class="hide-el" cx="185" cy="355" r="8" fill="#F5B301" stroke="#B07800" stroke-width="2"/>
+    <text id="${p}-bigtxt" class="hide-el" x="185" y="208" text-anchor="middle" font-weight="800" fill="#B07800">hơn một trăm</text>
+    ${mk}
+    <defs>
+      <marker id="${p}-ar-g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#F5B301"/></marker>
+      <marker id="${p}-ar-r" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#E05252"/></marker>
+    </defs>
+  </svg>`;
+}
+
+/* =====================================================================
+   MÀN CHÀO
+   ===================================================================== */
+function vChao(){
+  return `<div class="screen" id="scr-chao">
+    <div class="card">
+      <h2>Chào bạn! 👋</h2>
+      <p class="lead">Cùng đi qua năm chặng để hiểu vì sao từ hơn một trăm người trên núi Chí Linh,
+      nghĩa quân Lam Sơn đã giành lại độc lập cho đất nước.</p>
+      <p class="small">Ứng dụng chỉ hỏi tên và lớp của bạn. Mọi dữ liệu nằm trên máy bạn, không gửi đi đâu.</p>
+      <div class="field"><label for="in-ten">Tên của bạn</label>
+        <input id="in-ten" maxlength="30" placeholder="Ví dụ: Minh Anh" autocomplete="off"></div>
+      <div class="field"><label for="in-lop">Lớp của bạn</label>
+        <input id="in-lop" maxlength="12" placeholder="Ví dụ: 7A" autocomplete="off"></div>
+      <button type="button" class="btn pri big" onclick="xlBatDau()">Bắt đầu pha 1 — Gây tò mò</button>
+      <p class="small" style="margin-top:10px">Đã có tệp dữ liệu? Bấm nút 📂 Nạp dữ liệu ở góc dưới bên phải.</p>
+    </div>
+  </div>`;
+}
+function xlBatDau(){
+  const ten=$('#in-ten'), lop=$('#in-lop');
+  const t=(ten.value||'').trim(), l=(lop.value||'').trim();
+  if(!t||!l){
+    toast('Bạn điền đủ tên và lớp nhé!');
+    (ten.value?t:ten).focus();
+    return;
+  }
+  S.hoTen=t; S.lop=l;
+  show('p1');
+}
+
+/* =====================================================================
+   PHA 1 · GÂY TÒ MÒ — hoạt hình 10 cảnh + đoán trước rồi hé lộ
+   Nhịp tự chạy 3,7 giây một cảnh (trong khoảng 3,5–4 giây).
+   ===================================================================== */
+const E_NHIP=3700;
+
+function vP1(){
+  const kb=LESSON.engage.kichBan;
+  return `<div class="screen" id="scr-p1">
+  <div class="card">
+    <h2>Pha 1 · Gây tò mò <span class="doi">Xem phim ngắn, rồi đoán trước</span></h2>
+    <p class="lead">Xem phim ngắn về hành trình khởi nghĩa Lam Sơn. Bạn có thể tạm dừng, lùi lại, hoặc bấm "Bỏ qua" nếu đã xem.</p>
+    <div class="scenetitle" id="p1-title"></div>
+    <div class="stage" id="p1-stage"></div>
+    <p class="loidan" id="p1-loidan"></p>
+    <div class="ctl" role="group" aria-label="Thanh điều khiển hoạt hình">
+      <button type="button" class="btn" id="e-tudau" onclick="p1TuDau()" title="Về cảnh 1">⏮<span class="ctl-txt"> Từ đầu</span></button>
+      <button type="button" class="btn" id="e-lui" onclick="p1Lui()" title="Về cảnh trước">◀<span class="ctl-txt"> Lùi</span></button>
+      <button type="button" class="btn main" id="e-chaydung" onclick="p1DoiChayDung()" title="Dừng hoặc chạy">⏸<span class="ctl-txt"> Dừng</span></button>
+      <button type="button" class="btn" id="e-tiep" onclick="p1Tiep()" title="Sang cảnh sau">▶<span class="ctl-txt"> Tiếp</span></button>
+      <button type="button" class="btn" id="e-boqua" onclick="p1BoQua()" title="Nhảy tới cảnh cuối">⏭<span class="ctl-txt"> Bỏ qua</span></button>
+    </div>
+    <div class="dots" id="e-dots" aria-label="Dãy chấm chọn cảnh"></div>
+    <p class="status" id="e-status"></p>
+    <p class="khint">Phím tắt trên máy tính: ← lùi · → tiếp · phím cách dừng hoặc chạy</p>
+  </div>
+  <div class="card">
+    <h2>Đoán trước rồi hé lộ <span class="doi">Chọn mức bạn nghĩ là đúng</span></h2>
+    <p class="q">${esc(LESSON.engage.duDoan.q)}</p>
+    <div id="p1-dudoan">${duDoanHTML()}</div>
+    <div id="p1-helo"></div>
+  </div>
+  ${ctaHTML('p2','Tiếp: Pha 2 — Khám phá')}
+  </div>`;
+}
+function duDoanHTML(){
+  const d=LESSON.engage.duDoan, da=S.p1.duDoan;
+  return d.options.map((o,i)=>
+    `<button type="button" class="opt${da===i?' sel-ok':''}" ${da>=0?'disabled':''} onclick="xlDuDoan(${i})">
+     <span class="och">${'ABCD'[i]}</span><span>${esc(o)}</span></button>`).join('');
+}
+function xlDuDoan(i){
+  if(S.p1.duDoan>=0)return;
+  S.p1.duDoan=i;
+  const d=LESSON.engage.duDoan;
+  $('#p1-dudoan').innerHTML=duDoanHTML();
+  $('#p1-helo').innerHTML=
+    `<div class="why"><b>${esc(d.heLo)}</b><br>${esc(d.khoangCach[i])}</div>
+     <p>${esc(d.chuyen)}</p>`;
+  capNhatCtaKhung();
+  kiemTraXong('p1');
+}
+
+/* --- Bộ máy hoạt hình: bấm nút nào cũng dừng tự chạy; rời pha thì huỷ hẹn giờ --- */
+function dungHen(){ if(A.timer){clearTimeout(A.timer); A.timer=null;} }
+function henKhung(){
+  dungHen();
+  const n=LESSON.engage.kichBan.length;
+  if(!S.p1.eChay||S.p1.eFrame>=n-1)return;
+  A.timer=setTimeout(()=>{
+    if(S.man!=='p1'){ dungHen(); return; }   /* rời pha thì dừng hẳn */
+    S.p1.eFrame++;
+    if(S.p1.eFrame>=n-1)S.p1.eChay=false;
+    veP1(); henKhung();
+  },E_NHIP);
+}
+function tayDieuKhien(){ S.p1.eChay=false; dungHen(); }
+function p1TuDau(){ tayDieuKhien(); S.p1.eFrame=0; veP1(); }
+function p1Lui(){ if(S.p1.eFrame<=0)return; tayDieuKhien(); S.p1.eFrame--; veP1(); }
+function p1Tiep(){ const n=LESSON.engage.kichBan.length; if(S.p1.eFrame>=n-1)return; tayDieuKhien(); S.p1.eFrame++; veP1(); }
+function p1Nhay(k){ tayDieuKhien(); S.p1.eFrame=Math.max(0,Math.min(k,LESSON.engage.kichBan.length-1)); veP1(); }
+function p1BoQua(){ tayDieuKhien(); S.p1.eFrame=LESSON.engage.kichBan.length-1; veP1(); }
+function p1DoiChayDung(){
+  if(S.p1.eChay){ S.p1.eChay=false; dungHen(); }
+  else{ if(S.p1.eFrame>=LESSON.engage.kichBan.length-1)S.p1.eFrame=0; S.p1.eChay=true; }
+  veP1(); henKhung();
+}
+
+function sauP1(){
+  $('#p1-stage').innerHTML=mapSVG('p1');
+  veP1();
+  if(!S.p1.daTuChay){ S.p1.daTuChay=true; S.p1.eChay=true; veP1(); henKhung(); }
+}
+
+function veP1(){
+  const kb=LESSON.engage.kichBan, k=S.p1.eFrame, cuoi=(k>=kb.length-1);
+  const svg=document.getElementById('p1-svg');
+  if(!svg)return;
+  veP1Scene(svg,k);
+  document.getElementById('p1-title').textContent='Cảnh '+(k+1)+': '+kb[k].ten;
+  document.getElementById('p1-loidan').textContent=kb[k].loiDan;
+  document.getElementById('e-tudau').disabled=(k===0);
+  document.getElementById('e-lui').disabled=(k===0);
+  document.getElementById('e-tiep').disabled=cuoi;
+  document.getElementById('e-boqua').disabled=cuoi;
+  const b=document.getElementById('e-chaydung');
+  b.innerHTML=cuoi&&!S.p1.eChay?'↺<span class="ctl-txt"> Xem lại</span>':(S.p1.eChay?'⏸<span class="ctl-txt"> Dừng</span>':'▶<span class="ctl-txt"> Chạy</span>');
+  document.getElementById('e-dots').innerHTML=kb.map((sc,i)=>
+    `<button type="button" class="dot${i===k?' cur':(i<k?' seen':'')}" aria-label="Cảnh ${i+1}: ${esc(sc.ten)}" onclick="p1Nhay(${i})"></button>`).join('');
+  document.getElementById('e-status').textContent=
+    (cuoi&&!S.p1.eChay)?'Hết phim — bấm ↺ Xem lại, hoặc chọn mức dự đoán bên dưới.':('Cảnh '+(k+1)+' / '+kb.length);
+}
+
+function veP1Scene(svg,k){
+  svg.classList.toggle('toi',k===0);
+  svg.classList.toggle('vang',k===9);
+  tog(svg,'p1-rdots',k===0);
+  tog(svg,'p1-dd-0',k>=1);
+  tog(svg,'p1-flag',k===1);
+  tog(svg,'p1-dd-1',k>=2);
+  tog(svg,'p1-ring',(k===2||k===3||k===4));
+  const ring=svg.querySelector('#p1-ring'); if(ring)ring.classList.toggle('si',k===2);
+  const gold=svg.querySelector('#p1-dd-0 circle');
+  if(gold){ gold.style.opacity=(k===3)?'.25':'1'; gold.classList.toggle('glow',k>=1&&k!==3); }
+  tog(svg,'p1-bigtxt',k===3);
+  tog(svg,'p1-split',k===4);
+  const sp=svg.querySelector('#p1-split');
+  if(sp){ sp.classList.remove('go'); void sp.getBoundingClientRect(); if(k===4)sp.classList.add('go'); }
+  tog(svg,'p1-ar-na',k>=5);  tog(svg,'p1-dd-2',k>=5);
+  tog(svg,'p1-band',k>=6);   tog(svg,'p1-dd-3',k>=6);
+  tog(svg,'p1-ar3',k>=7);    tog(svg,'p1-dd-4',k>=7);
+  tog(svg,'p1-ar-minh',k===8); tog(svg,'p1-break',k===8); tog(svg,'p1-dd-5',k>=8);
+  tog(svg,'p1-dd-6',k===9);
+}
+
+/* Phím tắt: mũi tên trái/phải và phím cách; bỏ qua khi đang ở ô nhập liệu */
+document.addEventListener('keydown',ev=>{
+  const t=ev.target;
+  if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='SELECT'))return;
+  if(S.man==='p1'){
+    if(ev.key===' '&&t&&t.tagName==='BUTTON')return;  /* nút đang focus tự xử lý phím cách */
+    if(ev.key==='ArrowRight'){ ev.preventDefault(); p1Tiep(); }
+    else if(ev.key==='ArrowLeft'){ ev.preventDefault(); p1Lui(); }
+    else if(ev.key===' '){ ev.preventDefault(); p1DoiChayDung(); }
+  }else if(S.man==='p3'&&(ev.key==='ArrowRight'||ev.key==='ArrowLeft')){
+    /* đổi thẻ bằng phím mũi tên khi con trỏ đang ở khung thẻ (không phải nút khác) */
+    const trongKhu=!t||t===document.body||t.id==='f-the'||(t.closest&&t.closest('#f-khu')!==null);
+    if(trongKhu){ ev.preventDefault(); if(ev.key==='ArrowRight')theSau(); else theTruoc(); }
+  }
+});
+
+/* =====================================================================
+   PHA 2 · KHÁM PHÁ — ba trạm
+   ===================================================================== */
+function vP2(){
+  return `<div class="screen" id="scr-p2">
+  <div class="card">
+    <h2>Trạm A · Tua thời gian <span class="pabadge" id="a-tag"></span></h2>
+    <p class="lead">Kéo thanh trượt từ năm 1416 đến 1428. Kéo tới đâu, bản đồ sáng tới đó.</p>
+    <p style="margin:6px 0"><span class="yearchip" id="a-year">Năm: 1416</span></p>
+    <input type="range" id="a-slider" min="1416" max="1428" step="1" value="${S.p2.aMax}"
+      aria-label="Thanh trượt chọn năm, từ 1416 đến 1428" oninput="xlTruotA(this.value)">
+    <div class="tickrow"><span>1416</span><span>1418</span><span>1420</span><span>1422</span><span>1424</span><span>1426</span><span>1428</span></div>
+    <div class="stage" id="a-stage"></div>
+    <div class="moccard" id="a-moc"></div>
+    <div class="diadanh" id="a-dd"></div>
+    <p class="small" id="a-hint"></p>
+  </div>
+  <div class="card">
+    <h2>Trạm B · Vì sao không đánh thành? <span class="pabadge" id="b-tag"></span></h2>
+    <p class="q">${esc(LESSON.explore.tramB.datDe)}</p>
+    <div class="pa-grid" id="b-buttons"></div>
+    <div id="b-panel"></div>
+    <div id="b-chot"></div>
+  </div>
+  <div class="card">
+    <h2>Trạm C · Ai là ai? <span class="pabadge" id="c-tag"></span></h2>
+    <p class="lead">${esc(LESSON.explore.tramC.datDe)}</p>
+    <div class="pairwrap" id="c-wrap"></div>
+    <p class="small" id="c-note"></p>
+  </div>
+  ${ctaHTML('p3','Tiếp: Pha 3 — Giải thích')}
+  </div>`;
+}
+function sauP2(){
+  $('#a-stage').innerHTML=mapSVG('a');
+  veTramA(S.p2.aMax,true);
+  veTramB(); veTramC(); veNoteC();
+}
+
+/* --- Trạm A: thanh trượt đổi tham số, bản đồ vẽ lại ngay lập tức --- */
+function veTramA(y,dauTien){
+  y=+y; S.p2.aMax=y;
+  const svg=document.getElementById('a-svg');
+  if(svg){
+    svg.classList.remove('toi'); svg.classList.toggle('vang',y>=1427);
+    LESSON.explore.tramA.diaDanh.forEach((dd,i)=>tog(svg,'a-dd-'+i, y>=dd.namBat));
+    tog(svg,'a-rdots',false); tog(svg,'a-bigtxt',false); tog(svg,'a-split',false); tog(svg,'a-flag',false);
+    tog(svg,'a-ring', y>=1418&&y<=1423);
+    tog(svg,'a-ar-na', y>=1424);
+    tog(svg,'a-band', y>=1425);
+    tog(svg,'a-ar3', y>=1426);
+    tog(svg,'a-ar-minh', y>=1427); tog(svg,'a-break', y>=1427);
+  }
+  const yEl=document.getElementById('a-year'); if(yEl)yEl.textContent='Năm: '+y;
+  veMocA();
+  const dd=LESSON.explore.tramA.diaDanh.filter(d=>y>=d.namBat);
+  const ddEl=document.getElementById('a-dd');
+  if(ddEl)ddEl.innerHTML=dd.length?dd.map(d=>`<div class="ddchip"><b>${esc(d.ten)}</b> — ${esc(d.chuThich)}</div>`).join('')
+    :'<div class="ddchip">Chưa có địa danh nào sáng lên. Kéo thanh trượt về sau nhé.</div>';
+  const hint=document.getElementById('a-hint');
+  if(hint)hint.textContent = S.p2.aDone?'Bạn đã kéo tới năm 1428 — trạm A hoàn thành!':'Hãy kéo thanh trượt tới năm 1428 để hoàn thành trạm.';
+  const tag=document.getElementById('a-tag');
+  if(tag)tag.textContent=S.p2.aDone?'✓ Hoàn thành':'';
+  if(y>=1428&&!S.p2.aDone&&!dauTien){
+    S.p2.aDone=true;
+    toast('Trạm A hoàn thành! 🗺️');
+    kiemHuyHieu(); kiemTraXong('p2'); capNhatCtaKhung();
+    if(tag)tag.textContent='✓ Hoàn thành';
+    if(hint)hint.textContent='Bạn đã kéo tới năm 1428 — trạm A hoàn thành!';
+  }
+}
+function xlTruotA(v){ veTramA(+v,false); }
+
+function veMocA(){
+  const M=LESSON.explore.tramA, y=S.p2.aMax;
+  const ds=[]; M.mocNam.forEach((nam,i)=>{ if(nam<=y)ds.push(i); });
+  const el=document.getElementById('a-moc'); if(!el)return;
+  if(!ds.length){ el.innerHTML='<p class="small" style="margin:0">Chưa có diễn biến nào ở năm này.</p>'; S.p2.aMoc=-1; return; }
+  const cuoi=ds[ds.length-1];
+  /* chỉ giữ vị trí phân trang khi cùng năm với mốc mới nhất, nếu không thì nhảy theo năm */
+  const cur=(S.p2.aMoc>=0&&M.mocNam[S.p2.aMoc]===M.mocNam[cuoi])?S.p2.aMoc:cuoi;
+  const gr=ds.filter(i=>M.mocNam[i]===M.mocNam[cur]);
+  const pos=gr.indexOf(cur), m=M.moc[cur];
+  S.p2.aMoc=cur;
+  const phanTrang=gr.length>1?
+    ` <span class="small">· Diễn biến ${pos+1}/${gr.length}</span>
+      <button type="button" class="btn ghost" style="min-height:34px;padding:2px 12px" onclick="aMocDoi(-1)" aria-label="Diễn biến trước">‹</button>
+      <button type="button" class="btn ghost" style="min-height:34px;padding:2px 12px" onclick="aMocDoi(1)" aria-label="Diễn biến sau">›</button>`:'';
+  el.innerHTML=`<p style="margin:0 0 4px"><b>${esc(m.thoiGian)}</b>${phanTrang}</p>
+    <p style="margin:0 0 4px">${esc(m.suKien)}</p>
+    <p class="small" style="margin:0"><b>Ý nghĩa:</b> ${esc(m.yNghia)}</p>`;
+}
+function aMocDoi(d){
+  const M=LESSON.explore.tramA, y=S.p2.aMax;
+  const ds=[]; M.mocNam.forEach((nam,i)=>{ if(nam<=y)ds.push(i); });
+  const gr=ds.filter(i=>M.mocNam[i]===M.mocNam[S.p2.aMoc]);
+  if(!gr.length)return;
+  let pos=gr.indexOf(S.p2.aMoc)+d;
+  pos=Math.max(0,Math.min(gr.length-1,pos));
+  S.p2.aMoc=gr[pos]; veMocA();
+}
+
+/* --- Trạm B: mô phỏng hậu quả của từng lựa chọn (từng bước, do bạn điều khiển) --- */
+function veTramB(){
+  const PB=LESSON.explore.tramB;
+  const bEl=document.getElementById('b-buttons');
+  if(bEl)bEl.innerHTML=PB.phuongAn.map((pa,i)=>
+    `<button type="button" class="btn${S.p2.bSel===i?' pri':''}" onclick="xlChonPA(${i})">
+      Phương án ${'12'[i]}: ${esc(pa.ten)}${S.p2.bSim[i]?'<span class="pabadge da">✓ đã mô phỏng</span>':''}</button>`).join('');
+  const tag=document.getElementById('b-tag');
+  if(tag)tag.textContent=(S.p2.bSim[0]&&S.p2.bSim[1])?'✓ Hoàn thành':'';
+  const c=document.getElementById('b-chot');
+  if(c)c.innerHTML=(S.p2.bSim[0]&&S.p2.bSim[1])?`<div class="why" style="margin-top:10px"><b>Chốt lại:</b> ${esc(PB.chot)}</div>`:'';
+  vePanelB();
+}
+function vePanelB(){
+  const i=S.p2.bSel, PB=LESSON.explore.tramB;
+  const el=document.getElementById('b-panel'); if(!el)return;
+  if(i<0){ el.innerHTML=''; return; }
+  const pa=PB.phuongAn[i], soBuoc=pa.buoc.length, daN=S.p2.bSteps[i];
+  let html=`<hr><p style="margin:6px 0"><b>Mô phỏng: ${esc(pa.ten)}</b> <span class="small">— ${esc(pa.goiY)}</span></p>
+    <ol class="stepwrap">${pa.buoc.map((s,j)=>`<li class="${j<daN?'on':''}">${esc(s)}</li>`).join('')}</ol>`;
+  if(daN<soBuoc){
+    html+=`<button type="button" class="btn pri" onclick="xlBuocPA(${i})">${daN===0?'Chạy mô phỏng':'Bước tiếp theo ('+(daN+1)+'/'+soBuoc+')'}</button>`;
+  }else{
+    html+=`<div class="ketluan${pa.canhBao?' canhbao':''}"><b>Kết luận:</b> ${esc(pa.ketLuan)}</div>
+      <div class="row" style="margin-top:8px">
+        <button type="button" class="btn ghost" onclick="xlLaiPA(${i})">Mô phỏng lại</button>
+        <button type="button" class="btn ghost" onclick="xlDongB()">Đóng</button></div>`;
+  }
+  el.innerHTML=html;
+}
+function xlChonPA(i){ S.p2.bSel=i; veTramB(); }
+function xlLaiPA(i){ S.p2.bSteps[i]=0; S.p2.bSel=i; veTramB(); }
+function xlDongB(){ S.p2.bSel=-1; vePanelB(); }
+function xlBuocPA(i){
+  const pa=LESSON.explore.tramB.phuongAn[i];
+  if(S.p2.bSteps[i]<pa.buoc.length)S.p2.bSteps[i]++;
+  vePanelB();
+  if(S.p2.bSteps[i]>=pa.buoc.length&&!S.p2.bSim[i]){
+    S.p2.bSim[i]=true;
+    veTramB();
+    if(S.p2.bSim[0]&&S.p2.bSim[1])toast('Bạn đã mô phỏng cả hai phương án! ⚖️');
+    kiemHuyHieu(); kiemTraXong('p2'); capNhatCtaKhung();
+  }
+}
+
+/* --- Trạm C: ghép ba nhân vật với vai trò (chạm thẻ rồi chạm vai trò) --- */
+function veTramC(){
+  const TC=LESSON.explore.tramC;
+  const el=document.getElementById('c-wrap'); if(!el)return;
+  el.innerHTML=`
+    <div class="pcol"><h4>Nhân vật</h4>${TC.nhanVat.map((n,i)=>
+      `<button type="button" class="pairbtn${S.p2.cPair[i]?' done':(S.p2.cSel===i?' sel':'')}" ${S.p2.cPair[i]?'disabled':''} onclick="xlChonNhan(${i})"><b>${esc(n.ten)}</b></button>`).join('')}</div>
+    <div class="pcol"><h4>Vai trò</h4>${S.p2.cOrder.map((vi,slot)=>
+      `<button type="button" id="c-vai-${vi}" class="pairbtn${S.p2.cPair[vi]?' done':''}" ${S.p2.cPair[vi]?'disabled':''} onclick="xlChonVai(${vi})">${esc(TC.nhanVat[vi].vai)}</button>`).join('')}</div>`;
+  const tag=document.getElementById('c-tag');
+  if(tag)tag.textContent=S.p2.cDone?'✓ Hoàn thành':'';
+}
+function veNoteC(){
+  const n=document.getElementById('c-note');
+  if(n)n.textContent=S.p2.cDone?'Ba người là ba vai trò: người đứng đầu, người quân sư, và người sẵn sàng hy sinh.':'';
+}
+function xlChonNhan(i){
+  if(S.p2.cPair[i])return;
+  S.p2.cSel=(S.p2.cSel===i?-1:i);
+  veTramC();
+}
+function xlChonVai(vi){
+  if(S.p2.cPair[vi])return;
+  if(S.p2.cSel<0){ toast('Bạn chạm chọn một nhân vật trước nhé.'); return; }
+  if(vi===S.p2.cSel){
+    S.p2.cPair[vi]=true; S.p2.cSel=-1; veTramC(); veNoteC();
+    if(S.p2.cPair.every(Boolean)&&!S.p2.cDone){
+      S.p2.cDone=true; veNoteC();
+      toast('Trạm C hoàn thành! 🤝');
+      kiemHuyHieu(); kiemTraXong('p2'); capNhatCtaKhung();
+    }
+  }else{
+    const b=document.getElementById('c-vai-'+vi);
+    if(b){ b.classList.add('wrong'); setTimeout(()=>b.classList.remove('wrong'),400); }
+    toast('Chưa đúng — thử lại nhé!');
+  }
+}
+
+/* =====================================================================
+   PHẦN CÂU HỎI DÙNG CHUNG (pha 3, pha 4, pha 5)
+   ===================================================================== */
+function quizHTML(p){
+  const st=quizSt(p), L=st.list;
+  if(st.done){
+    const pct=Math.round(st.dung/L.length*100);
+    let khoan='';
+    if(p==='k5'){
+      khoan=S.p5.best>=NAM_MO
+        ?'<br>Bạn đã đạt ngưỡng chứng nhận (80%)! Bấm "Nhận chứng nhận" ở cuối trang.'
+        :`<br>Còn thiếu ${NAM_MO-st.dung} câu đúng nữa để mở chứng nhận (cần ${NAM_MO}/${L.length} câu). Làm lại để nâng điểm nhé!`;
+    }else{
+      khoan='<br>Điểm không phải điều quan trọng nhất — quan trọng là bạn hiểu bài.';
+    }
+    return `<div class="ketluan"><b>Hoàn thành! Bạn trả lời đúng ${st.dung}/${L.length} câu (${pct}%).</b>${khoan}</div>
+      <div class="row" style="margin-top:8px"><button type="button" class="btn ghost" onclick="xlLaiQuiz('${p}')">Làm lại bộ này</button></div>`;
+  }
+  const q=L[st.idx];
+  const opts=q.options.map((o,i)=>{
+    let cls='opt';
+    if(st.traLoi){ if(i===q.correctIndex)cls+=' ok'; else if(i===st.chon)cls+=' ko'; }
+    return `<button type="button" class="${cls}" ${st.traLoi?'disabled':''} onclick="xlTraLoi('${p}',${i})">
+      <span class="och">${'ABCD'[i]}</span><span>${esc(o)}</span></button>`;
+  }).join('');
+  const fb=st.traLoi?`
+    <p class="${st.chon===q.correctIndex?'feedback-ok':'feedback-ko'}">${st.chon===q.correctIndex?'Chính xác! 🎉':'Chưa đúng — đừng lo, cùng xem giải thích nhé.'}</p>
+    <div class="why"><b>Giải thích:</b> ${esc(q.explanation)}</div>
+    <button type="button" class="btn pri" onclick="xlCauTiep('${p}')">${st.idx===L.length-1?'Xem kết quả':'Câu tiếp theo'}</button>`:'';
+  return `<p class="qmeta">Câu ${st.idx+1}/${L.length} · Số câu đúng: ${st.dung}</p>
+    <p class="q">${esc(q.question)}</p>${opts}${fb}`;
+}
+function rerenderQuiz(p){ const e=document.getElementById('qz-'+p); if(e)e.innerHTML=quizHTML(p); }
+function xlTraLoi(p,i){
+  const st=quizSt(p); if(st.traLoi||st.done)return;
+  st.chon=i; st.traLoi=true;
+  if(i===st.list[st.idx].correctIndex){ S.streak++; st.dung++; if(S.streak>=5)thuongHuyHieu('hb3'); }
+  else{ S.streak=0; st.coSai=true; }
+  rerenderQuiz(p);
+}
+function xlCauTiep(p){
+  const st=quizSt(p); if(!st.traLoi)return;
+  st.traLoi=false; st.chon=-1;
+  if(st.idx>=st.list.length-1){ st.done=true; onQuizDone(p); }
+  else st.idx++;
+  rerenderQuiz(p); capNhatCtaKhung();
+}
+function xlLaiQuiz(p){
+  const st=quizSt(p);
+  st.list=xaoTronCanBang(nguonQuiz(p));
+  st.idx=0; st.chon=-1; st.traLoi=false; st.dung=0; st.coSai=false; st.done=false;
+  if(p==='k5'){ S.p5.time=0; const e=document.getElementById('p5-time'); if(e)e.textContent=fmtT(0); batHen5(); }
+  rerenderQuiz(p); capNhatCtaKhung();
+  toast('Bộ câu hỏi mới đã sẵn sàng!');
+}
+function onQuizDone(p){
+  const st=quizSt(p);
+  if(st.coSai)thuongHuyHieu('hb4');   /* sai mà vẫn làm hết — không bỏ cuộc */
+  if(p==='k5'){
+    dungHen5();
+    if(st.dung>S.p5.best){ S.p5.best=st.dung; S.p5.bestDate=new Date().toISOString(); }
+  }
+  kiemTraXong(p==='k3'?'p3':p==='k5'?'p5':'p4');
+  kiemHuyHieu();
+}
+
+/* =====================================================================
+   PHA 3 · GIẢI THÍCH — 12 thẻ lật (mỗi lần MỘT thẻ, bấm lật qua lật lại,
+   có bộ nút điều hướng) + 15 câu kiểm tra nhanh
+   ===================================================================== */
+function vP3(){
+  const soDaXem=S.p3.seen.filter(Boolean).length;
+  return `<div class="screen" id="scr-p3">
+  <div class="card">
+    <h2>Pha 3 · Giải thích — 12 thẻ lật</h2>
+    <p class="lead">Mỗi lần hiện một thẻ to, dễ đọc. Bấm vào thẻ để lật qua lật lại giữa ý chính và ví dụ đời thường, rồi bấm “Thẻ sau” để đổi thẻ.</p>
+    <p class="small" id="f-count">Đã xem ${soDaXem}/12 thẻ.</p>
+    <div id="f-khu">${theKhuHTML()}</div>
+  </div>
+  <div class="card">
+    <h2>Kiểm tra nhanh <span class="doi">15 câu · bốn phương án</span></h2>
+    <p class="small">Chọn một đáp án. Trả lời xong sẽ có giải thích ngắn.</p>
+    <div id="qz-k3">${quizHTML('k3')}</div>
+  </div>
+  ${ctaHTML('p4','Tiếp: Pha 4 — Vận dụng')}
+  </div>`;
+}
+function sauP3(){ capNhatCtaKhung(); }
+
+/* --- Khung một thẻ + bộ nút điều hướng --- */
+function theKhuHTML(){
+  const i=Math.max(0,Math.min(LESSON.flashcards.length-1,S.p3.cur|0)), lat=!!S.p3.lat, c=LESSON.flashcards[i];
+  return `
+  <div class="fstage">
+    <div class="flip${lat?' on':''}" id="f-the" role="button" tabindex="0" aria-pressed="${lat}"
+      aria-label="Thẻ ${i+1} trên 12. Bấm để lật qua lật lại giữa mặt trước và mặt sau."
+      onclick="xlLatThe()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();xlLatThe();}">
+      <div class="fin">
+        <div class="fface ffront"><span class="ftag">Thẻ ${i+1}/12 · Ý chính</span>
+          <p class="ftxt">${esc(c.front)}</p>
+          <span class="fhint">👆 Bấm vào thẻ để lật xem ví dụ</span></div>
+        <div class="fface fback"><span class="ftag">Ví dụ đời thường</span>
+          <p class="ftxt">${esc(c.back)}</p>
+          <span class="fhint">Bấm một lần nữa để lật lại ý chính</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="fnav">
+    <button type="button" class="btn" id="f-prev" onclick="theTruoc()"${i===0?' disabled':''}>‹ Thẻ trước</button>
+    <div class="fpos" id="f-pos" aria-live="polite">Thẻ ${i+1} trên 12</div>
+    <button type="button" class="btn" id="f-next" onclick="theSau()"${i===LESSON.flashcards.length-1?' disabled':''}>Thẻ sau ›</button>
+  </div>
+  <div class="dots" id="f-dots" role="group" aria-label="Chọn nhanh từng thẻ">${LESSON.flashcards.map((_,k)=>
+    `<button type="button" class="dot${k===i?' cur':(S.p3.seen[k]?' seen':'')}" aria-label="Tới thẻ ${k+1}" onclick="theNhay(${k})"></button>`).join('')}</div>`;
+}
+function veThe(){ const e=document.getElementById('f-khu'); if(e)e.innerHTML=theKhuHTML(); }
+function xlLatThe(){
+  const el=document.getElementById('f-the'); if(!el)return;
+  S.p3.lat=!S.p3.lat;                          /* lật qua lật lại nhiều lần */
+  el.classList.toggle('on',S.p3.lat);
+  el.setAttribute('aria-pressed',String(S.p3.lat));
+  if(S.p3.lat&&!S.p3.seen[S.p3.cur]){          /* lần đầu lật tới mặt sau mới tính là đã xem */
+    S.p3.seen[S.p3.cur]=true;
+    const n=S.p3.seen.filter(Boolean).length;
+    const c=document.getElementById('f-count');
+    if(c)c.textContent=`Đã xem ${n}/12 thẻ.`;
+    const d=document.querySelectorAll('#f-dots .dot')[S.p3.cur];
+    if(d)d.classList.add('seen');
+    kiemTraXong('p3'); capNhatCtaKhung();
+  }
+}
+function theTruoc(){ if(S.p3.cur<=0)return; S.p3.cur--; S.p3.lat=false; veThe(); }
+function theSau(){ if(S.p3.cur>=LESSON.flashcards.length-1)return; S.p3.cur++; S.p3.lat=false; veThe(); }
+function theNhay(k){ S.p3.cur=Math.max(0,Math.min(LESSON.flashcards.length-1,k|0)); S.p3.lat=false; veThe(); }
+
+/* =====================================================================
+   PHA 4 · VẬN DỤNG — hai tình huống, mỗi tình huống ba câu
+   ===================================================================== */
+function vP4(){
+  return `<div class="screen" id="scr-p4">
+  <div class="card">
+    <h2>Pha 4 · Vận dụng <span class="doi">Bài học của nghĩa quân giúp gì cho bạn?</span></h2>
+    <p class="lead">Hai tình huống quen thuộc của tuổi 11–15. Trả lời từng câu, sẽ có giải thích.</p>
+  </div>
+  <div class="card">
+    <h2>Tình huống 1 · Áp lực mùa thi ${S.p4.s1.done?'<span class="pabadge da">✓</span>':''}</h2>
+    <p>${esc(LESSON.useCases[0].boiCanh)}</p>
+    <div id="qz-s1">${quizHTML('s1')}</div>
+  </div>
+  <div class="card">
+    <h2>Tình huống 2 · Một lần thất bại trong cuộc thi của trường ${S.p4.s2.done?'<span class="pabadge da">✓</span>':''}</h2>
+    <p>${esc(LESSON.useCases[1].boiCanh)}</p>
+    <div id="qz-s2">${quizHTML('s2')}</div>
+  </div>
+  ${ctaHTML('p5','Tiếp: Pha 5 — Đánh giá')}
+  </div>`;
+}
+function sauP4(){ capNhatCtaKhung(); }
+
+/* =====================================================================
+   PHA 5 · ĐÁNH GIÁ — 15 câu + đồng hồ ĐẾM LÊN có nút tắt
+   ===================================================================== */
+function fmtT(s){ const m=Math.floor(s/60), r=s%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0'); }
+function vP5(){
+  return `<div class="screen" id="scr-p5">
+  <div class="card">
+    <h2>Pha 5 · Đánh giá <span class="doi">15 câu</span></h2>
+    <div class="timerchip" id="p5-timer">⏱ <span id="p5-time">${fmtT(S.p5.time)}</span>
+      <button type="button" class="btn ghost" id="p5-tg" onclick="xlTatHen()">${S.p5.timerOn?'Tắt đồng hồ':'Bật đồng hồ'}</button></div>
+    <p class="lead">Làm bình tĩnh. Đồng hồ chỉ để bạn tự đua với chính mình, không ảnh hưởng tới điểm.</p>
+    <div id="qz-k5">${quizHTML('k5')}</div>
+  </div>
+  ${ctaHTML('cert','Nhận chứng nhận')}
+  </div>`;
+}
+function sauP5(){
+  if(!S.p5.started){ S.p5.started=true; S.p5.time=0; }
+  batHen5();
+  capNhatCtaKhung();
+}
+function batHen5(){
+  dungHen5();
+  if(S.p5.k.done)return;
+  T5.iv=setInterval(()=>{
+    S.p5.time++;
+    const e=document.getElementById('p5-time');
+    if(e&&S.p5.timerOn)e.textContent=fmtT(S.p5.time);   /* mỗi giây chỉ đổi ô số */
+  },1000);
+}
+function dungHen5(){ if(T5.iv){ clearInterval(T5.iv); T5.iv=null; } }
+function xlTatHen(){
+  S.p5.timerOn=!S.p5.timerOn;
+  const e=document.getElementById('p5-time'), b=document.getElementById('p5-tg');
+  if(e)e.style.visibility=S.p5.timerOn?'visible':'hidden';
+  if(b)b.textContent=S.p5.timerOn?'Tắt đồng hồ':'Bật đồng hồ';
+  toast(S.p5.timerOn?'Đã bật lại đồng hồ.':'Đã tắt đồng hồ — bạn yên tâm làm bài.');
+}
+
+/* =====================================================================
+   CHỨNG NHẬN — mở khoá khi đạt từ 80% (12/15 câu) trở lên
+   ===================================================================== */
+function vCert(){
+  if(!(S.xong.p5&&S.p5.best>=NAM_MO)){
+    return `<div class="screen" id="scr-cert"><div class="card">
+      <h2>Chứng nhận chưa mở 🔒</h2>
+      <p class="lead">Cần đạt từ 80% (12/15 câu) ở pha Đánh giá để mở chứng nhận. Bạn cứ quay lại pha 5 và làm lại nhé!</p>
+      <button type="button" class="btn" onclick="show('p5')">Về pha 5</button></div></div>`;
+  }
+  const pct=Math.round(S.p5.best/15*100);
+  const hbIcons=LESSON.huyHieu.filter(h=>S.hb[h.id]).map(h=>h.ico).join(' ')||'—';
+  const ngay=new Date().toLocaleDateString('vi-VN');
+  return `<div class="screen" id="scr-cert">
+  <div class="card no-print">
+    <h2>Chúc mừng bạn! 🎉</h2>
+    <p class="lead">Bạn đã đi hết năm pha và đạt ${pct}% ở phần đánh giá. Nhận chứng nhận nào!</p>
+    <div class="row">
+      <button type="button" class="btn pri" onclick="window.print()">🖨️ In chứng nhận</button>
+      <button type="button" class="btn ghost" onclick="show('p5')">Về pha 5</button>
+    </div>
+  </div>
+  <div class="cert-card">
+    <div class="kicker">GIẤY CHỨNG NHẬN</div>
+    <h2>Hành trình Khởi nghĩa Lam Sơn</h2>
+    <p class="small">Lịch sử 7 · Mô hình học tập 5E</p>
+    <p style="margin:10px 0 0">Trao cho</p>
+    <div class="name">${esc(S.hoTen||'Học sinh')}</div>
+    <p class="small">Lớp: ${esc(S.lop||'—')}</p>
+    <p class="cert-score">Hoàn thành cả năm pha · Đánh giá: <b>${S.p5.best}/15 câu đúng (${pct}%)</b></p>
+    <div class="cert-hb">${hbIcons}</div>
+    <p class="cert-date">Ngày ${ngay}</p>
+  </div>
+  </div>`;
+}
+
+/* =====================================================================
+   NÚT CỐ ĐỊNH: XUẤT / NẠP DỮ LIỆU .json
+   ===================================================================== */
+function xlXuat(){
+  try{
+    const data={app:LESSON.meta.app, phienBan:1, xuatLuc:new Date().toISOString(), tenBai:LESSON.meta.title, trangThai:S};
+    const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=('LamSon_LichSu7_'+(S.hoTen||'hocsinh')).replace(/[^\w\-]/g,'_')+'.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+    toast('Đã xuất dữ liệu ra tệp .json — hãy giữ tệp này nhé.');
+  }catch(e){ toast('Không xuất được tệp trên trình duyệt này.'); }
+}
+function xlNapFile(inp){
+  const f=inp.files&&inp.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>napTuText(String(r.result));
+  r.onerror=()=>toast('Không đọc được tệp.');
+  r.readAsText(f);
+  inp.value='';
+}
+function napTuText(txt){
+  try{
+    const d=JSON.parse(txt);
+    if(!d||d.app!==LESSON.meta.app||!d.trangThai)throw new Error('sai-dinh-dang');
+    S=ghepTrangThai(trangThaiGoc(),d.trangThai);
+    S.p1.eChay=false;               /* nạp xong: hoạt hình ở chế độ dừng */
+    sinhDsCauHoi();
+    veNav(); veMan(); window.scrollTo(0,0);
+    toast('Đã nạp dữ liệu — tiếp tục hành trình nhé!');
+  }catch(e){ toast('Tệp không đọc được. Hãy chọn đúng tệp .json đã xuất.'); }
+}
+function ghepTrangThai(g,n){
+  ['man','hoTen','lop','streak'].forEach(k=>{ if(typeof n[k]===typeof g[k])g[k]=n[k]; });
+  if(n.xong)Object.keys(g.xong).forEach(k=>{ if(typeof n.xong[k]==='boolean')g.xong[k]=n.xong[k]; });
+  if(n.hb)Object.keys(g.hb).forEach(k=>{ if(typeof n.hb[k]==='boolean')g.hb[k]=n.hb[k]; });
+  const sao=(g0,n0,keys)=>keys.forEach(k=>{ if(n0&&typeof n0[k]===typeof g0[k])g0[k]=n0[k]; });
+  if(n.p1)sao(g.p1,n.p1,['eFrame','daTuChay','duDoan']);
+  if(n.p2){
+    sao(g.p2,n.p2,['aMax','aDone','bSel','cSel','cDone']);
+    if(Array.isArray(n.p2.bSteps)&&n.p2.bSteps.length===2)g.p2.bSteps=n.p2.bSteps.slice();
+    if(Array.isArray(n.p2.bSim)&&n.p2.bSim.length===2)g.p2.bSim=n.p2.bSim.slice();
+    if(Array.isArray(n.p2.cOrder)&&n.p2.cOrder.length===3)g.p2.cOrder=n.p2.cOrder.slice();
+    if(Array.isArray(n.p2.cPair)&&n.p2.cPair.length===3)g.p2.cPair=n.p2.cPair.slice();
+    if(typeof n.p2.aMoc==='number')g.p2.aMoc=n.p2.aMoc;
+  }
+  if(n.p3){
+    if(Array.isArray(n.p3.seen)&&n.p3.seen.length===12)g.p3.seen=n.p3.seen.slice();
+    sao(g.p3,n.p3,['cur','lat']);
+    g.p3.cur=Math.max(0,Math.min(11,g.p3.cur|0));
+  }
+  const gq=(gq0,nq0)=>{
+    if(!nq0||typeof nq0!=='object')return;
+    gq0.idx=nq0.idx|0; gq0.chon=(typeof nq0.chon==='number')?nq0.chon:-1;
+    gq0.traLoi=!!nq0.traLoi; gq0.dung=nq0.dung|0; gq0.coSai=!!nq0.coSai; gq0.done=!!nq0.done;
+    if(Array.isArray(nq0.list)&&nq0.list.length&&nq0.list.every(x=>x&&typeof x.question==='string'&&Array.isArray(x.options)&&typeof x.correctIndex==='number'))gq0.list=nq0.list;
+  };
+  gq(g.p3.k,n.p3&&n.p3.k); gq(g.p4.s1,n.p4&&n.p4.s1); gq(g.p4.s2,n.p4&&n.p4.s2); gq(g.p5.k,n.p5&&n.p5.k);
+  if(n.p5){
+    sao(g.p5,n.p5,['time','timerOn','started','best','bestDate']);
+    if(typeof g.p5.best!=='number'||g.p5.best<0)g.p5.best=0;
+  }
+  return g;
+}
+
+/* =====================================================================
+   KHỞI ĐỘNG
+   ===================================================================== */
+function capNhatCtaKhung(){
+  const b=document.getElementById('cta-btn'); if(!b)return;
+  let ok=false, nhan='', goi='';
+  if(S.man==='p1'){ ok=S.p1.duDoan>=0; nhan='Tiếp: Pha 2 — Khám phá'; goi='Chọn một mức dự đoán để mở nút này.'; }
+  else if(S.man==='p2'){ ok=S.xong.p2; nhan='Tiếp: Pha 3 — Giải thích'; goi='Hãy hoàn thành cả ba trạm A, B, C nhé.'; }
+  else if(S.man==='p3'){ ok=S.xong.p3; nhan='Tiếp: Pha 4 — Vận dụng'; goi='Hãy lật xem đủ cả 12 thẻ và trả lời hết 15 câu.'; }
+  else if(S.man==='p4'){ ok=S.xong.p4; nhan='Tiếp: Pha 5 — Đánh giá'; goi='Trả lời hết câu hỏi của cả hai tình huống nhé.'; }
+  else if(S.man==='p5'){
+    ok=S.xong.p5&&S.p5.best>=NAM_MO; nhan='Nhận chứng nhận';
+    goi=ok?'':`Còn thiếu ${NAM_MO-S.p5.best} câu đúng nữa để mở chứng nhận (cần ${NAM_MO}/15 câu).`;
+  }
+  b.disabled=!ok; b.textContent=nhan;
+  const h=document.getElementById('cta-hint'); if(h)h.textContent=goi;
+}
+
+function khoiDong(){
+  sinhDsCauHoi();
+  kiemCanBang(LESSON.knowledgeQuiz);   /* kiểm cân bằng đáp án — hai bộ câu hỏi lớn */
+  kiemCanBang(LESSON.finalQuiz);
+  veNav(); veMan();
+}
+/* Móc nối kiểm tra ngoài (bảng điều khiển): chạy kiemCanBang(LESSON.knowledgeQuiz) và
+   kiemCanBang(LESSON.finalQuiz) để nghiệm thu cân bằng đáp án; __TrangThai() xem trạng thái. */
+window.LESSON=LESSON;
+window.__TrangThai=()=>S;
+khoiDong();
+</script>
+</body>
+</html>
