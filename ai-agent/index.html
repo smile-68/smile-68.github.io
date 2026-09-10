@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tập huấn AI-Agent · Trường Trịnh Hoài Đức · 12/9/2026</title>
+<style>
+:root{
+  --navy:#1F3864; --blue:#2E5C9A; --orange:#C55A11; --green:#2E7D32; --red:#C0392B;
+  --ink:#16202e; --mute:#5a6473; --line:#D2DAE6; --bg:#F4F7FB; --card:#fff;
+  --sang:#C55A11; --chieu:#2E5C9A;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth; scroll-padding-top:118px}
+body{margin:0;background:var(--bg);color:var(--ink);
+     font:16.5px/1.65 -apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:0 18px}
+
+header{background:var(--navy);color:#fff;padding:22px 0 20px}
+header .kicker{color:#FFC08A;font-size:12px;letter-spacing:.16em;font-weight:800;margin:0 0 6px}
+header h1{margin:0 0 6px;font-size:26px;line-height:1.22}
+header .sub{margin:0;opacity:.9;font-size:14.5px}
+header .now{margin-top:12px;background:rgba(255,255,255,.12);border-radius:10px;padding:9px 13px;
+  font-size:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+header .now b{color:#FFD9B8}
+
+nav{position:sticky;top:0;z-index:40;background:#fff;border-bottom:1px solid var(--line);
+    box-shadow:0 2px 8px rgba(20,40,80,.06)}
+nav .wrap{display:flex;gap:2px;overflow-x:auto}
+nav button{background:none;border:0;border-bottom:3px solid transparent;padding:13px 14px;
+  font:600 14.5px inherit;color:var(--mute);cursor:pointer;white-space:nowrap}
+nav button:hover{color:var(--navy)}
+nav button[aria-selected="true"]{color:var(--navy);border-color:var(--orange)}
+
+main{padding:22px 0 90px}
+section[hidden]{display:none}
+h2{color:var(--navy);font-size:22px;margin:0 0 4px}
+h3{color:var(--blue);font-size:18px;margin:26px 0 8px}
+h4{color:var(--navy);font-size:15.5px;margin:16px 0 6px}
+p{margin:0 0 12px} ul,ol{margin:0 0 12px;padding-left:22px} li{margin-bottom:5px}
+.lead{font-size:17px;color:#38424f;margin-bottom:18px}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:0 0 16px}
+.card.sang{border-left:6px solid var(--sang)}
+.card.chieu{border-left:6px solid var(--chieu)}
+
+table{width:100%;border-collapse:collapse;margin:10px 0 16px;font-size:14.5px;background:#fff}
+th{background:var(--navy);color:#fff;text-align:left;padding:9px 10px;vertical-align:top;font-weight:600}
+td{border:1px solid var(--line);padding:9px 10px;vertical-align:top}
+tbody tr:nth-child(even){background:#F2F6FB}
+.tblwrap{overflow-x:auto}
+
+.box{border-left:5px solid var(--blue);background:#EBF2FA;padding:12px 15px;border-radius:0 10px 10px 0;margin:12px 0}
+.box.warn{border-color:var(--orange);background:#FFF4E6}
+.box.good{border-color:var(--green);background:#E9F4EB}
+.box.bad{border-color:var(--red);background:#FDECEC}
+.box b:first-child{display:block;margin-bottom:3px}
+.box.warn b:first-child{color:var(--orange)}
+.box.good b:first-child{color:var(--green)}
+.box.bad b:first-child{color:var(--red)}
+.box b:first-child{color:var(--blue)}
+
+code{background:#E9EEF6;padding:1px 6px;border-radius:5px;font:13.5px/1.5 "Courier New",monospace}
+pre{background:#F4F5F7;border-left:5px solid #9AA5B4;padding:13px 15px;border-radius:0 10px 10px 0;
+    overflow-x:auto;font:13px/1.55 "Courier New",monospace;margin:8px 0}
+
+button.act{font:inherit;cursor:pointer;border-radius:10px;border:0;padding:11px 18px;min-height:46px;font-weight:600}
+.btn{background:var(--navy);color:#fff} .btn:hover{background:#152b4d}
+.btn-ghost{background:#fff;color:var(--navy);border:2px solid var(--navy)}
+.btn-sm{min-height:40px;padding:8px 14px;font-size:14px}
+.ok{color:var(--green);font-weight:700;font-size:14px}
+
+/* dòng thời gian */
+.tl{display:flex;flex-direction:column;gap:0}
+.tl-row{display:grid;grid-template-columns:96px 1fr;gap:14px;padding:11px 0;border-bottom:1px dashed var(--line)}
+.tl-row:last-child{border-bottom:0}
+.tl-gio{font-weight:800;color:var(--navy);font-size:14.5px;padding-top:2px}
+.tl-gio small{display:block;font-weight:500;color:var(--mute);font-size:12.5px}
+.tl-tit{font-weight:700;margin-bottom:2px}
+.tl-mo{font-size:14.5px;color:#414c5b}
+.tag{display:inline-block;padding:1px 9px;border-radius:999px;font-size:11.5px;font-weight:800;
+     color:#fff;margin-left:7px;vertical-align:2px}
+.tag.demo{background:var(--orange)} .tag.lab{background:var(--green)}
+.tag.kt{background:var(--blue)} .tag.nghi{background:#8895a6}
+.tl-row.lab{background:#F2FAF3;border-radius:10px;padding-left:8px;padding-right:8px}
+.tl-row.demo{background:#FFF7EE;border-radius:10px;padding-left:8px;padding-right:8px}
+
+/* LAB */
+.lab-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.lab-nav button{font:700 14.5px inherit;padding:10px 16px;min-height:46px;border-radius:10px;
+  border:2px solid var(--line);background:#fff;color:var(--mute);cursor:pointer}
+.lab-nav button[aria-selected="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
+.meta{display:grid;grid-template-columns:130px 1fr;gap:0;border:1px solid var(--line);border-radius:10px;
+      overflow:hidden;margin-bottom:14px;font-size:14.5px}
+.meta div{padding:9px 12px;border-bottom:1px solid var(--line)}
+.meta div:nth-child(4n+1),.meta div:nth-child(4n+2){background:#F2F6FB}
+.meta div:nth-child(odd){font-weight:700;color:var(--navy)}
+.meta div:nth-last-child(-n+2){border-bottom:0}
+
+.step{display:flex;gap:11px;align-items:flex-start;padding:11px 12px;border:1px solid var(--line);
+      border-radius:11px;margin-bottom:8px;background:#fff}
+.step input{margin-top:3px;width:22px;height:22px;flex:none;cursor:pointer}
+.step .n{font-weight:800;color:var(--orange);flex:none;min-width:20px}
+.step.done{background:#F1F8F2;border-color:#BFE0C4}
+.step.done .txt{color:var(--mute);text-decoration:line-through}
+.tiendo{font-size:14px;color:var(--mute);margin:4px 0 14px}
+.tiendo b{color:var(--green)}
+
+.pw{position:relative;margin:8px 0 16px}
+.pw pre{margin:0;padding-right:120px;max-height:340px}
+.pw .cp{position:absolute;top:10px;right:10px}
+
+.chip{display:inline-block;background:#EBF2FA;color:var(--blue);border:1px solid #CBDCF0;
+      border-radius:999px;padding:2px 11px;font-size:12.5px;font-weight:700;margin:0 5px 5px 0}
+
+footer{border-top:2px solid var(--line);margin-top:34px;padding:16px 0 40px;font-size:13.5px;color:var(--mute)}
+a{color:var(--blue)}
+@media(max-width:640px){
+  .tl-row{grid-template-columns:74px 1fr;gap:10px}
+  .meta{grid-template-columns:104px 1fr}
+  header h1{font-size:21px}
+  .pw pre{padding-right:14px} .pw .cp{position:static;margin-bottom:8px}
+}
+@media print{
+  nav,header .now,.lab-nav,button.act,.step input{display:none!important}
+  section[hidden]{display:block!important}
+  body{background:#fff} header{background:#fff;color:#000;border-bottom:3px solid var(--navy)}
+  header h1{color:var(--navy)} header .kicker{color:var(--orange)}
+  .card{break-inside:avoid} .step{break-inside:avoid}
+}
+
+.nb{border:1px solid var(--vien,#d7dee8);border-left:4px solid var(--cam,#C55A11);border-radius:6px;padding:.6rem .9rem;margin:.6rem 0;background:#fff}
+.nb-h{display:flex;flex-wrap:wrap;gap:.6rem;align-items:baseline;margin-bottom:.2rem}
+.nb-h b{color:#C55A11}
+.nb-h span{font-size:.86rem;color:#5b6472}
+.nb ol{margin:.2rem 0 .1rem 1.1rem;padding:0}
+.nb li{margin:.25rem 0}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <p class="kicker">IGC · AI IN EDUCATION</p>
+    <h1>Ứng dụng AI-Agent trong Giảng dạy</h1>
+    <p class="sub">Trường TH–THCS–THPT Trịnh Hoài Đức, Trảng Bom · Thứ Bảy 12/9/2026 · Trực tuyến</p>
+    <div class="now">
+      <span>Trang này để thầy cô mở song song trong suốt buổi học.</span>
+      <b id="dongho"></b>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <div class="wrap" role="tablist">
+    <button role="tab" data-t="lotrinh" aria-selected="true">Lộ trình</button>
+    <button role="tab" data-t="lab" aria-selected="false">6 bài thực hành</button>
+    <button role="tab" data-t="prompt" aria-selected="false">Thư viện prompt</button>
+    <button role="tab" data-t="kythuat" aria-selected="false">Hộp kỹ thuật</button>
+    <button role="tab" data-t="chuanbi" aria-selected="false">Chuẩn bị</button>
+    <button role="tab" data-t="nopbai" aria-selected="false">Nộp sản phẩm</button>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<!-- ============================= LỘ TRÌNH ============================= -->
+<section id="lotrinh">
+  <h2>Lộ trình sáu tiếng</h2>
+  <p class="lead">Mỗi phần thực hành chạy ba nhịp: <b>DEMO</b> báo cáo viên làm một lần trọn vẹn ·
+  <b>HANDS-ON</b> thầy cô làm trên bài dạy thật của mình · <b>CHỮA BÀI</b> cả lớp cùng soi sản phẩm.
+  Ai không theo kịp trên màn hình thì mở tab này và tự đi theo nhịp của mình.</p>
+
+  <div class="card sang">
+    <h3 style="margin-top:0">Buổi sáng · 8:30 – 11:30 · Thiết kế bài giảng sinh động</h3>
+    <p style="font-size:15px;color:#414c5b;font-style:italic;margin-bottom:14px">
+      Làm sao để công sức soạn bài của tôi tích luỹ lại, thay vì gõ lại từ đầu mỗi tuần?</p>
+    <div class="tl">
+      <div class="tl-row"><div class="tl-gio">8:30<small>15 phút</small></div><div>
+        <div class="tl-tit">Mở màn — trò chơi “Người hay Máy?”</div>
+        <div class="tl-mo">Quét QR, chơi 8 mẫu, nộp bài. Cả lớp xem bảng điều khiển trực tiếp. Rồi lật bài về kiến trúc ba mảnh.</div></div></div>
+      <div class="tl-row"><div class="tl-gio">8:45<small>13 phút</small></div><div>
+        <div class="tl-tit">Khung 7N<span class="tag kt">KIẾN THỨC</span></div>
+        <div class="tl-mo">Giữ 5N cũ, thêm NGUỒN và NGHIỆM THU. Ba lỗi kinh điển khi AI soạn giáo án.</div></div></div>
+      <div class="tl-row demo"><div class="tl-gio">8:58<small>10 phút</small></div><div>
+        <div class="tl-tit">Soạn kế hoạch bài dạy Ngữ văn 8 trong 6 phút<span class="tag demo">DEMO 1</span></div>
+        <div class="tl-mo">Khoảnh khắc nhấn: AI tự ghi “CHƯA CÓ DỮ LIỆU” thay vì bịa.</div></div></div>
+      <div class="tl-row lab"><div class="tl-gio">9:08<small>30 phút</small></div><div>
+        <div class="tl-tit">Tạo trợ giảng số soạn KHBD<span class="tag lab">LAB 1</span></div>
+        <div class="tl-mo">Trên bài dạy thật của mình. <a href="#" onclick="moLab(1);return false">Mở phiếu hướng dẫn →</a></div></div></div>
+      <div class="tl-row"><div class="tl-gio">9:38<small>10 phút</small></div><div>
+        <div class="tl-tit">Chữa bài chung</div>
+        <div class="tl-mo">Ba thầy cô chia sẻ màn hình, cả lớp soi bằng bộ lọc bốn câu hỏi.</div></div></div>
+      <div class="tl-row"><div class="tl-gio">9:48<small>10 phút</small></div><div>
+        <div class="tl-tit">Nghỉ giải lao<span class="tag nghi">NGHỈ</span></div>
+        <div class="tl-mo">Kênh Zalo vẫn mở cho ai chưa xong LAB 1.</div></div></div>
+      <div class="tl-row"><div class="tl-gio">9:58<small>7 phút</small></div><div>
+        <div class="tl-tit">Vì sao AI bịa, và cách neo nguồn<span class="tag kt">KIẾN THỨC</span></div></div></div>
+      <div class="tl-row demo"><div class="tl-gio">10:05<small>8 phút</small></div><div>
+        <div class="tl-tit">Đối chứng hai bên về Khởi nghĩa Lam Sơn<span class="tag demo">DEMO 2</span></div>
+        <div class="tl-mo">Chatbot thường trả lời sai tự tin; NotebookLM từ chối vì không có trong tài liệu.</div></div></div>
+      <div class="tl-row lab"><div class="tl-gio">10:13<small>25 phút</small></div><div>
+        <div class="tl-tit">Neo AI vào tài liệu của mình<span class="tag lab">LAB 2</span></div>
+        <div class="tl-mo"><a href="#" onclick="moLab(2);return false">Mở phiếu hướng dẫn →</a></div></div></div>
+      <div class="tl-row demo"><div class="tl-gio">10:38<small>8 phút</small></div><div>
+        <div class="tl-tit">Từ giáo án ra bộ slide trong 3 phút<span class="tag demo">DEMO 3</span></div>
+        <div class="tl-mo">Xuất .pptx rồi mở lên PowerPoint gõ sửa ngay trước mắt lớp.</div></div></div>
+      <div class="tl-row lab"><div class="tl-gio">10:46<small>30 phút</small></div><div>
+        <div class="tl-tit">Học liệu trực quan<span class="tag lab">LAB 3</span></div>
+        <div class="tl-mo">Chọn một nhánh: slide · hình ảnh · video 90 giây. <a href="#" onclick="moLab(3);return false">Mở phiếu →</a></div></div></div>
+      <div class="tl-row"><div class="tl-gio">11:16<small>14 phút</small></div><div>
+        <div class="tl-tit">Chốt buổi sáng</div>
+        <div class="tl-mo">Nộp sản phẩm. Buổi chiều nhớ mang theo ma trận đề hoặc danh mục yêu cầu cần đạt.</div></div></div>
+    </div>
+  </div>
+
+  <div class="card chieu">
+    <h3 style="margin-top:0">Buổi chiều · 13:30 – 16:30 · Quản lý trải nghiệm học tập</h3>
+    <p style="font-size:15px;color:#414c5b;font-style:italic;margin-bottom:14px">
+      Làm sao để học sinh có thứ để luyện tập, và tôi có thứ để nhìn thấy các em học đến đâu?</p>
+    <div class="tl">
+      <div class="tl-row"><div class="tl-gio">13:30<small>8 phút</small></div><div>
+        <div class="tl-tit">Khởi động</div>
+        <div class="tl-mo">Đọc lại dữ liệu trò chơi buổi sáng như một bộ dữ liệu thật.</div></div></div>
+      <div class="tl-row"><div class="tl-gio">13:38<small>12 phút</small></div><div>
+        <div class="tl-tit">Kiểm tra đánh giá thời AI<span class="tag kt">KIẾN THỨC</span></div>
+        <div class="tl-mo">Ma trận đề, ngân hàng câu hỏi, rubric, và cách ra bài mà học sinh dùng AI vẫn phải tư duy.</div></div></div>
+      <div class="tl-row demo"><div class="tl-gio">13:50<small>8 phút</small></div><div>
+        <div class="tl-tit">30 câu Toán 9 và công thức không vỡ font<span class="tag demo">DEMO 4</span></div>
+        <div class="tl-mo">Dán LaTeX vào Word, bấm <code>Alt + =</code>, công thức hiện ra đẹp.</div></div></div>
+      <div class="tl-row lab"><div class="tl-gio">13:58<small>25 phút</small></div><div>
+        <div class="tl-tit">Trợ giảng ra đề, rubric, bản in công thức đúng<span class="tag lab">LAB 4</span></div>
+        <div class="tl-mo"><a href="#" onclick="moLab(4);return false">Mở phiếu hướng dẫn →</a></div></div></div>
+      <div class="tl-row"><div class="tl-gio">14:23<small>10 phút</small></div><div>
+        <div class="tl-tit">Nghỉ giải lao<span class="tag nghi">NGHỈ</span></div></div></div>
+      <div class="tl-row"><div class="tl-gio">14:33<small>10 phút</small></div><div>
+        <div class="tl-tit">Mổ xẻ trò chơi buổi sáng<span class="tag kt">KIẾN THỨC</span></div>
+        <div class="tl-mo">Kiến trúc ba mảnh và giải phẫu một app học tập năm pha.</div></div></div>
+      <div class="tl-row demo"><div class="tl-gio">14:43<small>10 phút</small></div><div>
+        <div class="tl-tit">Dựng app Lam Sơn và phát QR cho cả lớp<span class="tag demo">DEMO 5</span></div>
+        <div class="tl-mo">Cả lớp quét QR chơi app vừa sinh ra năm phút trước.</div></div></div>
+      <div class="tl-row lab"><div class="tl-gio">14:53<small>40 phút</small></div><div>
+        <div class="tl-tit">Xây dựng và xuất bản app học tập<span class="tag lab">LAB 5</span></div>
+        <div class="tl-mo">Bài trọng tâm của cả ngày. <a href="#" onclick="moLab(5);return false">Mở phiếu →</a></div></div></div>
+      <div class="tl-row"><div class="tl-gio">15:33<small>17 phút</small></div><div>
+        <div class="tl-tit">“Chợ app” — trưng bày sản phẩm</div>
+        <div class="tl-mo">Quét QR chơi thử sản phẩm của nhau, soi bằng khung ARCS.</div></div></div>
+      <div class="tl-row demo"><div class="tl-gio">15:50<small>8 phút</small></div><div>
+        <div class="tl-tit">Bảng điểm tự biết em nào cần giúp<span class="tag demo">DEMO 6</span></div></div></div>
+      <div class="tl-row lab"><div class="tl-gio">15:58<small>12 phút</small></div><div>
+        <div class="tl-tit">Tự động hoá việc hành chính<span class="tag lab">LAB 6</span></div>
+        <div class="tl-mo"><a href="#" onclick="moLab(6);return false">Mở phiếu hướng dẫn →</a></div></div></div>
+      <div class="tl-row"><div class="tl-gio">16:10<small>12 phút</small></div><div>
+        <div class="tl-tit">Năm lằn ranh khi dùng AI<span class="tag kt">KIẾN THỨC</span></div>
+        <div class="tl-mo">Hướng dẫn học sinh dùng AI có trách nhiệm. Các kênh học miễn phí nên đăng ký.</div></div></div>
+      <div class="tl-row"><div class="tl-gio">16:22<small>8 phút</small></div><div>
+        <div class="tl-tit">Tổng kết và cam kết</div>
+        <div class="tl-mo">Mỗi thầy cô cam kết một việc sẽ làm trong hai tuần.</div></div></div>
+    </div>
+  </div>
+
+  <div class="box good"><b>Bộ lọc bốn câu hỏi — dùng cho mọi sản phẩm AI trước khi mang vào lớp</b>
+  <b style="display:inline;color:inherit">1.</b> Có thật không? &nbsp;
+  <b style="display:inline;color:inherit">2.</b> Có đúng chương trình không? &nbsp;
+  <b style="display:inline;color:inherit">3.</b> Có hợp lớp mình không? &nbsp;
+  <b style="display:inline;color:inherit">4.</b> Có an toàn không?</div>
+</section>
+
+<!-- ============================= LAB ============================= -->
+<section id="lab" hidden>
+  <h2>Sáu bài thực hành</h2>
+  <p class="lead">Đánh dấu từng bước khi làm xong để không lạc chỗ. Mỗi phiếu in ra được.</p>
+  <div class="lab-nav" role="tablist" id="labNav"></div>
+  <div id="labNoiDung"></div>
+</section>
+
+<!-- ============================= PROMPT ============================= -->
+<section id="prompt" hidden>
+  <h2>Thư viện prompt</h2>
+  <p class="lead">Bấm <b>Sao chép</b> rồi dán vào công cụ. Phần trong <code>[ngoặc vuông]</code> là chỗ
+  thầy cô thay bằng nội dung của mình.</p>
+  <div id="promptDS"></div>
+</section>
+
+<!-- ============================= KỸ THUẬT ============================= -->
+<section id="kythuat" hidden>
+  <h2>Hộp kỹ thuật</h2>
+  <p class="lead">Bốn việc hay vướng nhất, mỗi việc giải quyết trong vài phút.</p>
+
+  <div class="card">
+    <h3 style="margin-top:0">1. Công thức Toán và Hoá không bị lỗi font</h3>
+    <p>Nguyên nhân gốc: AI xuất công thức bằng ký tự Unicode đặc biệt, máy nào không có font tương ứng
+    sẽ hiện ô vuông. Giải pháp là buộc AI xuất bằng LaTeX.</p>
+    <div class="tblwrap"><table>
+      <thead><tr><th style="width:60px">Bước</th><th style="width:32%">Việc</th><th>Thao tác</th></tr></thead>
+      <tbody>
+      <tr><td><b>1</b></td><td>Buộc AI xuất LaTeX</td><td>Thêm vào bản mô tả việc: “Mọi công thức toán học viết bằng LaTeX đặt giữa hai dấu <code>$</code>. Không dùng ký tự Unicode đặc biệt, không xuất công thức dưới dạng ảnh.”</td></tr>
+      <tr><td><b>2</b></td><td>Đưa vào Word — một công thức</td><td>Copy chuỗi LaTeX, dán vào Word, bôi đen rồi bấm <code>Alt + =</code>. Word tự chuyển thành công thức chuẩn, sửa được như gõ tay.</td></tr>
+      <tr><td><b>2b</b></td><td>Đưa vào Word — cả tệp 30 câu</td><td>Chép toàn bộ vào một tệp <code>.txt</code>, chạy pandoc trong dòng lệnh: <code>pandoc bai.txt -o bai.docx --reference-doc=Mau.docx</code>. Pandoc đổi mọi <code>$…$</code> thành công thức Word gốc một lượt và đóng theo mẫu đề của tổ. Đây là bước 4 của LAB 4.</td></tr>
+      <tr><td><b>3</b></td><td>Đưa vào Google Form</td><td>Form không hiển thị LaTeX. Chuyển LaTeX thành ảnh PNG rồi chèn, hoặc ra đề trên Word và chỉ dùng Form để thu đáp án.</td></tr>
+      <tr><td><b>4</b></td><td>Đưa vào app học tập</td><td>Yêu cầu AI nhúng MathJax. Công thức tự hiển thị đúng trên mọi máy và mọi điện thoại.</td></tr>
+      <tr><td><b>5</b></td><td>Ký hiệu hoá học</td><td>Viết <code>$H_2SO_4$</code>, <code>$Fe^{3+}$</code> rồi xử lý như bước 2 đến 4.</td></tr>
+      <tr><td><b>6</b></td><td>Vẽ hình toán học</td><td>Yêu cầu AI sinh mã SVG. Dán thẳng vào app, phóng to không vỡ nét.</td></tr>
+      </tbody></table></div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">2. Tạo mã QR hàng loạt ngay trong Google Sheets</h3>
+    <p>Dán đường dẫn vào ô A2, dán công thức sau vào ô B2, rồi kéo xuống để tạo QR cho nhiều lớp cùng lúc.</p>
+    <div class="pw"><button class="act btn btn-sm cp" data-cp="qr">Sao chép</button>
+    <pre id="p-qr">=IMAGE("https://quickchart.io/qr?size=300&amp;text="&amp;ENCODEURL(A2))</pre></div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">3. Đưa app lên GitHub Pages để có địa chỉ vĩnh viễn</h3>
+    <p>Bản trên z.ai chỉ là chỗ chạy thử: số lượt xuất bản có hạn và dữ liệu bị xoá sau một ngày.
+    GitHub Pages cho app một địa chỉ không bao giờ đổi, nên mã QR đã phát cho học sinh vẫn dùng được mãi.</p>
+    <ol>
+      <li>Yêu cầu z.ai xuất toàn bộ app thành <b>một tệp HTML duy nhất</b>, tải về máy.</li>
+      <li>Bấm đúp vào tệp — nó phải chạy ngay cả khi tắt mạng. Nếu không, yêu cầu z.ai gộp mọi thứ vào một tệp.</li>
+      <li>Vào <a href="https://github.com" target="_blank" rel="noopener">github.com</a>, tạo kho mới, đặt chế độ <b>Public</b>.</li>
+      <li>Tải tệp lên và đổi tên thành <code>index.html</code>.</li>
+      <li>Vào <b>Settings → Pages</b>, chọn nhánh <code>main</code> rồi lưu. Khoảng một phút sau app có địa chỉ.</li>
+      <li>Sửa app về sau: sửa tệp rồi tải đè lên, địa chỉ giữ nguyên.</li>
+    </ol>
+    <div class="box warn"><b>Toàn bộ thao tác bằng giao diện web</b>
+    Không cần gõ một dòng lệnh nào. Nếu vướng ở bước nào, nhắn vào nhóm Zalo, trợ giảng sẽ chia sẻ màn hình kèm.</div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">4. Năm lằn ranh khi dùng AI trong nhà trường</h3>
+    <div class="tblwrap"><table>
+      <thead><tr><th style="width:26%">Lằn ranh</th><th>Cụ thể là gì</th></tr></thead>
+      <tbody>
+      <tr><td><b>Dữ liệu học sinh</b></td><td>Không nhập họ tên thật, ảnh, số điện thoại, điểm số hay hoàn cảnh gia đình vào công cụ AI bên ngoài. Cần AI xử lý dữ liệu lớp thì thay tên bằng mã HS01, HS02… rồi ghép lại sau.</td></tr>
+      <tr><td><b>Bản quyền</b></td><td>Ảnh và nhạc lấy từ nguồn cho phép dùng. Không đưa nguyên tác phẩm còn bản quyền vào app phát cho học sinh.</td></tr>
+      <tr><td><b>AI bịa</b></td><td>Mọi số liệu, năm, tên người, trích dẫn đều phải đối chiếu với sách giáo khoa hoặc nguồn chính thống trước khi dùng.</td></tr>
+      <tr><td><b>Phụ thuộc</b></td><td>AI đề xuất, thầy cô chốt. Không mang thẳng sản phẩm AI vào lớp mà chưa đọc lại.</td></tr>
+      <tr><td><b>Công bằng</b></td><td>Bài tập cho phép dùng AI phải kèm phần trình bày quá trình tư duy, để em không có thiết bị vẫn không bị thiệt.</td></tr>
+      </tbody></table></div>
+  </div>
+</section>
+
+<!-- ============================= CHUẨN BỊ ============================= -->
+<section id="chuanbi" hidden>
+  <h2>Chuẩn bị trước ngày 12/9</h2>
+  <p class="lead">Danh sách này quyết định thầy cô có thực hành được hay không. Xong trước ngày 10/9.</p>
+  <div id="cbDS"></div>
+
+  <h3>Đường dẫn các công cụ</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th style="width:26%">Công cụ</th><th style="width:30%">Địa chỉ</th><th>Dùng ở đâu</th></tr></thead>
+    <tbody>
+    <tr><td><b>Gemini (Gems)</b></td><td><a href="https://gemini.google.com" target="_blank" rel="noopener">gemini.google.com</a></td><td>LAB 1 và LAB 4 — trợ giảng số</td></tr>
+    <tr><td><b>NotebookLM</b></td><td><a href="https://notebooklm.google.com" target="_blank" rel="noopener">notebooklm.google.com</a></td><td>LAB 2 — neo nguồn, sinh học liệu</td></tr>
+    <tr><td><b>z.ai</b></td><td><a href="https://chat.z.ai" target="_blank" rel="noopener">chat.z.ai</a></td><td>LAB 3 (slide) và LAB 5 (app)</td></tr>
+    <tr><td><b>GitHub</b></td><td><a href="https://github.com" target="_blank" rel="noopener">github.com</a></td><td>LAB 5 — nơi ở lâu dài của app</td></tr>
+    <tr><td><b>Google Forms</b></td><td><a href="https://forms.google.com" target="_blank" rel="noopener">forms.google.com</a></td><td>LAB 6 — thu dữ liệu vào Sheets</td></tr>
+    <tr><td><b>pandoc</b></td><td><a href="https://pandoc.org" target="_blank" rel="noopener">pandoc.org</a></td><td>LAB 4 — đổi LaTeX sang Word công thức đúng</td></tr>
+    <tr><td><b>Google Sheets</b></td><td><a href="https://sheets.google.com" target="_blank" rel="noopener">sheets.google.com</a></td><td>LAB 6 — tự động hoá</td></tr>
+    <tr><td><b>Canva for Education</b></td><td><a href="https://canva.com/education" target="_blank" rel="noopener">canva.com/education</a></td><td>LAB 3 — chỉnh slide, làm phiếu</td></tr>
+    <tr><td><b>Gemini Canvas</b></td><td><a href="https://gemini.google.com" target="_blank" rel="noopener">gemini.google.com</a></td><td>LAB 6 — dựng app trắc nghiệm HTML một tệp</td></tr>
+    <tr><td><b>Google Classroom</b></td><td><a href="https://classroom.google.com/c/ODg0MjM2MzEzOTYw?cjc=oixfraoa" target="_blank" rel="noopener">classroom.google.com</a> · mã <b>oixfraoa</b></td><td>Nộp bảy bài tập về nhà sau buổi học</td></tr>
+    </tbody></table></div>
+
+  <h3>Kênh học miễn phí nên đăng ký sau khoá</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th style="width:28%">Kênh</th><th style="width:26%">Điều kiện</th><th>Dùng để làm gì</th></tr></thead>
+    <tbody>
+    <tr><td><b>Brilliant for Educators</b><br><a href="https://educator.brilliant.org/apply" target="_blank" rel="noopener">educator.brilliant.org/apply</a></td><td>Miễn phí cho giáo viên K-12 đang dạy tại trường</td><td>Khoá học tương tác Toán, Khoa học, Khoa học máy tính, kèm công cụ theo dõi tiến độ lớp</td></tr>
+    <tr><td><b>Khanmigo Free Teacher Tools</b><br><a href="https://khanmigo.ai" target="_blank" rel="noopener">khanmigo.ai</a></td><td>Miễn phí cho tài khoản có vai trò giáo viên, đã mở tại Việt Nam</td><td>Soạn bài, sinh câu hỏi, viết rubric, gợi ý cách giải thích lại khái niệm khó</td></tr>
+    <tr><td><b>Gemini trong Google Classroom</b></td><td>Miễn phí với tài khoản Workspace for Education của trường</td><td>Soạn KHBD, sinh đề xuất thẳng ra Google Forms, tạo rubric</td></tr>
+    <tr><td><b>Canva for Education</b></td><td>Miễn phí sau khi xác minh là giáo viên</td><td>Slide, phiếu bài tập, hình ảnh, đồ hoạ lớp học</td></tr>
+    </tbody></table></div>
+  <p style="font-size:14px;color:var(--mute);font-style:italic">Điều kiện của các nền tảng thay đổi thường xuyên. Bản kiểm tra gần nhất: ngày 10/9/2026.</p>
+</section>
+
+<!-- ============================= NỘP BÀI ============================= -->
+<section id="nopbai" hidden>
+  <h2>Nộp sản phẩm</h2>
+  <p class="lead">Mỗi bài thực hành kết thúc bằng một sản phẩm. Sau buổi học, thầy cô hoàn thiện và
+  nộp qua lớp <b>Google Classroom</b> của khoá. Kho sản phẩm này về sau trở thành kho học liệu số
+  đầu tiên của nhà trường.</p>
+
+  <div class="box"><b>Lớp Google Classroom của khoá</b>
+  Vào <a href="https://classroom.google.com/c/ODg0MjM2MzEzOTYw?cjc=oixfraoa" target="_blank" rel="noopener">classroom.google.com/c/ODg0MjM2MzEzOTYw</a>
+  hoặc mở classroom.google.com → dấu <b>+</b> → <b>Tham gia lớp học</b> → nhập mã lớp <b>oixfraoa</b>.
+  Mỗi bài tập là một mục trong lớp; nộp tệp hoặc dán đường dẫn vào đúng mục đó.</div>
+
+  <h3>Bảy bài tập về nhà và hạn nộp</h3>
+  <p>Hạn nộp tính theo giờ Việt Nam, <b>23:59 Chủ nhật</b> (viết tắt “CN”), năm 2026. Giấy chứng nhận
+  hoàn thành cấp cho thầy cô nộp đủ tối thiểu <b>bốn trên bảy</b> bài trước <b>23:59 Chủ nhật 11/10/2026</b>.
+  Nộp sớm một bài vẫn hơn nộp muộn đủ bài — nộp được bài nào thì nộp bài đó, không chờ gom.</p>
+  <div id="spDS"></div>
+
+  <div class="box good"><b>Mẹo nộp cho gọn</b>
+  Đặt tên tệp theo mẫu <b>[Tổ]_[Môn][Lớp]_BT[số].[đuôi]</b>, ví dụ <b>Toan_Toan9_BT4.docx</b>.
+  Với sản phẩm là đường dẫn (Gem, NotebookLM, app, GitHub Pages) thì dán link vào ô bình luận riêng
+  của bài, kiểm lại link mở được ở chế độ ẩn danh trước khi nộp.</div>
+
+  <div class="box bad"><b>Lằn ranh dữ liệu học sinh</b>
+  Không nộp tệp có họ tên thật, ảnh, số điện thoại, điểm số hay hoàn cảnh gia đình học sinh.
+  Mọi ví dụ trong sản phẩm dùng mã học sinh HS01, HS02… hoặc tên giả lập. Đây chính là nội dung
+  khoá học đi dạy — sản phẩm vi phạm thì hỏng cả thông điệp.</div>
+
+  <h3>Rubric tự chấm app học tập</h3>
+  <p>Dùng để tự đánh giá và để đồng nghiệp góp ý trong phiên “Chợ app”. Không dùng xếp loại thi đua.</p>
+  <div class="tblwrap"><table>
+    <thead><tr><th style="width:20%">Tiêu chí</th><th style="width:9%">Điểm</th><th>Đạt</th><th>Khá</th><th>Tốt</th></tr></thead>
+    <tbody>
+    <tr><td><b>Chạy được thật</b></td><td>3</td><td>App mở được bằng đường dẫn</td><td>Làm hết một lượt không lỗi</td><td>Mở được trên điện thoại, quét QR vào ngay</td></tr>
+    <tr><td><b>Bám chương trình</b></td><td>3</td><td>Đúng môn, đúng khối lớp</td><td>Bám đúng yêu cầu cần đạt của bài</td><td>Bám yêu cầu cần đạt và có phân hoá theo trình độ</td></tr>
+    <tr><td><b>Sư phạm</b></td><td>2</td><td>Có câu hỏi và đáp án</td><td>Có phản hồi khi học sinh làm sai</td><td>Đủ năm pha, có gợi ý theo bậc, có ghi nhận kết quả</td></tr>
+    <tr><td><b>Dùng lại được</b></td><td>2</td><td>Tự mở lại được</td><td>Có nút xuất và nạp dữ liệu <code>.json</code>; sửa được nội dung khi đổi bài</td><td>Đã lên GitHub Pages, chia sẻ cho tổ dùng chung</td></tr>
+    </tbody></table></div>
+
+  <h3>Lộ trình 30 ngày sau khoá</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th style="width:16%">Thời điểm</th><th style="width:42%">Việc</th><th>Nhà trường hỗ trợ</th></tr></thead>
+    <tbody>
+    <tr><td><b>Tuần 1</b></td><td>Dạy thật một tiết bằng bộ hồ sơ đã làm. Cho học sinh dùng thử app bằng mã QR.</td><td>Tổ trưởng dự giờ nhẹ nhàng, ghi nhận cái được và cái vướng</td></tr>
+    <tr><td><b>Tuần 2</b></td><td>Sửa app và bộ đề dựa trên phản ứng thật của học sinh. Chia sẻ trợ giảng số cho cả tổ.</td><td>Sinh hoạt tổ dành 20 phút cho việc này</td></tr>
+    <tr><td><b>Tuần 3</b></td><td>Mỗi tổ chọn một sản phẩm tốt nhất đưa vào kho học liệu chung.</td><td>Nhà trường lập kho học liệu số dùng chung</td></tr>
+    <tr><td><b>Tuần 4</b></td><td>Buổi chia sẻ nội bộ 60 phút: các tổ trình bày sản phẩm và bài học rút ra.</td><td>Ban giám hiệu chủ trì, báo cáo viên tham dự trực tuyến</td></tr>
+    </tbody></table></div>
+</section>
+
+</main>
+
+<footer><div class="wrap">
+  Trang đồng hành khoá tập huấn <b>Ứng dụng AI-Agent trong Giảng dạy</b> ·
+  Trường TH–THCS–THPT Trịnh Hoài Đức, Trảng Bom · 12/9/2026 ·
+  Trang này chạy được khi không có mạng và in ra được.
+  <br><span style="font-size:12.5px">Ô đánh dấu chỉ giữ trong phiên làm việc hiện tại; tải lại trang là bắt đầu lại.</span>
+</div></footer>
+
+<script>
+/* ============================ DỮ LIỆU ============================ */
+const LAB = [
+{
+  so:1, ten:'Trợ giảng số soạn kế hoạch bài dạy',
+  gio:'Buổi sáng 9:08 – 9:38', tl:'DEMO 10 phút + thực hành 30 phút',
+  cc:'Gemini — chức năng Gems (miễn phí). Thay thế: Custom GPT trên ChatGPT.',
+  sp:'Một Gem đã đặt tên và chạy được, cùng một kế hoạch bài dạy nháp đã đi qua bộ lọc bốn câu hỏi.',
+  buoc:[
+    'Mở Gemini, vào mục Gems, chọn tạo Gem mới. Đặt tên theo mẫu “Trợ giảng soạn KHBD — [Môn] [Lớp]”. Tên rõ ràng để sau này cả tổ dùng chung.',
+    'Dán bản mô tả việc theo khung 7N (Prompt 1 trong Thư viện prompt) vào ô hướng dẫn. Sửa phần trong ngoặc vuông cho đúng môn, lớp, cấp học của mình.',
+    'Tải tài liệu nền lên Gem: trang sách giáo khoa của bài dạy (ảnh chụp cũng được), phụ lục kế hoạch bài dạy của cấp học, và một giáo án mẫu mà thầy cô thấy đạt.',
+    'Lưu Gem. Gọi Gem và gõ đúng một câu: “Soạn kế hoạch bài dạy cho bài [tên bài], thời lượng [số] tiết.” Không mô tả lại bối cảnh — đó là điểm khác biệt so với chat thông thường.',
+    'Chạy bộ lọc bốn câu hỏi trên kết quả. Đánh dấu chỗ cần sửa và yêu cầu Gem sửa lại đúng chỗ đó.',
+    'Chia sẻ đường dẫn Gem cho tổ trưởng chuyên môn.'
+  ],
+  bienthe:[
+    ['Tiểu học','Khung theo Công văn 2345, Phụ lục 4. Yêu cầu Gem viết bằng câu ngắn, thêm gợi ý hoạt động vận động xen giữa tiết.'],
+    ['Toán, Hoá – Sinh','Bổ sung dòng bắt buộc: “Mọi công thức viết bằng LaTeX đặt trong dấu $…$, không dùng ký tự đặc biệt.”'],
+    ['Tiếng Anh','Yêu cầu tách rõ bốn kỹ năng; kèm ngữ liệu nghe và bộ câu hỏi kiểm tra hiểu; nêu rõ trình độ theo khung CEFR.'],
+    ['Ngữ văn, Xã hội','Bắt buộc trích nguyên văn ngữ liệu từ tệp đã tải lên và ghi rõ trang; cấm tóm tắt tác phẩm theo trí nhớ của AI.'],
+    ['Lý – Tin, GDTC','Thêm phần thiết bị và phương án khi thiếu thiết bị; với GDTC thêm phương án sân bãi và an toàn.']
+  ],
+  loi:[
+    ['AI viết giáo án rất mượt nhưng sai yêu cầu cần đạt','Chưa nạp khung chương trình vào Gem. Tải lên và thêm dòng “chỉ bám yêu cầu cần đạt trong tệp đã tải”.'],
+    ['AI bịa tên tác phẩm, số liệu, thí nghiệm','Thêm vào phần NGUỒN: “Nội dung nào không có trong tài liệu đã tải, hãy ghi rõ CHƯA CÓ DỮ LIỆU thay vì tự nghĩ ra.”'],
+    ['Giáo án dài gấp ba lần thời lượng thật','Thêm vào phần NGHIỆM THU: “Tổng thời gian các hoạt động phải đúng bằng [45] phút; ghi số phút cho từng hoạt động và cộng lại để tự kiểm.”']
+  ]
+},
+{
+  so:2, ten:'Neo AI vào tài liệu của mình để sinh học liệu số',
+  gio:'Buổi sáng 10:13 – 10:38', tl:'DEMO 8 phút + thực hành 25 phút',
+  cc:'NotebookLM (miễn phí).',
+  sp:'Một sổ tay chứa tài liệu bài dạy, kèm bốn sản phẩm: tóm tắt bài, 10 câu hỏi phân mức, một phiếu bài tập, một bản tóm tắt dạng audio.',
+  buoc:[
+    'Tạo sổ tay mới, đặt tên theo bài dạy. Tải lên tối thiểu ba nguồn: trang SGK của bài, tài liệu tham khảo, và kế hoạch bài dạy vừa làm ở LAB 1.',
+    'Yêu cầu tóm tắt bài học theo góc nhìn học sinh lớp mình đang dạy. Đọc và sửa lại bằng ngôn ngữ của chính mình.',
+    'Yêu cầu sinh 10 câu hỏi bám tiến trình 5E: 2 câu gây tò mò, 3 câu khám phá, 2 câu giải thích, 2 câu vận dụng, 1 câu đánh giá. Mỗi câu ghi rõ đáp án và trang tài liệu làm căn cứ.',
+    'Yêu cầu tạo phiếu bài tập một trang cho học sinh làm tại lớp trong 10 phút. Tải về và chỉnh lại trong Word.',
+    'Bật chức năng tóm tắt dạng audio, chọn tiếng Việt. Đây là học liệu nghe cho học sinh ôn ở nhà, rất hợp với Tiếng Anh và Ngữ văn.',
+    'Kiểm chứng: chọn ngẫu nhiên ba câu hỏi, mở đúng trang tài liệu mà NotebookLM trích dẫn để đối chiếu.'
+  ],
+  ghi:'NotebookLM chỉ trả lời trong phạm vi tài liệu thầy cô nạp vào, và luôn chỉ ra câu trả lời lấy từ trang nào. Đây là công cụ hiệu quả nhất để trả lời nỗi lo “AI bịa”, và cũng là công cụ an toàn nhất để giao cho học sinh dùng.'
+},
+{
+  so:3, ten:'Học liệu trực quan: slide, hình ảnh, video',
+  gio:'Buổi sáng 10:46 – 11:16', tl:'DEMO 8 phút + thực hành 30 phút',
+  cc:'Chọn một nhánh: z.ai chế độ Slides · Gemini tạo ảnh · Google Vids (vids.new). Cả ba đều có bản miễn phí. Canva for Education để chỉnh lại.',
+  sp:'Một sản phẩm trực quan hoàn chỉnh, đã tải về máy, dùng được trong bài dạy của mình.',
+  nhanh:[
+    ['A — Slide','Đưa kế hoạch bài dạy từ LAB 1 vào z.ai chế độ Slides, sinh bộ slide, rồi sửa lại: bỏ chữ thừa, mỗi slide một ý, thêm câu hỏi cho học sinh.','Bộ 10–15 slide, xuất ra .pptx để chỉnh tiếp trên máy'],
+    ['B — Hình ảnh','Tạo 3–5 hình minh hoạ cho các khái niệm khó. Mô tả hình bằng bốn yếu tố: chủ thể, bối cảnh, phong cách, tỉ lệ khung hình.','3–5 ảnh PNG chèn được vào slide và phiếu bài tập'],
+    ['C — Video','Dựng một video 60–90 giây phục vụ đúng một mục tiêu: mở bài gây tò mò, hoặc chốt bài hệ thống hoá. Kèm phụ đề tiếng Việt.','Một tệp video hoặc đường dẫn, chiếu được trên lớp']
+  ],
+  buoc:[
+    'Chọn ĐÚNG MỘT nhánh và làm cho tới nơi. Ba nhánh chạy song song; bản ghi hình buổi học cho phép xem lại hai nhánh còn lại sau đó.',
+    'Chuẩn bị nguyên liệu: nhánh A cần kế hoạch bài dạy từ LAB 1; nhánh B và C cần danh sách khái niệm khó của bài.',
+    'Làm bản đầu tiên, đừng cầu toàn. Xem kết quả rồi mới biết cần sửa gì.',
+    'Sửa bằng câu tiếng Việt: “gộp slide 4 và 5”, “bỏ bớt chữ giữ ý chính”, “thêm một câu hỏi cho học sinh ở cuối mỗi phần”.',
+    'Tải sản phẩm về máy. Với nhánh A, mở tệp .pptx bằng PowerPoint để chắc chắn sửa được.',
+    'Nộp sản phẩm vào bảng chung.'
+  ],
+  nhanhBuoc:[
+    ['A — Slide','z.ai chế độ Slides → PowerPoint',[
+      'Mở chat.z.ai, chọn chế độ Slides. Dán nguyên kế hoạch bài dạy đã làm ở LAB 1, không viết lại gì.',
+      'Chọn một mẫu trình bày, bấm sinh. Chờ khoảng ba phút.',
+      'Sửa bằng câu tiếng Việt: “gộp slide 4 và 5”, “bỏ bớt chữ giữ ý chính”, “thêm một câu hỏi cho học sinh ở cuối mỗi phần”.',
+      'Xuất ra tệp .pptx và MỞ THỬ BẰNG POWERPOINT ngay. Bấm vào một ô chữ, gõ sửa được thì mới coi là xong.',
+      'Cần ảnh minh hoạ thì mượn một câu lệnh của nhánh B, sinh ảnh rồi chèn vào slide.'
+    ]],
+    ['B — Hình ảnh','Gemini tạo ảnh → PowerPoint',[
+      'Chọn một khái niệm khó và viết một câu: ảnh này phải làm bật ra điều gì. Viết không nổi câu đó thì đổi khái niệm, đừng sinh ảnh.',
+      'Ghép câu lệnh theo bốn yếu tố, kết thúc bằng câu chặn chữ: [chủ thể], [bối cảnh], [phong cách], tỉ lệ [16:9 hoặc 1:1], không có chữ trong ảnh.',
+      'Sinh bản đầu, đừng cầu toàn. Nhìn ảnh rồi mới biết phải sửa gì.',
+      'Sửa bằng câu tiếng Việt, mỗi lần đúng MỘT việc: “đám đông bên phải đông gấp năm lần”, “bỏ hết chữ trong ảnh”, “chừa dải trống để tôi gõ chữ đè lên”.',
+      'Ảnh khó (nhiều biểu tượng) thì thử sinh gộp một lần trước — mô tả rõ số lượng và vị trí từng phần trong cùng một câu lệnh. Gemini hiện xếp khá đều; chỉ tách nhỏ sinh riêng từng biểu tượng trên nền trắng rồi tự xếp trong PowerPoint khi ảnh gộp bị lệch hoặc sai.',
+      'Tải PNG, chèn vào slide, GÕ CHỮ ĐÈ BẰNG HỘP VĂN BẢN — không để AI viết chữ, dấu tiếng Việt sẽ sai.',
+      'Nghiệm thu: đưa ảnh cho một đồng nghiệp khác môn, che hết chữ, hỏi “ảnh này nói điều gì?”. Họ nói đúng ý thì ảnh đạt.'
+    ]],
+    ['C — Video','Google Vids (vids.new) → tệp .mp4',[
+      'Viết lời đọc TRƯỚC khi mở công cụ. Một trăm bốn mươi chữ là khoảng 55 giây; phần còn lại của 90 giây là nhịp nghỉ.',
+      'Vào vids.new, tạo video trống, giữ khung 16:9 cho khớp máy chiếu.',
+      'Dựng sáu cảnh theo sáu mốc giây của kịch bản, mỗi cảnh một ảnh nền đã sinh sẵn. Chưa có ảnh thì dùng nền trơn — nền trơn còn hơn ảnh sai ý.',
+      'Gõ chữ hiện trên hình bằng hộp văn bản của Vids, mỗi cảnh một dòng.',
+      'Dán lời đọc vào ô lời nhắc cuộn (teleprompter) rồi tự ghi tiếng. Vấp thì cứ đọc tiếp. Lồng tiếng AI cần gói Workspace hoặc gói Google AI trả phí, giọng thật vẫn gần gũi hơn.',
+      'Cắt chỗ vấp bằng cách XOÁ CHỮ trong bản ghi lời (transcript trim), không phải kéo thanh thời gian.',
+      'Bật phụ đề tự động tiếng Việt rồi ĐỌC LẠI TOÀN BỘ. Tên riêng và từ Hán Việt là chỗ máy nghe sai nhiều nhất.',
+      'Xuất .mp4 và tải về máy, đừng chỉ giữ đường dẫn. Xem trọn một lượt trước khi nộp.'
+    ]]
+  ],
+  ghi:'Quy tắc 90 giây: video AI dễ làm nên cũng dễ làm dài và làm thừa. Mọi video giới hạn 90 giây và phải trả lời được câu hỏi — video này thay thế được đoạn giảng nào của thầy cô? Không trả lời được thì không cần làm video.'
+},
+{
+  so:4, ten:'Trợ giảng số ra đề, rubric và bản in công thức đúng',
+  gio:'Buổi chiều 13:58 – 14:23', tl:'DEMO 8 phút + thực hành 25 phút',
+  cc:'Gemini Gems + pandoc (dòng lệnh, miễn phí). Nâng cao: Google Sheets để phân tích kết quả.',
+  sp:'Một ngân hàng 30 câu theo ma trận, một tệp .docx công thức hiện đúng đóng theo mẫu đề của tổ, và một rubric.',
+  buoc:[
+    'Tạo Gem thứ hai: “Trợ giảng ra đề — [Môn] [Lớp]”. Nạp ma trận đề của tổ, đề kiểm tra mẫu đã dùng, và danh mục yêu cầu cần đạt.',
+    'Yêu cầu sinh 30 câu hỏi phân theo bốn mức: nhận biết, thông hiểu, vận dụng, vận dụng cao — đúng tỉ lệ ma trận của tổ. Mỗi câu kèm đáp án và giải thích ngắn vì sao các phương án còn lại sai.',
+    'Yêu cầu xuất ra dạng bảng để dán thẳng vào Google Sheets: Câu hỏi | Các phương án | Đáp án | Mức độ | Giải thích — mọi công thức đặt trong dấu $…$ theo LaTeX. Chép toàn bộ vào một tệp văn bản .txt (ví dụ original_lab4.txt) để bước sau dùng.',
+    'Chuyển tệp .txt thành Word công thức hiện đúng bằng pandoc trong dòng lệnh, đóng theo mẫu đề của tổ. Chạy đúng một dòng: pandoc original_lab4.txt -o original_lab4.docx --reference-doc=DeKiemTraCu_Mau_Toan9.docx — pandoc đổi mỗi đoạn $…$ thành công thức Word gốc, và lấy phông chữ, lề, tiêu đề từ tệp mẫu.',
+    'Yêu cầu Gem viết rubric cho một câu hỏi tự luận của bài, gồm bốn mức và mô tả biểu hiện quan sát được ở mỗi mức.',
+    'Kiểm chứng: mở tệp .docx, soát ba điều — công thức hiện đúng (không còn ký tự $), đáp án khớp bản gốc, và ba câu Gem đánh dấu “cần giáo viên xem lại” đã được kiểm.'
+  ],
+  ghi:'pandoc cài một lần cho cả máy (macOS: “brew install pandoc”; Windows: tải bộ cài ở pandoc.org). Nếu bài có công thức, xem Hộp kỹ thuật mục 1 trước khi bắt đầu — dặn Gem viết $…$ ngay từ bản mô tả việc thì đỡ phải sửa 30 câu sau đó.'
+},
+{
+  so:5, ten:'Xây dựng và xuất bản app học tập cho học sinh',
+  gio:'Buổi chiều 14:53 – 15:33', tl:'DEMO 10 phút + thực hành 40 phút — bài trọng tâm',
+  cc:'Bước 1 dựng bằng z.ai chế độ Agent. Bước 2 đưa lên GitHub Pages để ở lâu dài.',
+  sp:'Một app đang chạy trên internet, kèm đường dẫn và mã QR chiếu được lên lớp, có nút xuất và nạp dữ liệu .json.',
+  khuon:[
+    ['A — Luyện tập có phản hồi','Toán, Hoá – Sinh, Tiếng Anh, Tiểu học','Ngân hàng câu hỏi lấy từ LAB 4, làm sai thì giải thích ngay, có thanh tiến độ và điểm tích luỹ'],
+    ['B — Trò chơi khám phá kiến thức','Xã hội, Ngữ văn, Tiểu học','Học sinh giải các mật thư nối tiếp nhau, mỗi mật thư mở ra một mảnh kiến thức'],
+    ['C — Mô phỏng trực quan','Xã hội, Lý – Tin, Toán, Hoá – Sinh','Bản đồ diễn biến có nút tua thời gian; đồ thị chuyển động có thanh trượt; mô phỏng phản ứng hoá học']
+  ],
+  buoc:[
+    'Mở chat.z.ai, chọn chế độ Agent. Đăng nhập bằng tài khoản đã tạo theo checklist chuẩn bị.',
+    'Dán khuôn mô tả app (Prompt 3 trong Thư viện prompt), thay phần trong ngoặc vuông bằng nội dung bài dạy và ngân hàng câu hỏi từ LAB 4. GIỮ NGUYÊN đoạn yêu cầu hai nút xuất và nạp dữ liệu.',
+    'Chờ z.ai dựng xong, chơi thử một lượt. Sửa bằng tiếng Việt: “chữ to hơn”, “thêm nút làm lại”, “đổi màu nền dịu hơn”.',
+    'Gặp lỗi khi chơi thử thì mô tả ĐÚNG MỘT lỗi đó bằng tiếng Việt cho z.ai sửa, nói rõ bấm nút nào, ở pha nào, kết quả sai ra sao. Ví dụ: “Ở pha 2, trả lời đúng cả ba câu rồi mà nút Tiếp vẫn bị khoá.” Sửa xong lỗi này mới báo lỗi tiếp theo.',
+    'Ưng ý rồi thì bấm icon Download (tải về) của z.ai để lấy app về máy ngay. Phiên làm việc trên z.ai bị xoá sau một thời gian, nên đây là bước không được bỏ.',
+    'Bấm “Xuất dữ liệu”, tải tệp .json về máy và cất vào thư mục bài dạy. Đây là bản gốc dữ liệu của thầy cô.',
+    'Yêu cầu z.ai xuất toàn bộ app thành một tệp HTML duy nhất, tải về. Bấm đúp để kiểm tra chạy được khi tắt mạng.',
+    'Đưa tệp lên GitHub Pages theo Hộp kỹ thuật mục 3. Tạo mã QR từ địa chỉ GitHub Pages, chiếu lên và nhờ một đồng nghiệp quét thử bằng điện thoại — đây là phép thử duy nhất chứng minh app chạy thật, và cũng là mã QR chính thức phát cho học sinh.',
+    'Nộp đường dẫn vào bảng tổng hợp chung để cả trường dùng lại.'
+  ],
+  ghi:'Bước lên GitHub Pages là bắt buộc, không phải phần nâng cao tuỳ chọn. Bản trên z.ai chỉ là chỗ dựng và sửa: phiên làm việc bị xoá sau một thời gian, nên phải tải app về máy ngay khi ưng ý.'
+},
+{
+  so:6, ten:'Tự động hoá công việc hành chính lặp lại',
+  gio:'Buổi chiều 15:58 – 16:10', tl:'DEMO 8 phút + thực hành 12 phút',
+  cc:'Google Sheets + Apps Script (Web App) + Gemini Canvas. Google Forms cho việc báo cáo. Tất cả miễn phí trong tài khoản trường.',
+  sp:'Một bảng tính tự động hoá một việc lặp lại: thu điểm trắc nghiệm bằng app có dashboard live, sinh nhận xét, hoặc báo cáo.',
+  viec:[
+    ['Thu điểm trắc nghiệm bằng app, có dashboard live','Dùng Gemini Canvas dựng một app trắc nghiệm HTML một tệp (chép câu từ ngân hàng ở LAB 4). Viết một Apps Script deploy dạng Web App để app gửi từng lượt trả lời về Google Sheets — mỗi lớp một tab, tự tạo. App có sẵn bảng điều khiển trực quan: ai đã trả lời, điểm từng em, bảng xếp hạng cập nhật ngay. Xem mẫu: 99_IceBreakers/KhoiDong_LamQuen.'],
+    ['Sinh nhận xét học bạ hàng loạt','Một bảng gồm cột điểm và cột đặc điểm; dùng Apps Script gọi AI sinh nhận xét cho từng em theo giọng văn mẫu. Giáo viên đọc lại và sửa trước khi dùng — không bao giờ dùng thẳng.'],
+    ['Báo cáo quản sinh, chủ nhiệm','Google Form ghi nhận sự việc hằng ngày, Sheets tự tổng hợp theo tuần, Apps Script gửi báo cáo tự động cuối tuần.'],
+    ['Sinh mã QR hàng loạt','Một công thức duy nhất trong Sheets biến mỗi đường dẫn thành một mã QR. Dùng để phát tài liệu, app, phiếu bài tập cho nhiều lớp cùng lúc.']
+  ],
+  buoc:[
+    'Chọn MỘT việc lặp lại mà thầy cô làm hằng tuần và thấy mất thời gian nhất.',
+    'Với việc thu điểm bằng app: mở Gemini, bật Canvas. Dán prompt mô tả app trắc nghiệm (hiện câu hỏi, chọn đáp án, chấm điểm, bảng xếp hạng, một nút gửi kết quả về máy chủ). Đính kèm ngân hàng câu hỏi từ LAB 4 và một app mẫu (ví dụ KhoiDong_LamQuen.html) làm khuôn để Canvas bám theo.',
+    'Xem kết quả Canvas trả về: một app HTML, một tệp mã Apps Script, và một tệp hướng dẫn .txt cách triển khai. Lướt qua ba tệp trong khung Canvas trước khi chạy thử.',
+    'Mở tệp hướng dẫn triển khai .txt Canvas sinh ra, đọc kỹ từng bước: tạo Google Sheet, dán mã Apps Script, Deploy Web app, lấy URL /exec, dán URL vào app. Đây là bản đồ cho các bước sau — làm theo đúng thứ tự.',
+    'Mở Google Sheet mới (theo PHẦN 1 của tệp hướng dẫn) — đây là nơi chứa kết quả. Trên thanh menu, vào Tiện ích mở rộng (Extensions) → Apps Script.',
+    'Trong Apps Script: xoá hết code mẫu, dán đoạn mã Web App Canvas cấp (doPost lưu một dòng, doGet trả dữ liệu cho dashboard), bấm Lưu.',
+    'Bấm Triển khai (Deploy) → Buổi triển khai mới (New deployment). Bấm bánh răng ở ô Chọn loại (Select type), chọn Ứng dụng web (Web app).',
+    'Điền cấu hình triển khai: Nội dung mô tả — ví dụ “Bản v1”; Chạy dưới dạng (Execute as) = Tôi; Người có quyền truy cập (Who has access) = Bất kỳ ai (rất quan trọng, để app của học sinh gọi được mà không lỗi quyền). Bấm Triển khai.',
+    'Lần đầu triển khai, Google hiện màn Uỷ quyền truy cập (Authorize access): bấm Cấp quyền → chọn tài khoản Google của bạn → “Nâng cao” (Advanced) → “Đi tới … (không an toàn)” (Go to … unsafe). Đây là script của chính bạn nên an toàn.',
+    'Màn xác nhận quyền: Google liệt kê các quyền app xin (xem, sửa, xoá Google Sheets của bạn; kết nối dịch vụ bên ngoài). Đọc qua rồi bấm Cho phép (Allow).',
+    'Hộp thoại “Đã cập nhật hoạt động triển khai” hiện Mã triển khai và URL ứng dụng web kết thúc bằng /exec. Bấm biểu tượng Sao chép cạnh URL để lấy đường dẫn — đây là địa chỉ máy chủ của app.',
+    'Mở tệp .html của app bằng trình soạn thảo văn bản đơn giản (TextEdit / Notepad / VS Code). Tìm dòng ENDPOINT: "" — thường nằm trong khối const CONFIG = { … } ở đầu tệp. Đặt con trỏ vào giữa hai dấu ngoặc kép, dán URL /exec vào, rồi lưu tệp (Ctrl/Cmd + S).',
+    'Bấm đúp tệp .html để mở app bằng trình duyệt. Ở màn đầu, nhập tên lớp (viết liền không dấu để đồng bộ Sheet gọn, ví dụ 10A1), bấm nút bắt đầu hoạt động.',
+    'Chơi thử một câu: app hiện câu hỏi trắc nghiệm, chọn đáp án, thấy chấm điểm và phản hồi. Sửa bằng câu tiếng Việt nếu cần: “chữ to hơn”, “thêm nút làm lại”.',
+    'Gõ các công thức tổng hợp, hoặc mở bảng điều khiển trực quan của app: điểm trung bình, câu sai nhiều nhất, danh sách em dưới ngưỡng, bảng xếp hạng.',
+    'Kiểm chứng: với việc dùng AI, đọc lại toàn bộ kết quả AI sinh ra rồi sửa trước khi dùng. Với việc thu điểm bằng app, mở Sheets soát vài dòng vừa lưu — đúng tên, đúng điểm, đúng tab lớp.',
+    'Lưu bản mẫu để tuần sau chỉ việc thay dữ liệu.'
+  ],
+  ghi:'Tuyệt đối không nhập họ tên thật, ảnh, số điện thoại hay hoàn cảnh gia đình học sinh vào công cụ AI. Khi cần AI xử lý dữ liệu lớp, thay tên bằng mã học sinh HS01, HS02… rồi ghép lại sau.'
+}
+];
+
+const PROMPTS = [
+{id:'p1', ten:'Prompt 1 — Bản mô tả việc cho trợ giảng soạn kế hoạch bài dạy', dung:'LAB 1', noi:
+`NGỮ CẢNH: Tôi là giáo viên môn [MÔN], dạy lớp [LỚP] tại trường phổ thông
+liên cấp. Sĩ số [SỐ] học sinh, trình độ [MÔ TẢ], phòng học có [THIẾT BỊ].
+
+NHẬP VAI: Bạn là chuyên viên phát triển chương trình, thành thạo Công văn
+[5512 hoặc 2345] và mô hình dạy học 5E.
+
+NGƯỜI DÙNG: Kết quả để tôi nộp tổ chuyên môn và dùng trực tiếp trên lớp.
+
+NHIỆM VỤ: Soạn kế hoạch bài dạy cho bài [TÊN BÀI], thời lượng [SỐ] tiết,
+tiến trình theo 5E: Gây tò mò - Khám phá - Giải thích - Vận dụng - Đánh giá.
+
+NGHI THỨC: Trình bày đúng khuôn phụ lục của cấp học, dạng bảng.
+Giọng sư phạm, câu ngắn, không dùng từ hoa mỹ.
+
+NGUỒN: Chỉ dùng các tệp tôi đã tải lên. Nội dung nào không có trong tài liệu,
+hãy ghi rõ "CHƯA CÓ DỮ LIỆU - cần giáo viên bổ sung", tuyệt đối không tự nghĩ ra.
+Khi trích ngữ liệu, ghi rõ lấy từ trang nào.
+
+NGHIỆM THU: Trước khi trả kết quả, hãy tự kiểm bốn điều và báo cho tôi:
+  1. Đủ các hoạt động theo khuôn, mỗi hoạt động có mục tiêu - sản phẩm - tiêu chí
+  2. Tổng thời gian các hoạt động đúng bằng [SỐ] phút (ghi số phút từng hoạt động)
+  3. Bám đúng yêu cầu cần đạt trong tài liệu đã tải, không vượt và không dưới chuẩn
+  4. Nêu rõ 2-3 chỗ bạn không chắc để tôi kiểm lại`},
+
+{id:'p2', ten:'Prompt 2 — Sinh ngân hàng câu hỏi theo ma trận', dung:'LAB 4', noi:
+`Dựa trên tài liệu tôi đã tải lên, sinh 30 câu hỏi trắc nghiệm 4 phương án
+cho bài [TÊN BÀI], môn [MÔN], lớp [LỚP].
+
+Phân bố theo mức độ: [10] nhận biết, [10] thông hiểu, [7] vận dụng,
+[3] vận dụng cao.
+
+Mỗi câu gồm: câu hỏi, 4 phương án, đáp án đúng, và giải thích ngắn
+VÌ SAO ba phương án còn lại sai (dùng để làm phản hồi tự động cho học sinh).
+
+Công thức toán học viết bằng LaTeX đặt giữa hai dấu $, không dùng ký tự
+Unicode đặc biệt.
+
+Xuất ra bảng 5 cột để tôi dán vào Google Sheets:
+Câu hỏi | Phương án (A/B/C/D cách nhau bằng dấu |) | Đáp án | Mức độ | Giải thích
+
+Tự kiểm trước khi trả: mỗi câu chỉ có đúng một đáp án đúng; các phương án
+sai phải hợp lý, không lộ liễu; toàn bộ nội dung nằm trong tài liệu đã tải.`},
+
+{id:'p3', ten:'Prompt 3 — Xây app học tập năm pha', dung:'LAB 5', noi:
+`Hãy tạo cho tôi một ứng dụng học tập chạy trên web, đóng gói trong MỘT tệp
+HTML duy nhất, chạy được cả khi không có mạng, giao diện tiếng Việt,
+hiển thị tốt trên điện thoại.
+
+CHỦ ĐỀ: bài [TÊN BÀI], môn [MÔN], lớp [LỚP].
+
+CẤU TRÚC 5 PHA, học sinh phải xong pha trước mới mở được pha sau:
+  1. GÂY TÒ MÒ: [câu hỏi hoặc tình huống khiêu khích]
+  2. KHÁM PHÁ: [thao tác kéo thả / mô phỏng / bảng số liệu để tự tìm quy luật]
+  3. GIẢI THÍCH: [nội dung cốt lõi, ngắn gọn, kèm ví dụ]
+  4. VẬN DỤNG: [bài tập tình huống mới, có gợi ý theo bậc khi học sinh bí]
+  5. ĐÁNH GIÁ: [số] câu hỏi tính điểm, đảo thứ tự đáp án mỗi lần làm,
+     có đồng hồ đếm giờ, đạt từ 90% thì hiện giấy chứng nhận in được.
+
+NGÂN HÀNG CÂU HỎI: [dán bảng câu hỏi đã sinh ở LAB 4]
+
+YÊU CẦU KỸ THUẬT: chữ tối thiểu 16px; nút bấm to, dễ chạm; màu nền dịu mắt;
+không thu thập bất kỳ dữ liệu cá nhân nào của học sinh;
+nếu có công thức toán, nhúng MathJax để hiển thị đúng;
+đóng gói toàn bộ vào MỘT tệp HTML, không tách tệp css hay js riêng.
+
+Mọi hoạt hình hoặc nội dung tự chuyển cảnh PHẢI có thanh điều khiển đầy đủ:
+sáu nút Từ đầu, Lùi, Dừng và Chạy, Tiếp, Bỏ qua, cùng dãy chấm bấm được và
+dòng "Cảnh mấy trên mấy". Học sinh bấm nút nào thì tạm dừng tự chạy.
+
+HAI NÚT BẮT BUỘC ở góc màn hình:
+  - "Xuất dữ liệu": tải toàn bộ kết quả làm bài xuống một tệp .json
+  - "Nạp dữ liệu": chọn tệp .json đó và khôi phục lại toàn bộ kết quả
+Lý do: nền tảng chạy thử xoá cơ sở dữ liệu sau một ngày, nên tệp .json là
+bản gốc duy nhất mà giáo viên giữ được.`},
+
+{id:'p4', ten:'Prompt 4 — Biến một trang SGK thành trò chơi mật thư', dung:'LAB 5, khuôn B', noi:
+`Từ nội dung trang sách tôi đã tải lên, hãy thiết kế một chuỗi 5 mật thư
+nối tiếp nhau cho học sinh lớp [LỚP] môn [MÔN].
+
+Quy tắc: giải xong mật thư 1 mới hiện mật thư 2. Mỗi mật thư mở ra một
+mảnh kiến thức của bài; giải hết 5 mật thư thì ghép lại thành bức tranh
+toàn cảnh của bài học.
+
+Mỗi mật thư gồm: câu đố, dữ kiện gợi ý, đáp án, và mảnh kiến thức được mở ra.
+Độ khó tăng dần. Thời gian giải cả chuỗi khoảng [15] phút.
+
+Sau đó đóng gói toàn bộ thành một tệp HTML duy nhất theo yêu cầu kỹ thuật
+ở Prompt 3.`},
+
+{id:'p5', ten:'Prompt 5 — Sinh nhận xét học bạ hàng loạt', dung:'LAB 6', noi:
+`Tôi có bảng dữ liệu lớp gồm các cột: mã học sinh, điểm giữa kỳ, điểm cuối kỳ,
+đặc điểm nổi bật.
+
+Hãy viết nhận xét cho từng em, mỗi nhận xét 2 đến 3 câu, theo giọng văn mẫu:
+"[dán một nhận xét mẫu do thầy cô tự viết]"
+
+Yêu cầu:
+- Nêu được một điểm mạnh cụ thể và một điểm cần cố gắng cụ thể.
+- Không dùng từ tiêu cực, không so sánh giữa các em.
+- Không lặp lại y hệt cấu trúc câu giữa các em.
+- Xuất ra hai cột: mã học sinh | nhận xét.
+
+LƯU Ý: bảng này chỉ có mã học sinh, không có tên thật. Tôi sẽ tự ghép tên sau.`}
+];
+
+const CHUANBI = [
+  ['Đăng nhập được tài khoản Google trên MÁY TÍNH sẽ dùng học (không dùng điện thoại).','Toàn bộ công cụ chạy trên tài khoản Google. Điện thoại không làm được bài thực hành chính.'],
+  ['Mở thử và đăng nhập được gemini.google.com và notebooklm.google.com.','Tránh mất thời gian đăng nhập trong giờ thực hành.'],
+  ['Tạo tài khoản miễn phí tại chat.z.ai và đăng nhập thử.','Công cụ của bài thực hành trọng tâm (LAB 5) và phần làm slide (LAB 3).'],
+  ['Tạo tài khoản GitHub (chỉ cần email, mất 3 phút).','Nơi xuất bản app học tập để có địa chỉ cố định. Không tạo trước sẽ không kịp trong buổi.'],
+  ['Chuẩn bị MỘT bài dạy có thật sẽ dạy trong tháng 9 hoặc 10: tên bài, số tiết, khối lớp.','Đây là sợi chỉ đỏ xuyên suốt sáu tiếng. Không có bài dạy thì không có gì để thực hành.'],
+  ['Chuẩn bị tệp tài liệu của bài đó: ảnh chụp trang SGK, giáo án cũ, đề kiểm tra cũ, ma trận đề của tổ.','Dùng để nạp vào trợ giảng số ở LAB 1, 2 và 4.'],
+  ['Tải bộ phiếu hướng dẫn PDF về máy.','Để tự làm tiếp khi đường truyền trục trặc.'],
+  ['Vào nhóm Zalo của lớp tập huấn.','Kênh hỗ trợ chính khi gặp sự cố trong buổi học.'],
+  ['Tham gia lớp Google Classroom của khoá: classroom.google.com → Tham gia lớp học → mã oixfraoa.','Nơi nhận đề bài và nộp bảy bài tập về nhà sau buổi học. Nộp đủ bốn trên bảy để nhận giấy chứng nhận.']
+];
+
+const SANPHAM = [
+  ['Trợ giảng số soạn kế hoạch bài dạy','Đường dẫn Gem chạy được + KHBD đã qua bộ lọc bốn câu hỏi (.docx hoặc .pdf)','LAB 1','CN 20/9'],
+  ['Bộ học liệu số của một bài dạy','Đường dẫn sổ NotebookLM + tóm tắt + 10 câu hỏi phân mức + phiếu bài tập + đường dẫn bản audio','LAB 2','CN 20/9'],
+  ['Học liệu trực quan','Một trong ba: bộ slide .pptx · 3–5 ảnh PNG · video ≤ 90 giây có phụ đề tiếng Việt','LAB 3','CN 27/9'],
+  ['Bộ công cụ kiểm tra đánh giá','Ngân hàng 30 câu + bản .docx công thức hiện đúng (qua pandoc) + một rubric bốn mức','LAB 4','CN 27/9'],
+  ['App hoặc trò chơi học tập cho học sinh — bài trọng tâm','Đường dẫn GitHub Pages đang chạy + mã QR + tệp .json dữ liệu gốc','LAB 5','CN 4/10'],
+  ['Một việc hành chính đã được tự động hoá','Đường dẫn app kèm dashboard, hoặc bản Sheet mẫu + đoạn mã Apps Script + một dòng ghi việc đã tự động hoá','LAB 6','CN 4/10'],
+  ['Nguyên tắc dùng AI có trách nhiệm','Bản cam kết lớp học một trang + một phiếu giao bài có kiểm soát','Buổi chiều','CN 11/10']
+];
+
+/* ============================ DỰNG GIAO DIỆN ============================ */
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const $ = s => document.querySelector(s);
+let labHienTai = 1;
+const daXong = {};   /* giữ trong phiên, không lưu ra ổ đĩa */
+
+/* --- tab chính --- */
+document.querySelectorAll('nav button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('nav button').forEach(x=>x.setAttribute('aria-selected', x===b?'true':'false'));
+    ['lotrinh','lab','prompt','kythuat','chuanbi','nopbai'].forEach(id=>{
+      $('#'+id).hidden = (id !== b.dataset.t);
+    });
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+});
+function moLab(n){
+  document.querySelector('nav button[data-t="lab"]').click();
+  labHienTai = n; veLab();
+}
+
+/* --- LAB --- */
+$('#labNav').innerHTML = LAB.map(l =>
+  '<button role="tab" data-n="'+l.so+'" aria-selected="'+(l.so===1)+'">LAB '+l.so+'</button>').join('');
+$('#labNav').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  labHienTai = +b.dataset.n; veLab();
+});
+
+function veLab(){
+  const l = LAB.find(x=>x.so===labHienTai);
+  document.querySelectorAll('#labNav button').forEach(b=>
+    b.setAttribute('aria-selected', +b.dataset.n===labHienTai ? 'true':'false'));
+
+  let h = '<div class="card"><h3 style="margin-top:0">LAB '+l.so+' — '+esc(l.ten)+'</h3>'
+    + '<div class="meta">'
+    + '<div>Thời điểm</div><div>'+esc(l.gio)+'</div>'
+    + '<div>Thời lượng</div><div>'+esc(l.tl)+'</div>'
+    + '<div>Công cụ</div><div>'+esc(l.cc)+'</div>'
+    + '<div>Sản phẩm nộp</div><div>'+esc(l.sp)+'</div>'
+    + '</div>';
+
+  if(l.nhanh){
+    h += '<h4>Chọn một nhánh</h4><div class="tblwrap"><table><thead><tr>'
+      + '<th style="width:16%">Nhánh</th><th>Làm gì trong 30 phút</th><th style="width:26%">Đầu ra</th>'
+      + '</tr></thead><tbody>'
+      + l.nhanh.map(n=>'<tr><td><b>'+esc(n[0])+'</b></td><td>'+esc(n[1])+'</td><td>'+esc(n[2])+'</td></tr>').join('')
+      + '</tbody></table></div>';
+  }
+  if(l.nhanhBuoc){
+    h += '<h4>Các bước riêng của từng nhánh</h4>'
+      + l.nhanhBuoc.map(n=>
+          '<div class="nb"><div class="nb-h"><b>'+esc(n[0])+'</b><span>'+esc(n[1])+'</span></div><ol>'
+          + n[2].map(b=>'<li>'+esc(b)+'</li>').join('')
+          + '</ol></div>').join('');
+  }
+  if(l.khuon){
+    h += '<h4>Ba khuôn app có sẵn — chọn một</h4><div class="tblwrap"><table><thead><tr>'
+      + '<th style="width:22%">Khuôn</th><th style="width:24%">Phù hợp tổ</th><th>Mô tả</th>'
+      + '</tr></thead><tbody>'
+      + l.khuon.map(n=>'<tr><td><b>'+esc(n[0])+'</b></td><td>'+esc(n[1])+'</td><td>'+esc(n[2])+'</td></tr>').join('')
+      + '</tbody></table></div>';
+  }
+  if(l.viec){
+    h += '<h4>Chọn một việc lặp lại để tự động hoá</h4><div class="tblwrap"><table><thead><tr>'
+      + '<th style="width:28%">Việc</th><th>Cách làm</th></tr></thead><tbody>'
+      + l.viec.map(n=>'<tr><td><b>'+esc(n[0])+'</b></td><td>'+esc(n[1])+'</td></tr>').join('')
+      + '</tbody></table></div>';
+  }
+
+  const key = n => 'l'+l.so+'b'+n;
+  const xong = l.buoc.filter((_,i)=>daXong[key(i)]).length;
+  h += '<h4>Các bước thực hiện</h4>'
+    + '<p class="tiendo">Đã xong <b>'+xong+' / '+l.buoc.length+'</b> bước</p>'
+    + l.buoc.map((b,i)=>
+        '<label class="step'+(daXong[key(i)]?' done':'')+'" for="'+key(i)+'">'
+        + '<input type="checkbox" id="'+key(i)+'" data-k="'+key(i)+'"'+(daXong[key(i)]?' checked':'')+'>'
+        + '<span class="n">'+(i+1)+'.</span><span class="txt">'+esc(b)+'</span></label>').join('');
+
+  if(l.bienthe){
+    h += '<h4>Biến thể theo tổ chuyên môn</h4><div class="tblwrap"><table><thead><tr>'
+      + '<th style="width:24%">Tổ</th><th>Điều chỉnh trong bản mô tả việc</th></tr></thead><tbody>'
+      + l.bienthe.map(n=>'<tr><td><b>'+esc(n[0])+'</b></td><td>'+esc(n[1])+'</td></tr>').join('')
+      + '</tbody></table></div>';
+  }
+  if(l.loi){
+    h += '<h4>Lỗi thường gặp và cách xử lý</h4>'
+      + l.loi.map(n=>'<div class="box warn"><b>'+esc(n[0])+'</b>'+esc(n[1])+'</div>').join('');
+  }
+  if(l.ghi){ h += '<div class="box good"><b>Đáng nhớ</b>'+esc(l.ghi)+'</div>'; }
+  h += '<div style="margin-top:16px"><button class="act btn-ghost btn-sm" onclick="window.print()">In phiếu này</button></div>';
+  h += '</div>';
+  $('#labNoiDung').innerHTML = h;
+}
+
+document.addEventListener('change', e=>{
+  const cb = e.target;
+  if(cb.matches('.step input')){
+    daXong[cb.dataset.k] = cb.checked;
+    veLab();
+  }
+});
+
+/* --- prompt --- */
+$('#promptDS').innerHTML = PROMPTS.map(p =>
+  '<div class="card"><h3 style="margin-top:0">'+esc(p.ten)+'</h3>'
+  + '<p><span class="chip">Dùng ở '+esc(p.dung)+'</span></p>'
+  + '<div class="pw"><button class="act btn btn-sm cp" data-cp="'+p.id+'">Sao chép</button>'
+  + '<pre id="p-'+p.id+'">'+esc(p.noi)+'</pre></div></div>').join('');
+
+/* --- chuẩn bị --- */
+$('#cbDS').innerHTML = CHUANBI.map((c,i)=>
+  '<label class="step" for="cb'+i+'"><input type="checkbox" id="cb'+i+'" data-cb="'+i+'">'
+  + '<span class="n">'+(i+1)+'.</span><span class="txt"><b>'+esc(c[0])+'</b><br>'
+  + '<span style="font-size:14px;color:#5a6473">'+esc(c[1])+'</span></span></label>').join('');
+document.addEventListener('change', e=>{
+  if(e.target.matches('[data-cb]')) e.target.closest('.step').classList.toggle('done', e.target.checked);
+});
+
+/* --- sản phẩm --- */
+$('#spDS').innerHTML = '<div class="tblwrap"><table><thead><tr>'
+  + '<th style="width:44px">#</th><th style="width:27%">Bài tập</th><th>Nộp gì lên Google Classroom</th><th style="width:11%">Từ</th><th style="width:13%">Hạn nộp</th>'
+  + '</tr></thead><tbody>'
+  + SANPHAM.map((s,i)=>'<tr><td><b>'+(i+1)+'</b></td><td>'+esc(s[0])+'</td><td>'+esc(s[1])+'</td><td>'+esc(s[2])+'</td><td><b>'+esc(s[3])+'</b></td></tr>').join('')
+  + '</tbody></table></div>';
+
+/* --- sao chép --- */
+document.addEventListener('click', e=>{
+  const b = e.target.closest('[data-cp]'); if(!b) return;
+  const txt = document.getElementById('p-'+b.dataset.cp).textContent;
+  const xong = ()=>{ const c=b.textContent; b.textContent='Đã chép'; setTimeout(()=>b.textContent=c,2200); };
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(txt).then(xong).catch(()=>duPhong(txt,xong));
+  } else duPhong(txt,xong);
+});
+function duPhong(txt, xong){
+  const ta=document.createElement('textarea');
+  ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); xong(); }
+  catch(err){ alert('Trình duyệt không cho sao chép tự động. Thầy cô bôi đen đoạn văn bản rồi bấm Ctrl+C.'); }
+  document.body.removeChild(ta);
+}
+
+/* --- đồng hồ: đang ở phần nào của buổi học --- */
+const MOC = [
+  [510,525,'Mở màn — trò chơi Người hay Máy'],[525,538,'Khung 7N'],[538,548,'DEMO 1'],
+  [548,578,'LAB 1 — trợ giảng soạn KHBD'],[578,588,'Chữa bài'],[588,598,'Nghỉ giải lao'],
+  [598,605,'Chống bịa bằng neo nguồn'],[605,613,'DEMO 2'],[613,638,'LAB 2 — NotebookLM'],
+  [638,646,'DEMO 3'],[646,676,'LAB 3 — học liệu trực quan'],[676,690,'Chốt buổi sáng'],
+  [810,818,'Khởi động buổi chiều'],[818,830,'Kiểm tra đánh giá thời AI'],[830,838,'DEMO 4'],
+  [838,863,'LAB 4 — ra đề và rubric'],[863,873,'Nghỉ giải lao'],[873,883,'Mổ xẻ kiến trúc ba mảnh'],
+  [883,893,'DEMO 5'],[893,933,'LAB 5 — app học tập'],[933,950,'Chợ app'],[950,958,'DEMO 6'],
+  [958,970,'LAB 6 — tự động hoá'],[970,982,'Năm lằn ranh'],[982,990,'Tổng kết']
+];
+function capNhatDongHo(){
+  const d = new Date(), p = d.getHours()*60 + d.getMinutes();
+  const m = MOC.find(x => p >= x[0] && p < x[1]);
+  const gio = String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  $('#dongho').textContent = m ? (gio + ' · đang ở: ' + m[2]) : gio;
+}
+capNhatDongHo(); setInterval(capNhatDongHo, 30000);
+
+veLab();
+</script>
+</body>
+</html>
